@@ -5,6 +5,17 @@
 ```c++
 #include <FloatEngine.h>
 Game game;
+class Obj_Test:public Object{
+
+};
+class Room_Test {
+public:
+      Object* obj_test;
+      Room_Test(){
+            obj_test = new Obj_Test();
+            Create(obj_test);
+      }
+};
 int main(){
       game.CreateWindow(640,480,"Test");
       if(game.CanStart()){
