@@ -19,7 +19,10 @@ public:
 int main(){
       game.CreateWindow(640,480,"Test");
       if(game.CanStart()){
+            auto r1 = new Room_Test;
+            Room_Goto(r1);
             game.Play(60);
+            delete r1;
       }
       game.Destroy();
       return 0;
