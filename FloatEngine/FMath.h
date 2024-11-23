@@ -61,8 +61,8 @@ public:
 	int Get_Point_Index(const FVec2& point);
 	//设置角度
 	void Set_Angle(float _angle);
-	//设置旋转原点
-	void Set_Origin(FVec2 origin);
+	//设置旋转原点(同绘制原点)
+	void Set_Rot_Origin(FVec2 origin);
 	//获取点的数量
 	inline int Get_Points_Number() const{
 		return static_cast<int>(points.size());
@@ -212,3 +212,5 @@ bool IsConvexPolygon(const std::vector<FVec2>& points);
 std::vector<F_Shape> DecomposeConcavePolygon(const F_Shape& concavePolygon);
 bool GJK_Collision_Plus(const F_Shape& shape1, const F_Shape& shape2);
 
+//计算点到矩形四条边上最近的那个点
+Vector2 Get_Closest_Point_On_Rectangle(const F_Rectangle& rect, Vector2 point);

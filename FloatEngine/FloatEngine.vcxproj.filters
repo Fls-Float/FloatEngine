@@ -15,9 +15,6 @@
     <Filter Include="源文件\Control">
       <UniqueIdentifier>{1bd4b915-cfd3-4233-bc5e-915f9cb2780c}</UniqueIdentifier>
     </Filter>
-    <Filter Include="头文件\Functions">
-      <UniqueIdentifier>{1e4fbf5a-e689-4ff9-967a-92dfe357505d}</UniqueIdentifier>
-    </Filter>
     <Filter Include="源文件\Control\Class">
       <UniqueIdentifier>{a2940464-f786-4902-83b3-a25b01ff87a3}</UniqueIdentifier>
     </Filter>
@@ -100,9 +97,6 @@
     <ClCompile Include="F_Anim.cpp">
       <Filter>源文件\Anim</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FloatEngine.h">
@@ -113,9 +107,6 @@
     </ClInclude>
     <ClInclude Include="Room.h">
       <Filter>头文件\Control</Filter>
-    </ClInclude>
-    <ClInclude Include="FloatApi.h">
-      <Filter>头文件\Functions</Filter>
     </ClInclude>
     <ClInclude Include="Actor.h">
       <Filter>头文件\Control\Class</Filter>
@@ -152,6 +143,9 @@
     </ClInclude>
     <ClInclude Include="F_Easings.h">
       <Filter>头文件\Anim</Filter>
+    </ClInclude>
+    <ClInclude Include="FloatApi.h">
+      <Filter>头文件\Control</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

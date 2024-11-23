@@ -54,11 +54,11 @@ FVec2 FVec2::operator/(float f)
 
 FVec2::operator Vector2()
 {
-    return Vector2(x, y);
+    return Vector2{ x, y };
 }
 FVec2::operator const Vector2() const
 {
-    return Vector2(x, y);
+    return Vector2{x, y};
 }
 F_Shape::F_Shape()
 {
@@ -144,10 +144,11 @@ void F_Shape::Set_Angle(float _angle)
     angle = _angle;
 }
 
-void F_Shape::Set_Origin(FVec2 origin)
+void F_Shape::Set_Rot_Origin(FVec2 origin)
 {
     rot_origin = origin;
 }
+
 
 int F_Shape::Get_Point_Index(const FVec2& point)
 {
@@ -217,7 +218,7 @@ void F_Polygon::Delete_Edge_Back()
 
 F_Line F_Polygon::Get_Edge(int index) const
 {
-    return F_Line(points[index*2], points[index*2+1]);  
+    return F_Line{ points[index * 2], points[index * 2 + 1] };
 }
 
 F_Rectangle::F_Rectangle()
@@ -802,4 +803,33 @@ bool GJK_Collision_Plus(const F_Shape&shape1, const F_Shape& shape2) {
         }
     }
     return false;  // 所有形状都没有相交
+}
+Vector2 Get_Closest_Point_On_Rectangle(const F_Rectangle& rect, Vector2 point) {
+    // 1. 计算旋转原点位置
+    Vector2 origin = { rect.x + rect.rot_origin.x * rect.width, rect.y + rect.rot_origin.y * rect.height };
+
+    // 2. 将点平移到旋转原点的坐标系下
+    Vector2 translatedPoint = { point.x - origin.x, point.y - origin.y };
+
+    // 3. 旋转矩形和点到矩形的旋转坐标系中
+    float cosA = cos(-rect.angle * PI / 180);
+    float sinA = sin(-rect.angle * PI / 180);
+    Vector2 rotatedPoint = {
+        translatedPoint.x * cosA - translatedPoint.y * sinA,
+        translatedPoint.x * sinA + translatedPoint.y * cosA
+    };
+
+    // 4. 计算点在旋转后的矩形范围内的最近点
+    Vector2 closestPoint = {
+        Clamp(rotatedPoint.x, -rect.width / 2.0f, rect.width / 2.0f),
+        Clamp(rotatedPoint.y, -rect.height / 2.0f, rect.height / 2.0f)
+    };
+
+    // 5. 将结果点从旋转坐标系转回世界坐标
+    Vector2 rotatedClosestPoint = {
+        closestPoint.x * cosA + closestPoint.y * sinA,
+        -closestPoint.x * sinA + closestPoint.y * cosA
+    };
+
+    return { rotatedClosestPoint.x + origin.x, rotatedClosestPoint.y + origin.y };
 }

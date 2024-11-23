@@ -79,6 +79,13 @@ void DEBUG_LOG(int lv, const char* text, bool english, bool auto_enter) {
 		cout << "\n";
 	}
 }
+int letter_to_kv(char letter)
+{
+	return F_Input::to_value(letter);
+}
+int number_to_kv(int number) {
+	return F_Input::number_to_value(number);
+}
 Color Make_Color_RGB(int r, int g, int b, float a) {
 	return ColorAlpha(Color{ (unsigned char)r,(unsigned char)g,(unsigned char)b }, a);
 }
@@ -153,7 +160,172 @@ Font Load_Font(const char* filePath, int size,const char*m_CodePoint)
 
 Font Load_Font_File_Codepoints(const char* filePath, int size, const char* codePoints_File)
 {
-	
+	const char* codepoint = LoadFileText(codePoints_File);
+	return Load_Font(filePath, size, codepoint);
+}
+// 在类外赋值
+const int F_Input::key_null = 0;
+const int F_Input::key_apostrophe = 39;
+const int F_Input::key_comma = 44;
+const int F_Input::key_minus = 45;
+const int F_Input::key_period = 46;
+const int F_Input::key_slash = 47;
+const int F_Input::key_zero = 48;
+const int F_Input::key_one = 49;
+const int F_Input::key_two = 50;
+const int F_Input::key_three = 51;
+const int F_Input::key_four = 52;
+const int F_Input::key_five = 53;
+const int F_Input::key_six = 54;
+const int F_Input::key_seven = 55;
+const int F_Input::key_eight = 56;
+const int F_Input::key_nine = 57;
+const int F_Input::key_semicolon = 59;
+const int F_Input::key_equal = 61;
+const int F_Input::key_a = 65;
+const int F_Input::key_b = 66;
+const int F_Input::key_c = 67;
+const int F_Input::key_d = 68;
+const int F_Input::key_e = 69;
+const int F_Input::key_f = 70;
+const int F_Input::key_g = 71;
+const int F_Input::key_h = 72;
+const int F_Input::key_i = 73;
+const int F_Input::key_j = 74;
+const int F_Input::key_k = 75;
+const int F_Input::key_l = 76;
+const int F_Input::key_m = 77;
+const int F_Input::key_n = 78;
+const int F_Input::key_o = 79;
+const int F_Input::key_p = 80;
+const int F_Input::key_q = 81;
+const int F_Input::key_r = 82;
+const int F_Input::key_s = 83;
+const int F_Input::key_t = 84;
+const int F_Input::key_u = 85;
+const int F_Input::key_v = 86;
+const int F_Input::key_w = 87;
+const int F_Input::key_x = 88;
+const int F_Input::key_y = 89;
+const int F_Input::key_z = 90;
+const int F_Input::key_left_bracket = 91;
+const int F_Input::key_backslash = 92;
+const int F_Input::key_right_bracket = 93;
+const int F_Input::key_grave = 96;
+const int F_Input::key_space = 32;
+const int F_Input::key_escape = 256;
+const int F_Input::key_enter = 257;
+const int F_Input::key_tab = 258;
+const int F_Input::key_backspace = 259;
+const int F_Input::key_insert = 260;
+const int F_Input::key_delete = 261;
+const int F_Input::key_right = 262;
+const int F_Input::key_left = 263;
+const int F_Input::key_down = 264;
+const int F_Input::key_up = 265;
+const int F_Input::key_page_up = 266;
+const int F_Input::key_page_down = 267;
+const int F_Input::key_home = 268;
+const int F_Input::key_end = 269;
+const int F_Input::key_caps_lock = 280;
+const int F_Input::key_scroll_lock = 281;
+const int F_Input::key_num_lock = 282;
+const int F_Input::key_print_screen = 283;
+const int F_Input::key_pause = 284;
+const int F_Input::key_f1 = 290;
+const int F_Input::key_f2 = 291;
+const int F_Input::key_f3 = 292;
+const int F_Input::key_f4 = 293;
+const int F_Input::key_f5 = 294;
+const int F_Input::key_f6 = 295;
+const int F_Input::key_f7 = 296;
+const int F_Input::key_f8 = 297;
+const int F_Input::key_f9 = 298;
+const int F_Input::key_f10 = 299;
+const int F_Input::key_f11 = 300;
+const int F_Input::key_f12 = 301;
+const int F_Input::key_left_shift = 340;
+const int F_Input::key_left_control = 341;
+const int F_Input::key_left_alt = 342;
+const int F_Input::key_left_super = 343;
+const int F_Input::key_right_shift = 344;
+const int F_Input::key_right_control = 345;
+const int F_Input::key_right_alt = 346;
+const int F_Input::key_right_super = 347;
+const int F_Input::key_kb_menu = 348;
+const int F_Input::key_kp_0 = 320;
+const int F_Input::key_kp_1 = 321;
+const int F_Input::key_kp_2 = 322;
+const int F_Input::key_kp_3 = 323;
+const int F_Input::key_kp_4 = 324;
+const int F_Input::key_kp_5 = 325;
+const int F_Input::key_kp_6 = 326;
+const int F_Input::key_kp_7 = 327;
+const int F_Input::key_kp_8 = 328;
+const int F_Input::key_kp_9 = 329;
+const int F_Input::key_kp_decimal = 330;
+const int F_Input::key_kp_divide = 331;
+const int F_Input::key_kp_multiply = 332;
+const int F_Input::key_kp_subtract = 333;
+const int F_Input::key_kp_add = 334;
+const int F_Input::key_kp_enter = 335;
+const int F_Input::key_kp_equal = 336;
+const int F_Input::key_back = 4;
+const int F_Input::key_menu = 82;
+const int F_Input::key_volume_up = 24;
+const int F_Input::key_volume_down = 25;
+// 鼠标按钮赋值
+const int F_Input::mouse_button_left = 0;
+const int F_Input::mouse_button_right = 1;
+const int F_Input::mouse_button_middle = 2;
+const int F_Input::mouse_button_side = 3;
+const int F_Input::mouse_button_extra = 4;
+const int F_Input::mouse_button_forward = 5;
+const int F_Input::mouse_button_back = 6;
+bool F_Input::keyboard_down(int key)
+{
+	return IsKeyDown(key);
+}
+bool F_Input::mb_down(int mb)
+{
+	return IsMouseButtonDown(mb);
+}
+bool F_Input::mb_pressed(int mb)
+{
+	return IsMouseButtonPressed(mb);
+}
+bool F_Input::mb_released(int mb)
+{
+	return IsMouseButtonReleased(mb);
+}
+bool F_Input::mb_up(int mb)
+{
+	return IsMouseButtonUp(mb);
+}
+bool F_Input::keyboard_pressed(int key) {
+	return IsKeyPressed(key);
+}
+bool F_Input::keyboard_released(int key) {
+	return IsKeyReleased(key);
+}
+bool F_Input::keyboard_pressed_repeat(int key){
+	return IsKeyPressedRepeat(key);
+}
+int F_Input::to_value(char letter)
+{
+	char c = toupper(letter);
+	if (c >= 'A' && c <= 'Z') {
+		return c - 'A' + 65;
+	}
+	return key_null;
+}
+
+int F_Input::number_to_value(int number)
+{
+	if (number >= 0 && number <= 9) {
+		return number + 48;
+	}
+	return key_null;
 }
 
 Color F_Color::LightGray = LIGHTGRAY;
@@ -273,7 +445,7 @@ void F_Render::Draw_Rectangle(float x, float y, float w, float h, Color col, boo
 void F_Render::Draw_Rectangle(float x, float y, float w, float h, float rot, FVec2 origin, Color col, bool line_mode)
 {
 	if(!line_mode)
-		DrawRectanglePro({ x,y,w,h }, origin, rot, col);
+		DrawRectanglePro({ x,y,w,h }, {origin.x,origin.y}, rot, col);
 	else {
 		// 计算矩形的半宽和半高
 		float hw = w / 2.0f;
@@ -362,39 +534,39 @@ void F_Render::Draw_Triangle(float x1, float y1, float x2, float y2, float x3, f
 		DrawTriangleLines(p1, p2, p3, col);
 	}
 }
-void F_Render::Draw_Text_Outline(Font fnt,float x, float y, const char* text, FVec2 origin, float rot, float font_size, float spacing, float thick, Color col, Color outline_color,bool fill_all)
+void F_Render::Draw_Text_Outline(struct Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color outline_color, float alpha ,bool fill_all)
 {
 	Font _draw_font = fnt;
 	if (!fill_all) {
-		DrawTextPro(_draw_font, text, { x - thick,y }, origin, rot, font_size, spacing, outline_color);
-		DrawTextPro(_draw_font, text, { x + thick,y }, origin, rot, font_size, spacing, outline_color);
-		DrawTextPro(_draw_font, text, { x,y - thick }, origin, rot, font_size, spacing, outline_color);
-		DrawTextPro(_draw_font, text, { x,y + thick}, origin, rot, font_size, spacing, outline_color);
+		Draw_Text_Ex(fnt, text, x - thick, y, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
+		Draw_Text_Ex(fnt, text, x + thick, y, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
+		Draw_Text_Ex(fnt, text, x, y - thick, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
+		Draw_Text_Ex(fnt, text, x, y + thick, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
 	}
 	else {
 		for (int i = 1; i <= (int)(thick); i++) {
-			DrawTextPro(_draw_font, text, { x - i,y }, origin, rot, font_size, spacing, outline_color);
-			DrawTextPro(_draw_font, text, { x + i,y }, origin, rot, font_size, spacing, outline_color);
-			DrawTextPro(_draw_font, text, { x,y - i }, origin, rot, font_size, spacing, outline_color);
-			DrawTextPro(_draw_font, text, { x,y + i }, origin, rot, font_size, spacing, outline_color);
+			Draw_Text_Ex(fnt, text, x - i, y, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
+			Draw_Text_Ex(fnt, text, x + i, y, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
+			Draw_Text_Ex(fnt, text, x, y - i, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
+			Draw_Text_Ex(fnt, text, x, y + i, o_x, o_y, rot, spacing, font_size, outline_color, alpha);
 		}
 	}
-	DrawTextPro(_draw_font, text, { x,y }, origin, rot, font_size, spacing, col);
+	Draw_Text_Ex(fnt, text, x, y, o_x, o_y, rot, spacing, font_size, col, alpha);
 }
-void F_Render::Draw_Text_Shadow(Font fnt,float x, float y, const char* text, FVec2 origin, float rot, float font_size, float spacing, float thick, Color col, Color shadow_color, bool fill_all)
+void F_Render::Draw_Text_Shadow( Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color shadow_color, float alpha , bool fill_all)
 {
 	Font _draw_font = fnt;
 	if (!fill_all) {
-		DrawTextPro(_draw_font, text, { x + thick,y }, origin, rot, font_size, spacing, shadow_color);
-		DrawTextPro(_draw_font, text, { x,y + thick }, origin, rot, font_size, spacing, shadow_color);
+		Draw_Text_Ex(fnt, text, x + thick, y, o_x, o_y, rot, spacing, font_size, shadow_color, alpha);
+		Draw_Text_Ex(fnt, text, x, y + thick, o_x, o_y, rot, spacing, font_size, shadow_color, alpha);
 	}
 	else {
 		for (int i = 1; i <= (int)(thick); i++) {
-			DrawTextPro(_draw_font, text, { x + i,y }, origin, rot, font_size, spacing, shadow_color);
-			DrawTextPro(_draw_font, text, { x,y + i }, origin, rot, font_size, spacing, shadow_color);
+			Draw_Text_Ex(fnt, text, x + i, y, o_x, o_y, rot, spacing, font_size, shadow_color, alpha);
+			Draw_Text_Ex(fnt, text, x, y + i, o_x, o_y, rot, spacing, font_size, shadow_color, alpha);
 		}
 	}
-	DrawTextPro(_draw_font, text, { x,y }, origin, rot, font_size, spacing, col);
+	Draw_Text_Ex(fnt, text, x, y, o_x, o_y, rot, spacing, font_size, col, alpha);
 }
 void Load_FCamera( float w, float h, F_Camera* camera)
 {
@@ -556,10 +728,10 @@ std::string F_File::Get_Open_File_Name(std::string strFilter)
 		return "";  // 用户取消选择或发生错误
 	}
 }
+bool F_File::loaded = false;
 FilePathList F_File::drop_list = FilePathList();
 std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 {
-
 	using namespace WinFuns;
 	OPENFILENAME ofn;
 	char szFile[260] = { 0 };
@@ -590,6 +762,7 @@ void F_File::Flush_Drop_Files()
 {
 	if (IsFileDropped()) {
 		drop_list = raylib::LoadDroppedFiles();
+		loaded = true;
 	}
 }
 
@@ -603,6 +776,19 @@ const char* F_File::Get_Drop_File(int index)
 	}
 	else {
 		return drop_list.paths[index];
+	}
+}
+
+F_File::F_File()
+{
+	drop_list = FilePathList();
+	loaded = false;
+}
+
+F_File::~F_File()
+{
+	if (loaded) {
+		UnloadDroppedFiles(drop_list);
 	}
 }
 

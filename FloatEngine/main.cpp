@@ -2,21 +2,18 @@
 
 #include "FloatEngine.h"
 Game game;
+
 class Block_Test :public Block {
 public:
 	void onEnter() {
 		m_block.width = 50;
 		m_block.height = 50;
+		m_block.Set_Rot_Origin({ 0,0 });
 		x = y = 0;
 	}
 	void onRender() {
-		F_Rectangle t;
-		t.width = m_block.width;
-		t.height = m_block.height;
-		t.x = x;
-		t.y = y;
-		t.angle = m_angle;
-		F_Render::Draw_Rectangle(t,F_Color::Green);
+		Block_Chase_Pos(0, 0);
+		Draw_Block(F_Color::Green);
 	}
 };
 class O1 :public Actor {
@@ -25,12 +22,24 @@ public:
 	void onEnter() {
 		m_block.width = 30;
 		m_block.height = 30;
+		m_block.rot_origin = { 0.5,0.5 };
 		size = 30;
 		x = 320;
 		y = 240;
+		auto i = Create_InstanceTemplate(420, 240, Block_Test(), "Block_test");
+		Add_New_Block(i);
 	}
 	void onUpdate() {
-		
+		bool up = F_Input::keyboard_down(F_Input::key_up);
+		bool down = F_Input::keyboard_down(F_Input::key_down);
+		bool left = F_Input::keyboard_down(F_Input::key_left);
+		bool right = F_Input::keyboard_down(F_Input::key_right);
+		float move_x=0, move_y=0;
+		if (up) move_y -= 2.5;
+		if (down) move_y += 2.5;
+		if (left) move_x -= 2.5;
+		if (right) move_x += 2.5;
+		Move(move_x, move_y);
 	}
 	void onRender() {
 		DrawCircle(x, y, size, F_Color::Red);
@@ -51,7 +60,7 @@ public:
 };
 
 int main() {
-	game.CreateWindow(640, 480, "");
+	game.CreateWindow(640, 480, "Actor测试");
 	if (game.CanStart()) {
 		auto r1 = new R1;
 		Room_Goto(r1);

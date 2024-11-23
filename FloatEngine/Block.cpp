@@ -2,7 +2,7 @@
 #include "Enum.h"
 Block::Block()
 {
-	m_block = { 0,0,0,0 };
+	m_block = { 0,0 };
 	m_angle = 0;
 	setObjPro(OBJPRO.Block);
 	setObjName("NONE_BLOCK");

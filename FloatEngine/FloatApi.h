@@ -43,13 +43,149 @@ inline bool Array_Has(T a[], T b) {
 #define  ARR_SIZE( a )  ( sizeof( (a) ) / sizeof( (a[0]) ) )
 Font Load_Font(const char* filePath, int size,const char*m_CodePoint);
 Font Load_Font_File_Codepoints(const char* filePath, int size, const char* codePoints_File);
+class F_Input {
+public:
+	static bool mb_down(int mb);
+	static bool mb_pressed(int mb);
+	static bool mb_released(int mb);
+	static bool mb_up(int mb);
+	static bool keyboard_pressed(int key);
+	static bool keyboard_down(int key);
+	static bool keyboard_released(int key);
+	static bool keyboard_pressed_repeat(int key);
+	//字母转换为键值
+	static int to_value(char letter);
+	//数字转换为键值
+	static int number_to_value(int number);
+	static const int key_null;
+	static const int key_apostrophe;
+	static const int key_comma;
+	static const int key_minus;
+	static const int key_period;
+	static const int key_slash;
+	static const int key_zero;
+	static const int key_one;
+	static const int key_two;
+	static const int key_three;
+	static const int key_four;
+	static const int key_five;
+	static const int key_six;
+	static const int key_seven;
+	static const int key_eight;
+	static const int key_nine;
+	static const int key_semicolon;
+	static const int key_equal;
+	static const int key_a;
+	static const int key_b;
+	static const int key_c;
+	static const int key_d;
+	static const int key_e;
+	static const int key_f;
+	static const int key_g;
+	static const int key_h;
+	static const int key_i;
+	static const int key_j;
+	static const int key_k;
+	static const int key_l;
+	static const int key_m;
+	static const int key_n;
+	static const int key_o;
+	static const int key_p;
+	static const int key_q;
+	static const int key_r;
+	static const int key_s;
+	static const int key_t;
+	static const int key_u;
+	static const int key_v;
+	static const int key_w;
+	static const int key_x;
+	static const int key_y;
+	static const int key_z;
+	static const int key_left_bracket;
+	static const int key_backslash;
+	static const int key_right_bracket;
+	static const int key_grave;
+	static const int key_space;
+	static const int key_escape;
+	static const int key_enter;
+	static const int key_tab;
+	static const int key_backspace;
+	static const int key_insert;
+	static const int key_delete;
+	static const int key_right;
+	static const int key_left;
+	static const int key_down;
+	static const int key_up;
+	static const int key_page_up;
+	static const int key_page_down;
+	static const int key_home;
+	static const int key_end;
+	static const int key_caps_lock;
+	static const int key_scroll_lock;
+	static const int key_num_lock;
+	static const int key_print_screen;
+	static const int key_pause;
+	static const int key_f1;
+	static const int key_f2;
+	static const int key_f3;
+	static const int key_f4;
+	static const int key_f5;
+	static const int key_f6;
+	static const int key_f7;
+	static const int key_f8;
+	static const int key_f9;
+	static const int key_f10;
+	static const int key_f11;
+	static const int key_f12;
+	static const int key_left_shift;
+	static const int key_left_control;
+	static const int key_left_alt;
+	static const int key_left_super;
+	static const int key_right_shift;
+	static const int key_right_control;
+	static const int key_right_alt;
+	static const int key_right_super;
+	static const int key_kb_menu;
+	static const int key_kp_0;
+	static const int key_kp_1;
+	static const int key_kp_2;
+	static const int key_kp_3;
+	static const int key_kp_4;
+	static const int key_kp_5;
+	static const int key_kp_6;
+	static const int key_kp_7;
+	static const int key_kp_8;
+	static const int key_kp_9;
+	static const int key_kp_decimal;
+	static const int key_kp_divide;
+	static const int key_kp_multiply;
+	static const int key_kp_subtract;
+	static const int key_kp_add;
+	static const int key_kp_enter;
+	static const int key_kp_equal;
+	static const int key_back;
+	static const int key_menu;
+	static const int key_volume_up;
+	static const int key_volume_down;
+	// 鼠标按钮
+	static const int mouse_button_left;
+	static const int mouse_button_right;
+	static const int mouse_button_middle;
+	static const int mouse_button_side;
+	static const int mouse_button_extra;
+	static const int mouse_button_forward;
+	static const int mouse_button_back;
+};
+//字母转换为key value
+int letter_to_kv(char letter);
+//数字转换为key value
+int number_to_kv(int number);
 class F_Color {
 public:
 	int R, G, B;
 	float A;
 	struct Color To_RlCol();
-	operator struct Color();
-	 static Color LightGray;
+	operator struct Color(); static Color LightGray;
 	 static Color Gray;
 	 static Color DarkGray;
 	 static Color DrakGray;
@@ -77,6 +213,7 @@ public:
 	 static Color RayWhite;
 	 static Color Yellow;
 };
+	
 Color Make_Color_RGB(int r, int g, int b, float a = 1.0f);
 F_Color Make_FColor_RGB(int r, int g, int b, float a = 1.0f);
 //绘制
@@ -106,8 +243,8 @@ public:
 	static void Draw_Polygon(std::vector<FVec2> points, Color color);
 	static void Draw_Triangle(F_Triangle triangle, struct  Color col);
 	static void Draw_Line(F_Line line, Color col);
-	static void Draw_Text_Outline(Font fnt, float x, float y, const char* text, FVec2 origin, float rot, float font_size, float spacing, float thick, Color col, Color outline_color, bool fill_all = false);
-	static void Draw_Text_Shadow(Font fnt, float x, float y, const char* text, FVec2 origin, float rot, float font_size, float spacing, float thick, Color col, Color shadow_color, bool fill_all = false);
+	static void Draw_Text_Outline(struct Font fnt, const char* text, float x, float y, float o_x,float o_y, float rot,  float spacing,float font_size, float thick, Color col, Color outline_color,float alpha = 1.0f, bool fill_all = false);
+	static void Draw_Text_Shadow(struct Font fnt, const char* text,float x, float y,  float o_x,float o_y, float rot, float spacing,float font_size, float thick, Color col, Color shadow_color,float alpha = 1.0f, bool fill_all = false);
 
 	//以下封装raylib的绘图函数
 
@@ -161,6 +298,7 @@ void Audio_Music_Update(F_Audio audio);
 //file
 class F_File {
 	static FilePathList drop_list;
+	static bool loaded;
 public:
 	//选择文件(返回""为失败)
 	static std::string Get_Open_File_Name(std::string strFilter);
@@ -169,6 +307,8 @@ public:
 	//
 	static void Flush_Drop_Files();
 	static const char* Get_Drop_File(int index);
+	F_File();
+	~F_File();
 };
 
 //ini
@@ -184,5 +324,5 @@ public:
 	bool Write_Int_Value(std::string Class, std::string name,int value);
 	bool Write_String_Value(std::string Class, std::string name,std::string value);
 	bool Write_Double_Value(std::string Class, std::string name,double value);
-	
 };
+

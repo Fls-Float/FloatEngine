@@ -4,9 +4,9 @@
 #ifndef CALLBACK
 #define CALLBACK __stdcall
 #endif
-#pragma comment(lib,"Kernel32.lib")
+#pragma comment(lib,"kernel32.lib")
 #pragma comment(lib,"user32.lib")
-
+#define DECLARE_HANDLE(name) struct name##__{int unused;}; typedef struct name##__ *name
 namespace WinFuns {
 #define MAKEINTRESOURCEA(i) ((const char*)((ULONG_PTR)((WORD)(i))))
 #define MAKEINTRESOURCEW(i) ((const wchar_t*)((ULONG_PTR)((WORD)(i))))
@@ -35,7 +35,7 @@ namespace WinFuns {
 		UINT  FontWeight;
 		WCHAR FaceName[32];
 	} CONSOLE_FONT_INFOEX, * PCONSOLE_FONT_INFOEX;
-
+	DECLARE_HANDLE(HWND);
 #ifdef _WIN64
 	typedef __int64 LONG_PTR;
 	typedef unsigned __int64 UINT_PTR;
@@ -64,12 +64,18 @@ namespace WinFuns {
 		void ZeroMemory(void* memory, int size);
 		void* LoadIconW(void* , const wchar_t* );
 		void* LoadIconA(void*, const char*);
-		void* GetModuleHandle(const char* lpModuleName);
-		LRESULT SendMessage(void*hWnd,UINT Msg,WPARAM wParam,  LPARAM lParam);
+		void*  GetModuleHandleA(const char* lpModuleName);
+		LRESULT SendMessageA(
+			HWND   hWnd,
+			UINT   Msg,
+			WPARAM wParam,
+			LPARAM lParam
+		);
 	}
 #define LoadIcon LoadIconA
 #define MessageBox MessageBoxA
-	
+#define GetModuleHandle GetModuleHandleA
+#define SendMessage SendMessageA
 #define STD_OUTPUT_HANDLE ((DWORD)-11)
 	extern "C" HANDLE GetStdHandle(DWORD nStdHandle);
 	extern "C" BOOL SetCurrentConsoleFontEx(HANDLE hConsoleOutput, BOOL  bMaximumWindow, PCONSOLE_FONT_INFOEX lpConsoleCurrentFontEx);

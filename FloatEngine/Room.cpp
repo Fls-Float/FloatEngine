@@ -28,56 +28,9 @@ void EventInstance(Object* inst, const char* event) {
 	}
 }
 
-void Room::sort_objects()
-{
-	int len = objects.size();
-	int i = 0;
-	int j = 0;
-	int n = 0;//同时找最大值的最小需要两个下标遍历
-	int flag = 0;
-	int pos = 0;//用来记录最后一次交换的位置
-	int k = len - 1;
-	for (i = 0; i < len - 1; i++)//确定排序趟数
-	{
-		pos = 0;
-		flag = 0;
-		//正向寻找最大值
-		for (j = n; j < k; j++)//确定比较次数
-		{
-			if (objects[j]->depth > objects[j + 1]->depth)
-			{
-				//交换
-				Object* tmp = objects[j];
-				objects[j] = objects[j + 1];
-				objects[j + 1] = tmp;
-				flag = 1;//加入标记
-				pos = j;//交换元素，记录最后一次交换的位置
-			}
-		}
-		if (flag == 0)//如果没有交换过元素，则已经有序,直接结束
-		{
-			return;
-		}
-		k = pos;//下一次比较到记录位置即可
-		//反向寻找最小值
-		for (j = k; j > n; j--)
-		{
-			Object* tmp = objects[j];
-			objects[j] = objects[j - 1];
-			objects[j - 1] = tmp;
-			flag = 1;
-		}
-		n++;
-		if (flag == 0)//如果没有交换过元素，则已经有序,直接结束
-		{
-			return;
-		}
-	}
-}
-
 Room::Room()
 {
-	auto_sort = false;
+
 }
 
 Room::~Room()
@@ -148,14 +101,14 @@ int Room::GetAllNum() const
 void Room::Delete(int index)
 {
 	objects.erase(objects.begin() + index);
-	if(auto_sort) sort_objects();
 }
-void Room::Create(Object* instance)
-{
-	Object* inst = instance;
-	objects.push_back(inst);
-	if(auto_sort) sort_objects();
+Object* Room::Create(Object* instance) {
+	// 创建新实例并存储到对象列表中
+	Object* newInstance = new Object(*instance);  // 深拷贝对象
+	objects.push_back(newInstance);
+	return newInstance;  // 返回存储对象的指针
 }
+
 void Room_Goto(Room* room)
 {
 	_Game_Main_Room = new Room;
@@ -234,8 +187,15 @@ Object* Create_Instance(float x, float y, Object* instance, const char* name = "
 	instance->onEnter();
 	instance->x = x;
 	instance->y = y;
-	room->Create(instance);
-	return instance;
+	return room->Create(instance);
+}
+
+Object* Create_Instance(Object* instance, const char* name)
+{
+	Room* room = Room_Get_Now();
+	instance->setObjName(name);
+	instance->onEnter();
+	return room->Create(instance);
 }
 
 void Destroy_Instance(const char* name, int num, ...)
