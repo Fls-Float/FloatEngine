@@ -11,8 +11,34 @@ Actor::Actor()
 	active = true;
 	gravity = {0.0f,-9.8f};
 	isJump = false;
+    enableGravity = false;
+    moveDirection = 0;
+    moveVelocity = 0;
 	change_name("NONE_ACTOR");
 }
 Actor::~Actor()
 {
 }
+
+void Actor::UpdatePhysics(float deltaTime)
+{
+    if (enableGravity)
+    {
+        float timeInSeconds = deltaTime;
+
+        // 计算初始速度
+        float initialVelocityX = cos(moveDirection * PI / 180) * moveVelocity;
+        float initialVelocityY = sin(moveDirection * PI / 180) * moveVelocity;
+
+        // 计算新的位置
+        float newX = initialVelocityX * timeInSeconds;
+        float newY = initialVelocityY * timeInSeconds + 0.5f * gravity.y * timeInSeconds * timeInSeconds;
+
+        // 更新角色的位置
+        x += newX;
+        y += newY;
+    }
+}
+
+
+

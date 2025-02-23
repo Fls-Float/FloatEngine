@@ -185,7 +185,7 @@ void F_Audio::SetY(float _y)
 		}
 		DEBUG_LOG(
 			
-			LOG_DEBUG, TextFormat("distance=%0.1f,vol=%.6f", distance,vol), false);
+			LOG_DEBUG, TextFormat("F_Audio.SetY:distance=%0.1f,vol=%.6f", distance,vol), false);
 		SetMusicVolume(m_music, vol);
 		break;
 	default:

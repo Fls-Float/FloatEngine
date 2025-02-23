@@ -54,6 +54,18 @@
     <Filter Include="源文件\Anim">
       <UniqueIdentifier>{dc541f68-2d54-4dba-83bd-b3dd7913a847}</UniqueIdentifier>
     </Filter>
+    <Filter Include="头文件\Shader">
+      <UniqueIdentifier>{8f7cf898-5a7d-4d33-80f1-79733da13b7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Shader">
+      <UniqueIdentifier>{d99b8af4-ec01-43b2-b690-c99868206473}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="头文件\Font">
+      <UniqueIdentifier>{d292129d-1255-495d-a50a-42b5d2221448}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Font">
+      <UniqueIdentifier>{944a4af2-63d2-4fd1-ad7a-8538f3de30e5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -88,14 +100,20 @@
     <ClCompile Include="F_Resource.cpp">
       <Filter>源文件\Control</Filter>
     </ClCompile>
-    <ClCompile Include="F_Text.cpp">
-      <Filter>源文件\Text</Filter>
-    </ClCompile>
     <ClCompile Include="F_Console.cpp">
       <Filter>源文件\Console</Filter>
     </ClCompile>
     <ClCompile Include="F_Anim.cpp">
       <Filter>源文件\Anim</Filter>
+    </ClCompile>
+    <ClCompile Include="F_Shader.cpp">
+      <Filter>源文件\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="F_Font.cpp">
+      <Filter>源文件\Font</Filter>
+    </ClCompile>
+    <ClCompile Include="F_Text.cpp">
+      <Filter>源文件\Text</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,6 +164,12 @@
     </ClInclude>
     <ClInclude Include="FloatApi.h">
       <Filter>头文件\Control</Filter>
+    </ClInclude>
+    <ClInclude Include="F_Shader.h">
+      <Filter>头文件\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="F_Font.h">
+      <Filter>头文件\Font</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

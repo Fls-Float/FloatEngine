@@ -50,16 +50,19 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
 	}
 	if (!TextIsEqual(title, "")) {
 		if (F_Debug::IsOpen()) {
-			SetWindowTitle(TextFormat("%s%s", title,"  --   (DEBUG)"));
+			SetWindowTitle(TextFormat("%s(DEBUG - floatengine v%s)", title,FLOAT_API_VERSION));
 		}
 		else {
 			SetWindowTitle(title);
 		}
 	}
+	//初始化
+	floatapi_font::InitDefaultFont();
 	InitAudioDevice();
 	_w = w; _h = h;
 	TextCopy(_title, title);
 	PollInputEvents();
+	DEBUG_LOG(LOG_INFO, "Game_Create_Window:窗口创建成功，当前状态:未激活(使用ShowWindow来手动激活)",0);
 }
 bool Game::CanStart()
 {
@@ -73,15 +76,18 @@ void Game::Play(int fps)
 		SetTargetFPS(_fps);
 	}
 	while (!WindowShouldClose()) {
-		//event
+		//enter
 		Room_Run_Now("onEnter");
 		//step
+		Room_Run_Now("onAlarmEvent");
 		Room_Run_Now("onUpdate");
 		//draw
 		Room_Run_Now("onRenderBefore");
 		BeginDrawing(); {
+			Room_Run_Now("onBeginCamera");
 			ClearBackground(background_col);
 			Room_Run_Now("onRender");
+			Room_Run_Now("onEndCamera");
 		}EndDrawing();
 		Room_Run_Now("onRenderNext");
 	}
@@ -98,7 +104,7 @@ void Game::Destroy()
 }
 
 
-void Game::Set_Background_Color(raylib::Color bk_col)
+void Game::Set_Background_Color(Color bk_col)
 {
 	background_col = bk_col;
 }
@@ -140,7 +146,32 @@ void Game::Set_Icon(Image icon)
 	memset(_icons, 0, sizeof _icons);
 	_icons[0] = icon;
 }
+char** ConvertStringVectorToCharArray(const std::vector<std::string>& strings) {
+	// 创建 char** 数组
+	char** result = new char* [strings.size() + 1]; // 额外分配一个空指针用于标记结束
 
+	for (size_t i = 0; i < strings.size(); ++i) {
+		// 分配空间并拷贝字符串
+		result[i] = new char[strings[i].size() + 1];
+		std::copy(strings[i].begin(), strings[i].end(), result[i]);
+		result[i][strings[i].size()] = '\0'; // 添加 null 终止符
+	}
+
+	// 设置最后一个指针为空指针
+	result[strings.size()] = nullptr;
+
+	return result;
+}
+
+void FreeCharArray(char** array) {
+	if (!array) return;
+
+	for (size_t i = 0; array[i] != nullptr; ++i) {
+		delete[] array[i];
+	}
+
+	delete[] array;
+}
 void Game::Set_Icon_Pre(const char* filePath) {
 	if (_icon_path.count >= _icon_path.capacity) {
 		if (_icon_path.capacity == 0) {
@@ -149,15 +180,16 @@ void Game::Set_Icon_Pre(const char* filePath) {
 		else {
 			_icon_path.capacity *= 2;
 		}
-		char** newPaths = new char* [_icon_path.capacity];
+		std::vector<std::string> newPaths;
 		for (unsigned int i = 0; i < _icon_path.count; i++) {
-			newPaths[i] = _icon_path.paths[i];
+			newPaths.push_back(_icon_path.paths[i]);
 		}
 		delete[] _icon_path.paths;
-		_icon_path.paths = newPaths;
+		_icon_path.paths = ConvertStringVectorToCharArray(newPaths);
 	}
 	size_t pathLen = strlen(filePath) + 1; 
-	_icon_path.paths[_icon_path.count] = new char[pathLen];
+	_icon_path.paths[_icon_path.count] = (char*)MemAlloc(pathLen);
+	//_icon_path.paths[_icon_path.count] = new char[pathLen];
 	strcpy(_icon_path.paths[_icon_path.count], filePath);  
 	_icon_path.count++;
 	_load_icon_pre = 1;
@@ -179,16 +211,16 @@ void Game::Set_Icons_Pre(FilePathList filePathList) {
 			else {
 				_icon_path.capacity *= 2; 
 			}
-			char** newPaths = new char* [_icon_path.capacity];
-			for (unsigned int j = 0; j < _icon_path.count; j++) {
-				newPaths[j] = _icon_path.paths[j];
+			std::vector<std::string> newPaths;
+			for (unsigned int i = 0; i < _icon_path.count; i++) {
+				newPaths.push_back(_icon_path.paths[i]);
 			}
 			delete[] _icon_path.paths;
-			_icon_path.paths = newPaths;
+			_icon_path.paths = ConvertStringVectorToCharArray(newPaths);
 		}
 		size_t pathLen = strlen(filePath) + 1; 
-		_icon_path.paths[_icon_path.count] = new char[pathLen];
-		strcpy(_icon_path.paths[_icon_path.count], filePath); 
+		_icon_path.paths[_icon_path.count] = (char*)MemAlloc(pathLen);
+		strcpy(_icon_path.paths[_icon_path.count], filePath);
 		_icon_path.count++;
 	}
 	_load_icon_pre = 1;

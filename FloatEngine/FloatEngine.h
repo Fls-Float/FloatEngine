@@ -1,5 +1,8 @@
 #pragma once
-#include "Game.h"
-#include "Room.h"
-#include "Block.h"
-#include "Actor.h"
+#include "FloatEngine/FloatApi.h"
+#ifdef FLOAT_API_VERSION 
+#include "FloatEngine/Game.h"
+#include "FloatEngine/Room.h"
+#include "FloatEngine/Block.h"
+#include "FloatEngine/Actor.h"
+#endif

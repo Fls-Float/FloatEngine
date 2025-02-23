@@ -1,3 +1,20 @@
+/**
+ * @file F_Easings.h
+ * @brief 缓动函数
+ * @defgroup Easings 缓动模块
+ *
+ * 提供各种缓动函数：
+ * - 线性缓动
+ * - 正弦缓动
+ * - 圆形缓动
+ * - 三次缓动
+ * - 二次缓动
+ * - 指数缓动
+ * - 回弹缓动
+ * - 弹性缓动
+ * - 反弹缓动
+ */
+
 #ifndef REASINGS_H
 #define REASINGS_H
 
@@ -15,7 +32,7 @@
 #define PI 3.14159265358979323846f //Required as PI is not always defined in math.h
 #endif
 
-namespace F_Easings{
+namespace ease_function{
          EASEDEF float EaseNone(float t, float b, float c, float d) { return b; }                            // Ease: Linear
 
         // Linear Easing functions

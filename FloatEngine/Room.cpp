@@ -2,40 +2,60 @@
 void EventInstance(Object* inst, const char* event) {
 	using namespace WinFuns;
 	void* hWnd = GetWindowHandle();
-	if (TextIsEqual(event, "onEnter")) {
-		if (inst) inst->onEnter();
-		else MessageBox(hWnd, TextFormat("Instance %d Is Error In onEnter", inst), "Error", 0);
+	if (inst == nullptr) return;
+	if (inst == (void*)(0)) return;
+	try {
+		if (TextIsEqual(event, "onEnter")) {
+			if (inst && !(!inst)) inst->onEnter();
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onEnter", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onUpdate")) {
+			if (inst && !(!inst)) inst->onUpdate();
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onUpdate", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onRender")) {
+			if (inst && !(!inst))inst->onRender();
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onRender", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onDestroy")) {
+			if (inst && !(!inst)) inst->onDestroy();
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onDestroy", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onRenderBefore")) {
+			if (inst && !(!inst))inst->onRenderBefore();
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onRenderBefore", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onRenderNext")) {
+			if (inst && !(!inst))inst->onRenderNext();
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onRenderNext", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onAlarmEvent")) {
+			if (inst && !(!inst)) { inst->onAlarmEvent(); }
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onAlarmEvent", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onBeginCamera")) {
+			if (inst && !(!inst)) { inst->onBeginCamera(); }
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onBeginCamera", inst), "Error", 0);
+		}
+		else if (TextIsEqual(event, "onEndCamera")) {
+			if (inst && !(!inst)) { inst->onEndCamera(); }
+			else MessageBox(hWnd, TextFormat("Instance %d Is Error In onEndCamera", inst), "Error", 0);
+		}
+		else {
+			MessageBox(hWnd, TextFormat("Event %s Is Error", event), "Error", 0);
+		}
 	}
-	else if (TextIsEqual(event, "onUpdate")) {
-		if (inst) inst->onUpdate();
-		else MessageBox(hWnd, TextFormat("Instance %d Is Error In onUpdate", inst), "Error", 0);
-	}
-	else if (TextIsEqual(event, "onRender")) {
-		if (inst)inst->onRender();
-		else MessageBox(hWnd, TextFormat("Instance %d Is Error In onRender", inst), "Error", 0);
-	}
-	else if (TextIsEqual(event, "onDestroy")) {
-		if (inst) inst->onDestroy();
-		else MessageBox(hWnd, TextFormat("Instance %d Is Error In onDestroy", inst), "Error", 0);
-	}
-	else if (TextIsEqual(event, "onRenderBefore")) {
-		if (inst)inst->onRenderBefore();
-		else MessageBox(hWnd, TextFormat("Instance %d Is Error In onRenderBefore", inst), "Error", 0);
-	}
-	else if (TextIsEqual(event, "onRenderNext")) {
-		if (inst)inst->onRenderNext();
-		else MessageBox(hWnd, TextFormat("Instance %d Is Error In onRenderNext", inst), "Error", 0);
+	catch (std::exception&e) {
+		DEBUG_LOG(LOG_FATAL, TextFormat("RunInstance_Error:%s", e.what()));
 	}
 }
 
 Room::Room()
 {
-
+	_counts = 0;
 }
 
-Room::~Room()
-{
-	RunInstance("onDestroy");
+Room::~Room(){
 	objects.clear();
 	objects.shrink_to_fit();
 	std::vector<Object*>().swap(objects);
@@ -62,11 +82,34 @@ int Room::FindOne(const char* name)
 	return -1;
 }
 
-int Room::GetNum(const char* name) const
+int Room::Find(int id)
+{
+	int i = 0;
+	for (auto obj : objects) {
+		if (obj->_ins_id == id) {
+			return i;
+		}
+		i++;
+	}
+	return -1;
+}
+
+int Room::GetCount(const char* name) const
 {
 	int n = 0;
 	for (auto obj : objects) {
 		if (TextIsEqual(obj->getObjName(), name)) {
+			n++;
+		}
+	}
+	return n;
+}
+
+int Room::GetCount(int id) const
+{
+	int n = 0;
+	for (auto obj : objects) {
+		if (obj->_ins_id == id) {
 			n++;
 		}
 	}
@@ -79,6 +122,7 @@ int Room::Delete(const char* name,int num)
 		if (num == 0) {
 			while (FindOne(name) != -1) {
 				objects.erase(objects.begin() + FindOne(name));
+				objects.shrink_to_fit();
 			}
 		}
 		else {
@@ -86,31 +130,77 @@ int Room::Delete(const char* name,int num)
 			while (FindOne(name) != -1) {
 				if (n == 0) break;
 				objects.erase(objects.begin() + FindOne(name));
+				objects.shrink_to_fit();
 				n--;
 			}
-			if (n != 0) return -1;
+			if (n != 0) return 0;
 		}
 		return 1;
 	}
-	return -1;
+	DEBUG_LOG(LOG_ERROR, "Room:在Delete(int index)函数中index不在合法范围内", 0);
+	return 0;
 }
-int Room::GetAllNum() const
+int Room::GetCount() const
 {
 	return (int)objects.size();
 }
-void Room::Delete(int index)
+std::string Room::GetName(int id)
 {
-	objects.erase(objects.begin() + index);
+	for (auto obj : objects) {
+		if (obj->_ins_id == id) {
+			return obj->getObjName();
+		}
+	}
+	return "NONE";
+}
+int Room::Delete(int index)
+{
+	if (index >= 0 && index < objects.size()) {
+		objects.erase(objects.begin() + index);
+		objects.shrink_to_fit();
+		return 1;
+	}
+	DEBUG_LOG(LOG_ERROR, "Room:在Delete(int index)函数中index不在合法范围内", 0);
+	return 0;
+}
+int Room::DeleteID(int id)
+{
+	if (Find(id) != -1) {
+		Object* obj = objects.at(Find(id));
+		if (!(!obj)) {
+			objects.erase(objects.begin() + Find(id));
+		}
+		objects.shrink_to_fit();
+		return 1;
+	}
+
+	DEBUG_LOG(LOG_ERROR, "Room:在Delete(int index)函数中index不在合法范围内", 0);
+	return 0;
 }
 Object* Room::Create(Object* instance) {
 	// 创建新实例并存储到对象列表中
 	Object* newInstance = new Object(*instance);  // 深拷贝对象
+	newInstance->_ins_id = _counts;
 	objects.push_back(newInstance);
-	return newInstance;  // 返回存储对象的指针
+	_counts++;
+	return objects.back();  // 返回存储对象的指针
 }
 
+Object* Room::AddIns(Object* instance)
+{
+	instance->_ins_id= _counts;
+	_counts++;
+	objects.push_back(instance);
+	return objects.back();
+}
+
+static Room* _Game_Main_Room = nullptr;
+static bool _Game_Room_Is_Enter = false;
+static Room* _Game_Next_Room=nullptr;
 void Room_Goto(Room* room)
 {
+	if (_Game_Main_Room != nullptr)
+		_Game_Main_Room->RunInstance("onDestroy");
 	_Game_Main_Room = new Room;
 	_Game_Main_Room = room;
 	_Game_Main_Room->RunInstance("onEnter");
@@ -120,9 +210,10 @@ void Room_Set_Next(Room* nextRoom) {
 	_Game_Next_Room = new Room;
 	_Game_Next_Room = nextRoom;
 }
-void Room_Goto_Next(Room* nextRoom) {
+void Room_Goto_Next(Room* nextRoom=nullptr) {
 	Room_Goto(_Game_Next_Room);
-	Room_Set_Next(nextRoom);
+	if (nextRoom != nullptr)
+		Room_Set_Next(nextRoom);
 }
 void Room_Reset()
 {
@@ -198,47 +289,57 @@ Object* Create_Instance(Object* instance, const char* name)
 	return room->Create(instance);
 }
 
-void Destroy_Instance(const char* name, int num, ...)
+int Destroy_Instance(const char* name, int num)
 {
 	Room* room = Room_Get_Now();
-	auto objects = room->GetObjList();
-	int index = 0;
-	int n = num;
-	int delete_num=0;
-	if (n == 0) {
-		for (auto obj : objects) {
-			if (TextIsEqual(obj->getObjName(), name)) {
-				room->Delete(index);
-			}
-		}
-	}
-	else for (auto obj:objects) {
-		if (!obj) {
-			return;
-		}
-		if (n == delete_num) {
-			break;
-		}
-		index++;
-		if (TextIsEqual(obj->getObjName(), name)) {
-			room->Delete(index);
-			delete_num++;
-		}
-	}
+	return room->Delete(name, num);
 
+}
+
+int Destroy_Instance(int id)
+{
+	return Room_Get_Now()->DeleteID(id);
 }
 
 bool IsExist_Instance(const char* name)
 {
-	return (Room_Get_Now()->FindOne(name) != -1);
+	return Room_Get_Now()->FindOne(name) ;
+}
+
+bool IsExist_Instance(int id)
+{
+	return Room_Get_Now()->Find(id)!=-1;
 }
 
 int Count_Instance(const char* name)
 {
-	return Room_Get_Now()->GetNum(name);
+	return Room_Get_Now()->GetCount(name);
 }
 
-int GetNum_Instance()
+int Count_Instance(int id)
 {
-	return Room_Get_Now()->GetAllNum(); 
-}						   
+	return 0;
+}
+
+int Count_Instance()
+{
+	return Room_Get_Now()->GetCount(); 
+}
+
+std::string Get_Instance_Name(int id)
+{
+	return Room_Get_Now()->GetName(id);
+}
+
+void Show_Instance_Info()
+{
+	Room* room = Room_Get_Now();
+	DEBUG_LOG(LOG_DEBUG, "所有实例信息，在当前房间中：",0);
+	
+	std::vector<Object*> instance = room->GetObjList();
+	int index = 0;
+	for (auto ins : instance) {
+		std::cout << "实例编号:" << index << "\t实例名称:" << ins->getObjName() << "\t实例ID:" << ins->_ins_id << "\t实例状态：" << IsExist_Instance(ins->_ins_id)<<std::endl;
+		index++;
+	}
+}

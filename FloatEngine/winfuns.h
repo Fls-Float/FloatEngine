@@ -1,6 +1,6 @@
 #pragma once
 #ifdef LINK_WINFUNS
-
+#include "rlgl.h"
 #ifndef CALLBACK
 #define CALLBACK __stdcall
 #endif
@@ -81,4 +81,8 @@ namespace WinFuns {
 	extern "C" BOOL SetCurrentConsoleFontEx(HANDLE hConsoleOutput, BOOL  bMaximumWindow, PCONSOLE_FONT_INFOEX lpConsoleCurrentFontEx);
 
 }
+namespace LinuxFuns {
+
+}
+
 #endif

@@ -11,7 +11,7 @@ Block::~Block() {
 	
 }
 
-void Block::Event_User(int index)
+void Block::onEvent_User(int index)
 {
 	switch (index) {
 	case Collision_With: {

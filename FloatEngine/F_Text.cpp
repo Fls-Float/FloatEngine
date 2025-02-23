@@ -49,12 +49,12 @@ void F_Text::operator+=(const char* text)
 
 F_Text F_Text::operator+(const char* text)
 {
-	F_Text t = (std::string(m_text)+std::string(text)).c_str();
-	return t;
+	return F_Text((std::string(m_text) + std::string(text)).c_str());
 }
 
 F_Text F_Text::operator+(const F_Text& text)
 {
+	return F_Text(std::string(std::string(m_text)+text.m_text).c_str());
 }
 
 int F_Text::Length()

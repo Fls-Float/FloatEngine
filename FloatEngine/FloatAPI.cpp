@@ -517,6 +517,7 @@ void F_Render::Draw_Triangle(float x1, float y1, float x2, float y2, float x3, f
 	}
 }
 void F_Render::Draw_Triangle(float x1, float y1, float x2, float y2, float x3, float y3, float rot, Color col, bool line_mode) {
+	using namespace floatapi_math;
 	if (!line_mode) {
 		float centerX = (x1 + x2 + x3) / 3.0f;
 		float centerY = (y1 + y2 + y3) / 3.0f;
@@ -567,6 +568,23 @@ void F_Render::Draw_Text_Shadow( Font fnt, const char* text, float x, float y, f
 		}
 	}
 	Draw_Text_Ex(fnt, text, x, y, o_x, o_y, rot, spacing, font_size, col, alpha);
+}
+void F_Render::Draw_Text_Outline(F_Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color outline_color, float alpha, bool fill_all)
+{
+	Draw_Text_Outline(fnt.to_raylib_font(), text, x, y, o_x, o_y, rot, spacing, font_size, thick, col, outline_color, alpha, fill_all);
+}
+void F_Render::Draw_Text_Shadow(F_Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color shadow_color, float alpha, bool fill_all)
+{
+	Draw_Text_Shadow(fnt.to_raylib_font(), text, x, y, o_x, o_y, rot, spacing, font_size, thick, col, shadow_color, alpha, fill_all);
+}
+void F_Render::Draw_Text_Ex(F_Font font, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float size, Color col, float alpha)
+{
+	Draw_Text_Ex(font.to_raylib_font(), text, x,y,o_x,o_y,rot,spacing,size,col, alpha);
+}
+void F_Render::Draw_Text(const char* text, float x, float y, float o_x, float o_y, float rot, float size, Color col, float alpha)
+{
+	extern Font f_default_font;
+	Draw_Text_Ex(f_default_font, text, x, y, o_x, o_y, rot, 0, size, col, alpha);
 }
 void Load_FCamera( float w, float h, F_Camera* camera)
 {
@@ -697,8 +715,34 @@ typedef struct tagOFNA {
 	DWORD         dwReserved;
 	DWORD         FlagsEx;
 } OPENFILENAMEA, * LPOPENFILENAMEA;
+typedef struct tagOFNW {
+	DWORD         lStructSize;
+	void* hwndOwner;
+	void* hInstance;
+	const wchar_t* lpstrFilter;
+	const wchar_t* lpstrCustomFilter;
+	DWORD         nMaxCustFilter;
+	DWORD         nFilterIndex;
+	wchar_t* lpstrFile;
+	DWORD         nMaxFile;
+	wchar_t* lpstrFileTitle;
+	DWORD         nMaxFileTitle;
+	const wchar_t* lpstrInitialDir;
+	const wchar_t* lpstrTitle;
+	DWORD         Flags;
+	WORD          nFileOffset;
+	WORD          nFileExtension;
+	const wchar_t* lpstrDefExt;
+	long unsigned* lCustData;
+	const wchar_t* lpTemplateName;
+	const wchar_t* lpstrPrompt;
+	void* pvReserved;
+	DWORD         dwReserved;
+	DWORD         FlagsEx;
+} OPENFILENAMEW, * LPOPENFILENAMEW;
 #define OPENFILENAME OPENFILENAMEA
 extern "C" int GetOpenFileNameA(OPENFILENAME* ofn);
+extern "C" int GetOpenFileNameW(OPENFILENAMEW* ofn);
 #define TCHAR wchar_t
 std::string F_File::Get_Open_File_Name(std::string strFilter)
 {
@@ -758,10 +802,38 @@ std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 	}
 }
 
+std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter, unsigned int flag)
+{
+	using namespace WinFuns;
+	OPENFILENAMEW ofn;
+	wchar_t szFile[260] = { 0 };
+
+	// 初始化OPENFILENAME结构体
+	memset(&ofn, sizeof(ofn), 0);
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.hwndOwner = GetWindowHandle();
+	ofn.Flags = flag;
+	// 显示文件对话框
+	if (GetOpenFileNameW(&ofn) == 1) {
+		return std::wstring(ofn.lpstrFile);
+	}
+	else {
+		return L"";  // 用户取消选择或发生错误
+	}
+}
+
 void F_File::Flush_Drop_Files()
 {
 	if (IsFileDropped()) {
-		drop_list = raylib::LoadDroppedFiles();
+		drop_list = LoadDroppedFiles();
 		loaded = true;
 	}
 }
@@ -800,4 +872,460 @@ Color F_Color::To_RlCol()
 F_Color::operator struct Color()
 {
 	return Make_Color_RGB(R, G, B, A);
+}
+
+#include <fstream>
+// 字符串修剪辅助函数
+static inline std::string& trim(std::string& s) {
+	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+		return !std::isspace(ch);
+		}));
+	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+		return !std::isspace(ch);
+		}).base(), s.end());
+	return s;
+}
+
+void F_Ini::parse_line(std::string& line) {
+	line = line.substr(0, line.find(';'));  // 移除行内注释
+	trim(line);
+
+	if (line.empty()) return;
+
+	if (line[0] == '[' && line.back() == ']') {
+		currentSection = line.substr(1, line.size() - 2);
+		trim(currentSection);
+		sections[currentSection];  // 确保section存在
+	}
+	else if (auto eq_pos = line.find('='); eq_pos != std::string::npos) {
+		std::string key = line.substr(0, eq_pos);
+		std::string value = line.substr(eq_pos + 1);
+		trim(key);
+		trim(value);
+		sections[currentSection][key] = value;
+	}
+}
+F_Ini::F_Ini(const std::string& filename ) {
+	if (!filename.empty()) {
+		Load(filename);
+	}
+}
+
+bool F_Ini::Load(const std::string& filename) {
+	sections.clear();
+	currentFile = filename;
+	currentSection = "default";  // 默认section
+
+	std::ifstream file(filename);
+	if (!file.is_open()) return false;
+
+	std::string line;
+	while (std::getline(file, line)) {
+		parse_line(line);
+	}
+	return true;
+}
+
+bool F_Ini::Save(const std::string& filename) {
+	std::string save_path = filename.empty() ? currentFile : filename;
+	if (save_path.empty()) return false;
+
+	std::ofstream file(save_path);
+	if (!file.is_open()) return false;
+
+	for (const auto& [section, entries] : sections) {
+		file << "[" << section << "]\n";
+		for (const auto& [key, value] : entries) {
+			file << key << "=" << value << "\n";
+		}
+		file << "\n";
+	}
+	return true;
+}
+
+// 读取方法
+int F_Ini::Get_Int_Value_From_Name(const std::string& Class, const std::string& name) {
+	try {
+		return std::stoi(sections[Class][name]);
+	}
+	catch (...) {
+		return 0;
+	}
+}
+
+std::string F_Ini::Get_String_Value_From_Name(const std::string& Class, const std::string& name) {
+	return sections[Class][name];
+}
+
+double F_Ini::Get_Double_Value_From_Name(const std::string& Class, const std::string& name) {
+	try {
+		return std::stod(sections[Class][name]);
+	}
+	catch (...) {
+		return 0.0;
+	}
+}
+
+// 写入方法
+bool F_Ini::Write_Int_Value(const std::string& Class, const std::string& name, int value) {
+	sections[Class][name] = std::to_string(value);
+	return true;
+}
+
+bool F_Ini::Write_String_Value(const std::string& Class, const std::string& name, const std::string& value) {
+	sections[Class][name] = value;
+	return true;
+}
+
+bool F_Ini::Write_Double_Value(const std::string& Class, const std::string& name, double value) {
+	sections[Class][name] = std::to_string(value);
+	return true;
+}
+#include <sstream>
+#include <cctype>
+#include <algorithm>
+
+namespace F_Json {
+
+	// JsonNull 实现
+	JsonType JsonNull::type() const { return JsonType::Null; }
+	std::string JsonNull::serialize() const { return "null"; }
+
+	// JsonBoolean 实现
+	JsonBoolean::JsonBoolean(bool v) : val(v) {}
+	JsonType JsonBoolean::type() const { return JsonType::Boolean; }
+	std::string JsonBoolean::serialize() const { return val ? "true" : "false"; }
+	bool JsonBoolean::value() const { return val; }
+
+	// JsonNumber 实现
+	JsonNumber::JsonNumber(double v) : val(v) {}
+	JsonType JsonNumber::type() const { return JsonType::Number; }
+	std::string JsonNumber::serialize() const {
+		std::ostringstream oss;
+		if (val == static_cast<int>(val)) {
+			oss << static_cast<int>(val);
+		}
+		else {
+			oss << val;
+		}
+		return oss.str();
+	}
+	double JsonNumber::value() const { return val; }
+
+	// JsonString 实现
+	JsonString::JsonString(std::string v) : val(std::move(v)) {}
+	JsonType JsonString::type() const { return JsonType::String; }
+	std::string JsonString::serialize() const {
+		std::ostringstream oss;
+		oss << '"';
+		for (char c : val) {
+			switch (c) {
+			case '"':  oss << "\\\""; break;
+			case '\\': oss << "\\\\"; break;
+			case '\b': oss << "\\b";  break;
+			case '\f': oss << "\\f";  break;
+			case '\n': oss << "\\n";  break;
+			case '\r': oss << "\\r";  break;
+			case '\t': oss << "\\t";  break;
+			default:   oss << c;      break;
+			}
+		}
+		oss << '"';
+		return oss.str();
+	}
+	std::string JsonString::value() const { return val; }
+
+	// JsonArray 实现
+	JsonType JsonArray::type() const { return JsonType::Array; }
+	std::string JsonArray::serialize() const {
+		std::string res = "[";
+		for (size_t i = 0; i < vals.size(); ++i) {
+			if (i > 0) res += ", ";
+			res += vals[i]->serialize();
+		}
+		return res + "]";
+	}
+	void JsonArray::add(std::shared_ptr<JsonValue> v) { vals.push_back(v); }
+	size_t JsonArray::size() const { return vals.size(); }
+	std::shared_ptr<JsonValue> JsonArray::get(size_t i) const { return vals.at(i); }
+
+	// JsonObject 实现
+	JsonType JsonObject::type() const { return JsonType::Object; }
+	std::string JsonObject::serialize() const {
+		std::string res = "{";
+		bool first = true;
+		for (const auto& [k, v] : vals) {
+			if (!first) res += ", ";
+			res += JsonString(k).serialize() + ": " + v->serialize();
+			first = false;
+		}
+		return res + "}";
+	}
+	void JsonObject::set(const std::string& k, std::shared_ptr<JsonValue> v) { vals[k] = v; }
+	bool JsonObject::has(const std::string& k) const { return vals.count(k); }
+	std::shared_ptr<JsonValue> JsonObject::get(const std::string& k) const { return vals.at(k); }
+
+	size_t JsonObject::size() const {
+		return vals.size();
+	}
+
+	// Json 包装类实现
+	Json::Json(std::shared_ptr<JsonValue> v) : val(v) {}
+	Json::Json() : val(std::make_shared<JsonNull>()) {}
+
+	Json Json::Null() { return Json(std::make_shared<JsonNull>()); }
+	Json Json::Boolean(bool b) { return Json(std::make_shared<JsonBoolean>(b)); }
+	Json Json::Number(double d) { return Json(std::make_shared<JsonNumber>(d)); }
+	Json Json::String(const std::string& s) { return Json(std::make_shared<JsonString>(s)); }
+	Json Json::Array() { return Json(std::make_shared<JsonArray>()); }
+	Json Json::Object() { return Json(std::make_shared<JsonObject>()); }
+
+	JsonType Json::type() const { return val->type(); }
+
+	bool Json::asBoolean() const {
+		auto p = dynamic_cast<JsonBoolean*>(val.get());
+		if (!p) throw std::runtime_error("Not a boolean");
+		return p->value();
+	}
+
+	double Json::asNumber() const {
+		auto p = dynamic_cast<JsonNumber*>(val.get());
+		if (!p) throw std::runtime_error("Not a number");
+		return p->value();
+	}
+
+	std::string Json::asString() const {
+		auto p = dynamic_cast<JsonString*>(val.get());
+		if (!p) throw std::runtime_error("Not a string");
+		return p->value();
+	}
+
+	Json& Json::add(const Json& item) {
+		if (val->type() != JsonType::Array) {
+			throw std::runtime_error("Not an array");
+		}
+		auto p = static_cast<JsonArray*>(val.get());
+		p->add(item.val);
+		return *this;
+	}
+
+	Json Json::get(size_t index) const {
+		auto p = dynamic_cast<JsonArray*>(val.get());
+		if (!p) throw std::runtime_error("Not an array");
+		return Json(p->get(index));
+	}
+
+	Json& Json::set(const std::string& key, const Json& v) {
+		auto p = dynamic_cast<JsonObject*>(val.get());
+		if (!p) throw std::runtime_error("Not an object");
+		p->set(key, v.val);
+		return *this;
+	}
+
+	Json Json::get(const std::string& key) const {
+		auto p = dynamic_cast<JsonObject*>(val.get());
+		if (!p) throw std::runtime_error("Not an object");
+		return Json(p->get(key));
+	}
+
+	std::string Json::serialize() const { return val->serialize(); }
+
+	// 解析相关辅助函数
+	namespace {
+		// f_json.cpp
+		static void skip_ws(const std::string& s, size_t& pos) {
+			while (pos < s.size()) {
+				// 处理单行注释
+				if (s[pos] == '/' && pos + 1 < s.size() && s[pos + 1] == '/') {
+					pos += 2;
+					while (pos < s.size() && s[pos] != '\n') pos++;
+					continue;
+				}
+
+				// 处理多行注释
+				if (s[pos] == '/' && pos + 1 < s.size() && s[pos + 1] == '*') {
+					pos += 2;
+					while (pos < s.size()) {
+						if (s[pos] == '*' && pos + 1 < s.size() && s[pos + 1] == '/') {
+							pos += 2;
+							break;
+						}
+						pos++;
+					}
+					continue;
+				}
+
+				// 空白处理
+				if (!std::isspace(s[pos])) break;
+				pos++;
+			}
+		}
+
+		Json parse_value(const std::string& s, size_t& pos);
+		Json parse_string(const std::string& s, size_t& pos);
+		
+		Json parse_object(const std::string& s, size_t& pos) {
+			Json obj = Json::Object();
+			pos++; // Skip '{'
+			bool expect_comma = false; // 标记是否期望逗号
+
+			while (pos < s.size()) {
+				skip_ws(s, pos);
+
+				// 检查对象结束
+				if (s[pos] == '}') {
+					pos++;
+					return obj;
+				}
+
+				// 检查逗号（如果是期望的）
+				if (expect_comma) {
+					if (s[pos] == ',') {
+						pos++;
+						skip_ws(s, pos);
+					}
+					else {
+						throw std::runtime_error("Expected ',' or '}'");
+					}
+				}
+
+				// 解析键值对
+				auto key = parse_string(s, pos).asString();
+				skip_ws(s, pos);
+
+				if (s[pos++] != ':') {
+					throw std::runtime_error("Expected ':'");
+				}
+
+				auto val = parse_value(s, pos);
+				obj.set(key, val);
+				expect_comma = true; // 下一个应期望逗号或结束符
+			}
+
+			throw std::runtime_error("Unterminated object");
+		}
+
+		Json parse_array(const std::string& s, size_t& pos) {
+			Json arr = Json::Array();
+			pos++; // Skip '['
+			while (pos < s.size()) {
+				skip_ws(s, pos);
+				if (s[pos] == ']') { pos++; break; }
+
+				arr.add(parse_value(s, pos));
+				skip_ws(s, pos);
+				if (s[pos] == ',') pos++;
+				else if (s[pos] != ']') throw std::runtime_error("Expected ',' or ']'");
+			}
+			return arr;
+		}
+
+		static Json parse_string(const std::string& s, size_t& pos) {
+			std::string res;
+			bool escape = false;
+			pos++; // Skip opening "
+			while (pos < s.size()) {
+				char c = s[pos++];
+				if (escape) {
+					switch (c) {
+					case '"':  res += '"';  break;
+					case '\\': res += '\\'; break;
+					case 'b':  res += '\b'; break;
+					case 'f':  res += '\f'; break;
+					case 'n':  res += '\n'; break;
+					case 'r':  res += '\r'; break;
+					case 't':  res += '\t'; break;
+					default:   throw std::runtime_error("Invalid escape");
+					}
+					escape = false;
+				}
+				else if (c == '"') {
+					return Json::String(res);
+				}
+				else if (c == '\\') {
+					escape = true;
+				}
+				else {
+					res += c;
+				}
+			}
+			throw std::runtime_error("Unterminated string");
+		}
+
+		Json parse_bool(const std::string& s, size_t& pos) {
+			if (s.substr(pos, 4) == "true") {
+				pos += 4;
+				return Json::Boolean(true);
+			}
+			else if (s.substr(pos, 5) == "false") {
+				pos += 5;
+				return Json::Boolean(false);
+			}
+			throw std::runtime_error("Invalid boolean");
+		}
+
+		Json parse_null(const std::string& s, size_t& pos) {
+			if (s.substr(pos, 4) == "null") {
+				pos += 4;
+				return Json::Null();
+			}
+			throw std::runtime_error("Invalid null");
+		}
+
+		Json parse_number(const std::string& s, size_t& pos) {
+			size_t end = pos;
+			if (s[end] == '-') end++;
+			while (end < s.size() && std::isdigit(s[end])) end++;
+			if (s[end] == '.') end++;
+			while (end < s.size() && std::isdigit(s[end])) end++;
+			if (s[end] == 'e' || s[end] == 'E') {
+				end++;
+				if (s[end] == '+' || s[end] == '-') end++;
+				while (end < s.size() && std::isdigit(s[end])) end++;
+			}
+			double num = std::stod(s.substr(pos, end - pos));
+			pos = end;
+			return Json::Number(num);
+		}
+
+		Json parse_value(const std::string& s, size_t& pos) {
+			skip_ws(s, pos);
+			if (pos >= s.size()) throw std::runtime_error("Unexpected end");
+
+			switch (s[pos]) {
+			case '{': return parse_object(s, pos);
+			case '[': return parse_array(s, pos);
+			case '"': return parse_string(s, pos);
+			case 't': case 'f': return parse_bool(s, pos);
+			case 'n': return parse_null(s, pos);
+			default:  return parse_number(s, pos);
+			}
+		}
+	}
+
+	Json Json::parse(const std::string& s) {
+		size_t pos = 0;
+		return parse_value(s, pos);
+	}
+	bool Json::has(const std::string& key) const {
+		if (auto obj = dynamic_cast<JsonObject*>(val.get())) {
+			return obj->has(key);
+		}
+		throw std::runtime_error("Not an object");
+	}
+
+	bool Json::isNull() const {
+		return val->type() == JsonType::Null;
+	}
+
+	size_t Json::size() const {
+		if (auto arr = dynamic_cast<JsonArray*>(val.get())) {
+			return arr->size();
+		}
+		if (auto obj = dynamic_cast<JsonObject*>(val.get())) {
+			return obj->size();
+		}
+		throw std::runtime_error("Not a container type");
+	}
+
 }

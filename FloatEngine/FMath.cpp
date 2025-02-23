@@ -1,4 +1,5 @@
 #include "FMath.h"
+#include <numeric> 
 FVec2::FVec2() :x(0), y(0)
 {
 }
@@ -167,6 +168,7 @@ void F_Shape::Shape_Set()
 
 FVec2 F_Shape::Support(const FVec2& dir) const
 {
+    using namespace floatapi_math;
     float max_dot = -FLT_MAX;
     FVec2 farthest_point = { -1,-1 };
 
@@ -254,6 +256,7 @@ F_Rectangle::F_Rectangle(const Rectangle& rect)
 
 void F_Rectangle::Shape_Set()
 {
+    using namespace floatapi_math;
     points[0] = Rotate_Point({ x,y }, 
         Vector2Add({ x,y }, { rot_origin.x* width, rot_origin.y* height }), angle);
     points[1] = Rotate_Point({ x+width,y },
@@ -420,6 +423,7 @@ void F_Ellipse::Set_NumPoints(int n)
     numPoints = n;
 }
 void F_Ellipse::Shape_Set() {
+    using namespace floatapi_math;
     points.clear(); // 清空之前的点
     // 遍历生成椭圆上的点
     for (int i = 0; i < numPoints; ++i) {
@@ -436,6 +440,7 @@ F_Ellipse::~F_Ellipse() {
 }
 
 Vector2 F_Ellipse::Support(const Vector2 & u) const {
+    using namespace floatapi_math;
     // 旋转方向向量到椭圆的局部坐标系
     Vector2 rotated_u = Vector2Rotate(u,-angle*PI / 180);  // 将方向向量旋转到与椭圆一致的角度
 
@@ -476,6 +481,7 @@ F_Triangle::F_Triangle(FVec2 _a, FVec2 _b, FVec2 _c) :
 
 void F_Triangle::Shape_Set()
 {
+    using namespace floatapi_math;
     // 计算 origin 在世界坐标系中的位置
     FVec2 origin_pos = {
         (a.x + b.x + c.x) / (6 * rot_origin.x),
@@ -524,312 +530,363 @@ void F_Triangle::Set_Origin(FVec2 origin)
 
 
 
-
-//函数
-bool Sign(float _x) {
-    if (_x == 0) {
-        return 0;
-    }
-    return fabsf(_x) / (_x);
-}
-
-bool Point_In_Rectangle(FVec2 p, F_Rectangle r)
-{
-    if (CheckCollisionPointRec(p, r.To_RlRect(1))) return true;
-    return false;
-}
-
-FVec2 FVec2Unit(FVec2 v)
-{
-    if(Vector2Length(v) == 0) return { 0,0 };
-    return Vector2Scale(v, 1 / Vector2Length(v));
-}
-
-bool Line_Segment_Collision(FVec2 a, FVec2 b, FVec2 c, FVec2 d)
-{
-    if (CheckCollisionLines(a,b,c,d,NULL)) return true;
-    return false;
-}
-
-
-FVec2 Rotate_Point(FVec2 point, FVec2 origin, float rot) {
-    return Vector2Add(origin, Vector2Rotate(Vector2Subtract(point,origin), rot));
-}
-
-bool Rectangle_Collision_AABB(const F_Rectangle& a, const F_Rectangle& b)
-{
-    Rectangle a1 = a.To_RlRect(1);
-    Rectangle a2 = b.To_RlRect(1);
-    if (CheckCollisionRecs(a1, a2)) {
-        return true;
-    }
-    return false;
-}
-
-F_Rectangle Get_Rectangle_AABB(const F_Rectangle& a, const F_Rectangle& b)
-{
-    Rectangle a1 = a.To_RlRect(1);
-    Rectangle a2 = b.To_RlRect(1);
-    if (CheckCollisionRecs(a1, a2)) {
-        return GetCollisionRec(a1, a2);
-    }
-    return F_Rectangle{ 0, 0, 0, 0 };
-}
-
-bool Circle_Collision(const F_Circle& a,const F_Circle& b)
-{
-    float distance = Vector2Distance({ a.x,a.y }, { b.x,b.y });
-    if (distance < a.radius + b.radius) {
-        return true;
-    }
-    return false;
-}
-
-bool Circle_Collision_Rectangle(const F_Circle& a,const F_Rectangle& b)
-{
-    return CheckCollisionCircleRec({ a.x,a.y }, a.radius, b.To_RlRect(1));
-}
-// Function to check collision between a circle and a rotated rectangle
-bool Circle_Collision_RectangleEx(const F_Circle& circle, const F_Rectangle& rect) {
-    // Circle center and radius
-    float circleX = circle.x;
-    float circleY = circle.y;
-    float circleRadius = circle.radius;
-    // Rectangle parameters
-    float rectX = rect.x;
-    float rectY = rect.y;
-    float rectWidth = rect.width;
-    float rectHeight = rect.height;
-    float rectAngle = rect.angle;
-
-    // Calculate the rectangle's four corner points
-    FVec2 topLeft = { rectX, rectY };
-    FVec2 topRight = { rectX + rectWidth, rectY };
-    FVec2 bottomLeft = { rectX, rectY + rectHeight };
-    FVec2 bottomRight = { rectX + rectWidth, rectY + rectHeight };
-
-    // Rotate rectangle corners around the origin (rect.rot_origin)
-    FVec2 origin = rect.rot_origin;
-    topLeft = Rotate_Point(topLeft,origin ,rectAngle);
-    topRight = Rotate_Point(topRight, origin,rectAngle);
-    bottomLeft = Rotate_Point(bottomLeft,origin ,rectAngle);
-    bottomRight = Rotate_Point(bottomRight, origin,rectAngle);
-
-    // Get the axis-aligned bounding box of the rotated rectangle
-    float minX = std::min({ topLeft.x, topRight.x, bottomLeft.x, bottomRight.x });
-    float maxX = std::max({ topLeft.x, topRight.x, bottomLeft.x, bottomRight.x });
-    float minY = std::min({ topLeft.y, topRight.y, bottomLeft.y, bottomRight.y });
-    float maxY = std::max({ topLeft.y, topRight.y, bottomLeft.y, bottomRight.y });
-
-    // Find the closest point on the AABB to the circle's center
-    float closestX = std::max(minX, std::min(circleX, maxX));
-    float closestY = std::max(minY, std::min(circleY, maxY));
-
-    // Calculate the distance between the circle's center and this closest point
-    float distanceX = circleX - closestX;
-    float distanceY = circleY - closestY;
-    float distanceSquared = distanceX * distanceX + distanceY * distanceY;
-
-    // Check if the distance is less than or equal to the circle's radius
-    return distanceSquared <= (circleRadius * circleRadius);
-}
-
-
-
-//GJK
-FVec2 TripleProduct(const FVec2& a, const FVec2& b, const FVec2& c) {
-    float ac = Vector2Dot(a, c);
-    float bc = Vector2Dot(b, c);
-    return { b.x * ac - a.x * bc, b.y * ac - a.y * bc };
-}
-
-float Vector2Dot(const FVec2& a, const FVec2& b) {
-    return a.x * b.x + a.y * b.y;
-}
-
-FVec2 Vector2Perpendicular(const FVec2& v) {
-    return { -v.y, v.x };
-}
-FVec2 MinkowskiSupport(const F_Shape& shape1, const F_Shape& shape2, const FVec2& direction) {
-    FVec2 p1 = shape1.Support( direction);
-    FVec2 p2 = shape2.Support( Vector2Negate(direction));
-    return Vector2Add(p1, Vector2Negate(p2));
-    
-}
-
-bool ContainsOrigin(std::vector<FVec2>& simplex, FVec2& direction) {
-    FVec2 a = simplex.back();
-    FVec2 ao = Vector2Negate(a);
-
-    if (simplex.size() == 3) {
-        FVec2 b = simplex[1];
-        FVec2 c = simplex[0];
-
-        FVec2 ab = Vector2Add(b , Vector2Negate(a));
-        FVec2 ac = Vector2Add(c, Vector2Negate(a));
-
-        FVec2 abPerp = TripleProduct(ac, ab, ab);
-        FVec2 acPerp = TripleProduct(ab, ac, ac);
-
-        if (Vector2Dot (abPerp, ao) > 0) {
-            simplex.erase(simplex.begin());
-            direction = abPerp;
+namespace floatapi_math {
+    //函数
+    bool Sign(float _x) {
+        if (_x == 0) {
+            return 0;
         }
-        else if (Vector2Dot(acPerp, ao) > 0) {
-            simplex.erase(simplex.begin() + 1);
-            direction = acPerp;
-        }
-        else {
-            return true;  // 原点在三角形中
-        }
-    }
-    else {
-        FVec2 b = simplex[0];
-        FVec2 ab = Vector2Add(b, Vector2Negate(a));
-
-        direction = TripleProduct(ab, ao, ab);
-        if (Vector2Dot(direction, direction) == 0) {
-            direction = Vector2Perpendicular(ab);
-        }
+        return fabsf(_x) / (_x);
     }
 
-    return false;
-}
-bool GJK_Collision(const F_Shape& shape1, const F_Shape& shape2) {
-    FVec2 direction = { 1, 0 };  // 初始方向
-    std::vector<FVec2> simplex;
-    simplex.push_back(MinkowskiSupport(shape1, shape2, direction));
-
-    direction = Vector2Negate(simplex[0]);
-
-    while (true) {
-        FVec2 new_point = MinkowskiSupport(shape1, shape2, direction);
-        if (Vector2Dot(new_point, direction) <= 0) {
-            return false;  // 如果最远点不在原点前方，图形不相交
-        }
-
-        simplex.push_back(new_point);
-
-        if (ContainsOrigin(simplex, direction)) {
-            return true;  // 原点在单纯形内，图形相交
-        }
+    bool Point_In_Rectangle(FVec2 p, F_Rectangle r)
+    {
+        if (CheckCollisionPointRec(p, r.To_RlRect(1))) return true;
+        return false;
     }
-}
-float PolygonArea(const std::vector<FVec2>& points) {
-    float area = 0.0f;
-    int n = points.size();
-    for (int i = 0; i < n; ++i) {
-        int j = (i + 1) % n;
-        area += points[i].x * points[j].y - points[j].x * points[i].y;
-    }
-    return area / 2.0f;
-}
 
-// 函数：检查点是否在多边形内部
-bool PointInPolygon(const FVec2& p, const std::vector<FVec2>& points) {
-    bool inside = false;
-    int n = points.size();
-    for (int i = 0, j = n - 1; i < n; j = i++) {
-        if ((points[i].y > p.y) != (points[j].y > p.y) &&
-            (p.x < (points[j].x - points[i].x) * (p.y - points[i].y) / (points[j].y - points[i].y) + points[i].x)) {
-            inside = !inside;
+    FVec2 FVec2Unit(FVec2 v)
+    {
+        if (Vector2Length(v) == 0) return { 0,0 };
+        return Vector2Scale(v, 1 / Vector2Length(v));
+    }
+
+    bool Line_Segment_Collision(FVec2 a, FVec2 b, FVec2 c, FVec2 d)
+    {
+        if (CheckCollisionLines(a, b, c, d, NULL)) return true;
+        return false;
+    }
+
+
+    FVec2 Rotate_Point(FVec2 point, FVec2 origin, float rot) {
+        return Vector2Add(origin, Vector2Rotate(Vector2Subtract(point, origin), rot));
+    }
+
+    bool Rectangle_Collision_AABB(const F_Rectangle& a, const F_Rectangle& b)
+    {
+        Rectangle a1 = a.To_RlRect(1);
+        Rectangle a2 = b.To_RlRect(1);
+        if (CheckCollisionRecs(a1, a2)) {
+            return true;
         }
+        return false;
     }
-    return inside;
-}
-bool IsConvexPolygon(const std::vector<FVec2>& points) {
-    int n = points.size();
-    if (n < 3) return false; // 少于3个点不是多边形
 
-    bool isPositive = false;
-    for (int i = 0; i < n; ++i) {
-        FVec2 A = points[i];
-        FVec2 B = points[(i + 1) % n];
-        FVec2 C = points[(i + 2) % n];
+    F_Rectangle Get_Rectangle_AABB(const F_Rectangle& a, const F_Rectangle& b)
+    {
+        Rectangle a1 = a.To_RlRect(1);
+        Rectangle a2 = b.To_RlRect(1);
+        if (CheckCollisionRecs(a1, a2)) {
+            return GetCollisionRec(a1, a2);
+        }
+        return F_Rectangle{ 0, 0, 0, 0 };
+    }
 
-        float crossProduct = (B.x - A.x) * (C.y - A.y) - (B.y - A.y) * (C.x - A.x);
-        if (i == 0) {
-            isPositive = crossProduct > 0; // 记录第一个叉积的符号
+    bool Circle_Collision(const F_Circle& a, const F_Circle& b)
+    {
+        float distance = Vector2Distance({ a.x,a.y }, { b.x,b.y });
+        if (distance < a.radius + b.radius) {
+            return true;
+        }
+        return false;
+    }
+
+    bool Circle_Collision_Rectangle(const F_Circle& a, const F_Rectangle& b)
+    {
+        return CheckCollisionCircleRec({ a.x,a.y }, a.radius, b.To_RlRect(1));
+    }
+    // Function to check collision between a circle and a rotated rectangle
+    bool Circle_Collision_RectangleEx(const F_Circle& circle, const F_Rectangle& rect) {
+        // Circle center and radius
+        float circleX = circle.x;
+        float circleY = circle.y;
+        float circleRadius = circle.radius;
+        // Rectangle parameters
+        float rectX = rect.x;
+        float rectY = rect.y;
+        float rectWidth = rect.width;
+        float rectHeight = rect.height;
+        float rectAngle = rect.angle;
+
+        // Calculate the rectangle's four corner points
+        FVec2 topLeft = { rectX, rectY };
+        FVec2 topRight = { rectX + rectWidth, rectY };
+        FVec2 bottomLeft = { rectX, rectY + rectHeight };
+        FVec2 bottomRight = { rectX + rectWidth, rectY + rectHeight };
+
+        // Rotate rectangle corners around the origin (rect.rot_origin)
+        FVec2 origin = rect.rot_origin;
+        topLeft = Rotate_Point(topLeft, origin, rectAngle);
+        topRight = Rotate_Point(topRight, origin, rectAngle);
+        bottomLeft = Rotate_Point(bottomLeft, origin, rectAngle);
+        bottomRight = Rotate_Point(bottomRight, origin, rectAngle);
+
+        // Get the axis-aligned bounding box of the rotated rectangle
+        float minX = std::min({ topLeft.x, topRight.x, bottomLeft.x, bottomRight.x });
+        float maxX = std::max({ topLeft.x, topRight.x, bottomLeft.x, bottomRight.x });
+        float minY = std::min({ topLeft.y, topRight.y, bottomLeft.y, bottomRight.y });
+        float maxY = std::max({ topLeft.y, topRight.y, bottomLeft.y, bottomRight.y });
+
+        // Find the closest point on the AABB to the circle's center
+        float closestX = std::max(minX, std::min(circleX, maxX));
+        float closestY = std::max(minY, std::min(circleY, maxY));
+
+        // Calculate the distance between the circle's center and this closest point
+        float distanceX = circleX - closestX;
+        float distanceY = circleY - closestY;
+        float distanceSquared = distanceX * distanceX + distanceY * distanceY;
+
+        // Check if the distance is less than or equal to the circle's radius
+        return distanceSquared <= (circleRadius * circleRadius);
+    }
+
+
+
+    //GJK
+    FVec2 TripleProduct(const FVec2& a, const FVec2& b, const FVec2& c) {
+        float ac = Vector2Dot(a, c);
+        float bc = Vector2Dot(b, c);
+        return { b.x * ac - a.x * bc, b.y * ac - a.y * bc };
+    }
+
+    float Vector2Dot(const FVec2& a, const FVec2& b) {
+        return a.x * b.x + a.y * b.y;
+    }
+
+    FVec2 Vector2Perpendicular(const FVec2& v) {
+        return { -v.y, v.x };
+    }
+    FVec2 MinkowskiSupport(const F_Shape& shape1, const F_Shape& shape2, const FVec2& direction) {
+        FVec2 p1 = shape1.Support(direction);
+        FVec2 p2 = shape2.Support(Vector2Negate(direction));
+        return Vector2Add(p1, Vector2Negate(p2));
+
+    }
+
+    bool ContainsOrigin(std::vector<FVec2>& simplex, FVec2& direction) {
+        FVec2 a = simplex.back();
+        FVec2 ao = Vector2Negate(a);
+
+        if (simplex.size() == 3) {
+            FVec2 b = simplex[1];
+            FVec2 c = simplex[0];
+
+            FVec2 ab = Vector2Add(b, Vector2Negate(a));
+            FVec2 ac = Vector2Add(c, Vector2Negate(a));
+
+            FVec2 abPerp = TripleProduct(ac, ab, ab);
+            FVec2 acPerp = TripleProduct(ab, ac, ac);
+
+            if (Vector2Dot(abPerp, ao) > 0) {
+                simplex.erase(simplex.begin());
+                direction = abPerp;
+            }
+            else if (Vector2Dot(acPerp, ao) > 0) {
+                simplex.erase(simplex.begin() + 1);
+                direction = acPerp;
+            }
+            else {
+                return true;  // 原点在三角形中
+            }
         }
         else {
-            if ((crossProduct > 0) != isPositive) {
-                return false; // 叉积符号不一致，说明是凹形
+            FVec2 b = simplex[0];
+            FVec2 ab = Vector2Add(b, Vector2Negate(a));
+
+            direction = TripleProduct(ab, ao, ab);
+            if (Vector2Dot(direction, direction) == 0) {
+                direction = Vector2Perpendicular(ab);
+            }
+        }
+
+        return false;
+    }
+    bool GJK_Collision(const F_Shape& shape1, const F_Shape& shape2) {
+        FVec2 direction = { 1, 0 };  // 初始方向
+        std::vector<FVec2> simplex;
+        simplex.push_back(MinkowskiSupport(shape1, shape2, direction));
+
+        direction = Vector2Negate(simplex[0]);
+
+        while (true) {
+            FVec2 new_point = MinkowskiSupport(shape1, shape2, direction);
+            if (Vector2Dot(new_point, direction) <= 0) {
+                return false;  // 如果最远点不在原点前方，图形不相交
+            }
+
+            simplex.push_back(new_point);
+
+            if (ContainsOrigin(simplex, direction)) {
+                return true;  // 原点在单纯形内，图形相交
             }
         }
     }
-    return true; // 所有叉积符号一致，说明是凸形
-}
+    float PolygonArea(const std::vector<FVec2>& points) {
+        float area = 0.0f;
+        int n = points.size();
+        for (int i = 0; i < n; ++i) {
+            int j = (i + 1) % n;
+            area += points[i].x * points[j].y - points[j].x * points[i].y;
+        }
+        return area / 2.0f;
+    }
 
-// 函数：分解凹形多边形为三角形
-std::vector<F_Shape> DecomposeConcavePolygon(const F_Shape& concavePolygon) {
-    std::vector<F_Shape> triangles;
-    if (IsConvexPolygon(concavePolygon.Get_Points())) {
-        triangles.push_back(concavePolygon);
+    // 函数：检查点是否在多边形内部
+    bool PointInPolygon(const FVec2& p, const std::vector<FVec2>& points) {
+        bool inside = false;
+        int n = points.size();
+        for (int i = 0, j = n - 1; i < n; j = i++) {
+            if ((points[i].y > p.y) != (points[j].y > p.y) &&
+                (p.x < (points[j].x - points[i].x) * (p.y - points[i].y) / (points[j].y - points[i].y) + points[i].x)) {
+                inside = !inside;
+            }
+        }
+        return inside;
+    }
+    bool IsConvexPolygon(const std::vector<FVec2>& points) {
+        int n = points.size();
+        if (n < 3) return false; // 少于3个点不是多边形
+
+        bool isPositive = false;
+        for (int i = 0; i < n; ++i) {
+            FVec2 A = points[i];
+            FVec2 B = points[(i + 1) % n];
+            FVec2 C = points[(i + 2) % n];
+
+            float crossProduct = (B.x - A.x) * (C.y - A.y) - (B.y - A.y) * (C.x - A.x);
+            if (i == 0) {
+                isPositive = crossProduct > 0; // 记录第一个叉积的符号
+            }
+            else {
+                if ((crossProduct > 0) != isPositive) {
+                    return false; // 叉积符号不一致，说明是凹形
+                }
+            }
+        }
+        return true; // 所有叉积符号一致，说明是凸形
+    }
+
+    std::vector<F_Shape> DecomposeConcavePolygon(const F_Shape& concavePolygon) {
+        std::vector<F_Shape> triangles;
+
+        // 获取点集
+        std::vector<FVec2> points = concavePolygon.Get_Points();
+        int n = points.size();
+
+        // 确保点数足够
+        if (n < 3) return triangles;
+
+        // 辅助函数：判断三点是否构成一个逆时针三角形
+        auto IsCounterClockwise = [](const FVec2& a, const FVec2& b, const FVec2& c) {
+            return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) > 0;
+            };
+
+        // 辅助函数：点是否在三角形内（用面积法）
+        auto IsPointInTriangle = [](const FVec2& p, const FVec2& a, const FVec2& b, const FVec2& c) {
+            float area1 = std::abs((a.x * (b.y - p.y) + b.x * (p.y - a.y) + p.x * (a.y - b.y)) / 2.0f);
+            float area2 = std::abs((b.x * (c.y - p.y) + c.x * (p.y - b.y) + p.x * (b.y - c.y)) / 2.0f);
+            float area3 = std::abs((c.x * (a.y - p.y) + a.x * (p.y - c.y) + p.x * (c.y - a.y)) / 2.0f);
+            float totalArea = std::abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.0f);
+            return std::abs((area1 + area2 + area3) - totalArea) < 1e-6f;  // 容错处理
+            };
+
+        // 使用耳切法
+        std::vector<int> indices(n);
+        std::iota(indices.begin(), indices.end(), 0);  // 初始化索引序列
+
+        while (indices.size() > 3) {
+            bool earFound = false;
+            int earIndex = -1;
+
+            // 遍历所有点，寻找可切割的耳
+            for (int i = 0; i < indices.size(); ++i) {
+                int prev = indices[(i - 1 + indices.size()) % indices.size()];
+                int curr = indices[i];
+                int next = indices[(i + 1) % indices.size()];
+
+                const FVec2& a = points[prev];
+                const FVec2& b = points[curr];
+                const FVec2& c = points[next];
+
+                // 如果不是逆时针，则跳过
+                if (!IsCounterClockwise(a, b, c)) continue;
+
+                // 确保其他点不在当前三角形内
+                bool isEar = true;
+                for (int j = 0; j < indices.size(); ++j) {
+                    if (j == prev || j == curr || j == next) continue;
+                    if (IsPointInTriangle(points[indices[j]], a, b, c)) {
+                        isEar = false;
+                        break;
+                    }
+                }
+
+                if (isEar) {
+                    earIndex = i;
+                    earFound = true;
+                    break;
+                }
+            }
+
+            // 如果找不到耳，说明多边形可能有问题
+            if (!earFound) return triangles;
+
+            // 切割耳并添加为三角形
+            int prev = indices[(earIndex - 1 + indices.size()) % indices.size()];
+            int curr = indices[earIndex];
+            int next = indices[(earIndex + 1) % indices.size()];
+
+            triangles.emplace_back(F_Shape({ points[prev], points[curr], points[next] }));
+            indices.erase(indices.begin() + earIndex);
+        }
+
+        // 剩余的最后一个三角形
+        if (indices.size() == 3) {
+            triangles.emplace_back(F_Shape({ points[indices[0]], points[indices[1]], points[indices[2]] }));
+        }
+
         return triangles;
     }
-    std::vector<FVec2> points = concavePolygon.Get_Points();
-    int n = points.size();
 
-    // 确保有足够的点
-    if (n < 3) return triangles;
-
-    // 选择一个点作为参考点
-    FVec2 referencePoint = points[0];
-
-    // 将多边形的其他点按角度排序
-    std::vector<FVec2> sortedPoints = points;
-    std::sort(sortedPoints.begin() + 1, sortedPoints.end(), [&](const FVec2& a, const FVec2& b) {
-        float angleA = atan2(a.y - referencePoint.y, a.x - referencePoint.x);
-        float angleB = atan2(b.y - referencePoint.y, b.x - referencePoint.x);
-        return angleA < angleB;
-        });
-
-    // 分解为三角形
-    for (int i = 1; i < n - 1; ++i) {
-        std::vector<FVec2> triangle = { referencePoint, sortedPoints[i], sortedPoints[i + 1] };
-        triangles.push_back(F_Shape(triangle));
-    }
-
-    return triangles;
-}
-bool GJK_Collision_Plus(const F_Shape&shape1, const F_Shape& shape2) {
-    auto concaveShapes1 = DecomposeConcavePolygon(shape1);
-    auto concaveShapes2 = DecomposeConcavePolygon(shape2);
-    for (const auto& s1 : concaveShapes1) {
-        for (const auto& s2 : concaveShapes2) {
-            if (GJK_Collision(s1, s2)) {
-                return true;
+    bool GJK_Collision_Plus(const F_Shape& shape1, const F_Shape& shape2) {
+        auto concaveShapes1 = DecomposeConcavePolygon(shape1);
+        auto concaveShapes2 = DecomposeConcavePolygon(shape2);
+        for (const auto& s1 : concaveShapes1) {
+            for (const auto& s2 : concaveShapes2) {
+                if (GJK_Collision(s1, s2)) {
+                    return true;
+                }
             }
         }
+        return false;  // 所有形状都没有相交
     }
-    return false;  // 所有形状都没有相交
-}
-Vector2 Get_Closest_Point_On_Rectangle(const F_Rectangle& rect, Vector2 point) {
-    // 1. 计算旋转原点位置
-    Vector2 origin = { rect.x + rect.rot_origin.x * rect.width, rect.y + rect.rot_origin.y * rect.height };
+    Vector2 Get_Closest_Point_On_Rectangle(const F_Rectangle& rect, Vector2 point) {
+        // 1. 计算旋转原点位置
+        Vector2 origin = { rect.x + rect.rot_origin.x * rect.width, rect.y + rect.rot_origin.y * rect.height };
 
-    // 2. 将点平移到旋转原点的坐标系下
-    Vector2 translatedPoint = { point.x - origin.x, point.y - origin.y };
+        // 2. 将点平移到旋转原点的坐标系下
+        Vector2 translatedPoint = { point.x - origin.x, point.y - origin.y };
 
-    // 3. 旋转矩形和点到矩形的旋转坐标系中
-    float cosA = cos(-rect.angle * PI / 180);
-    float sinA = sin(-rect.angle * PI / 180);
-    Vector2 rotatedPoint = {
-        translatedPoint.x * cosA - translatedPoint.y * sinA,
-        translatedPoint.x * sinA + translatedPoint.y * cosA
-    };
+        // 3. 旋转矩形和点到矩形的旋转坐标系中
+        float cosA = cos(-rect.angle * PI / 180);
+        float sinA = sin(-rect.angle * PI / 180);
+        Vector2 rotatedPoint = {
+            translatedPoint.x * cosA - translatedPoint.y * sinA,
+            translatedPoint.x * sinA + translatedPoint.y * cosA
+        };
 
-    // 4. 计算点在旋转后的矩形范围内的最近点
-    Vector2 closestPoint = {
-        Clamp(rotatedPoint.x, -rect.width / 2.0f, rect.width / 2.0f),
-        Clamp(rotatedPoint.y, -rect.height / 2.0f, rect.height / 2.0f)
-    };
+        // 4. 计算点在旋转后的矩形范围内的最近点
+        Vector2 closestPoint = {
+            Clamp(rotatedPoint.x, -rect.width / 2.0f, rect.width / 2.0f),
+            Clamp(rotatedPoint.y, -rect.height / 2.0f, rect.height / 2.0f)
+        };
 
-    // 5. 将结果点从旋转坐标系转回世界坐标
-    Vector2 rotatedClosestPoint = {
-        closestPoint.x * cosA + closestPoint.y * sinA,
-        -closestPoint.x * sinA + closestPoint.y * cosA
-    };
+        // 5. 将结果点从旋转坐标系转回世界坐标
+        Vector2 rotatedClosestPoint = {
+            closestPoint.x * cosA + closestPoint.y * sinA,
+            -closestPoint.x * sinA + closestPoint.y * cosA
+        };
 
-    return { rotatedClosestPoint.x + origin.x, rotatedClosestPoint.y + origin.y };
+        return { rotatedClosestPoint.x + origin.x, rotatedClosestPoint.y + origin.y };
+    }
 }
