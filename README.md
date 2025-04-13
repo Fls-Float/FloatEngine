@@ -1,10 +1,12 @@
-# Float Engine v1.4.1
+# Float Engine v1.4.3
 
 ##### A C++ game engine built using raylib.
 
 ##### Tutorial: 
 https://fls-float.github.io/floatengine-doc
+(only v1.4.0)
 ##### Example:
+https://github.com/fls-float/minesweeper
 
 ```c++
 #include <FloatEngine.h>
