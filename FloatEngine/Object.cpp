@@ -4,12 +4,15 @@ Object::Object()
 	m_block = { 0,0 };
 	m_angle = 0.0f;
 	m_origin = { 0,0 };
+	image_alpha = 1.0f;
+	image_color = WHITE;
+	image_xscale = image_yscale = 1.0f;
 	x = y = 0;
 	_m_obj_name = "NONE";
 	_m_obj_pro = OBJPRO.Normal;
 	depth = 0;
 	image_index = 0;
-	sprite_index = new Texture[0];
+	sprite_index = Sprite();
 	_ins_id = -1;
 	for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
 		alarm_time_node[i] = -1;
@@ -31,16 +34,19 @@ Object::Object()
 
 Object::Object(const char* name, int ins_id,int pro)
 {
+	_ins_id = -1;
 	m_block = Size{ 0,0 };
 	m_angle = 0.0f;
+	image_alpha = 1.0f;
+	image_color = WHITE;
+	image_xscale = image_yscale = 1.0f;
 	x = y = 0;
 	m_origin = { 0,0 };
 	_m_obj_name = name;
 	_m_obj_pro = pro;
 	depth = 0;
 	image_index = 0;
-	sprite_index = new Texture[0];
-	_ins_id = ins_id; 
+	sprite_index = Sprite();
 	for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
 		alarm_time_node[i] = -1;
 	}
@@ -59,9 +65,93 @@ Object::Object(const char* name, int ins_id,int pro)
 	};
 }
 
-Object::~Object()
-{
-	_m_obj_name.clear();
+Object::Object(Object&& other) noexcept
+	: _m_obj_pro(other._m_obj_pro),
+	_m_obj_name(std::move(other._m_obj_name)),
+	x(other.x),
+	y(other.y),
+	m_block(other.m_block),
+	m_angle(other.m_angle),
+	m_origin(other.m_origin),
+	image_alpha(other.image_alpha),
+	image_color(other.image_color),
+	image_xscale(other.image_xscale),
+	image_yscale(other.image_yscale),
+	depth(other.depth),
+	image_index(other.image_index),
+	sprite_index(std::move(other.sprite_index)),  // 使用移动构造函数
+	_ins_id(other._ins_id) {
+	for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
+		alarm_time_node[i] = other.alarm_time_node[i];
+	}
+	__object_alarm_clock_timer_ = other.__object_alarm_clock_timer_;
+	alarmEvents = std::move(other.alarmEvents);
+
+	// 重置原对象状态
+	other._ins_id = -1;
+	other.x = other.y = 0.0f;
+	other.m_block = { 0, 0 };
+	other.m_angle = 0.0f;
+	other.m_origin = { 0, 0 };
+	other.depth = 0;
+	other.image_index = 0.0f;
+}
+
+Object::Object(const Object& other)
+	: _m_obj_pro(other._m_obj_pro),
+	_m_obj_name(other._m_obj_name),
+	x(other.x),
+	y(other.y),
+	m_block(other.m_block),
+	m_angle(other.m_angle),
+	m_origin(other.m_origin),
+	image_alpha(other.image_alpha),
+	image_color(other.image_color),
+	image_xscale(other.image_xscale),
+	image_yscale(other.image_yscale),
+	depth(other.depth),
+	image_index(other.image_index),
+	sprite_index(other.sprite_index),  // 使用拷贝构造函数
+	_ins_id(other._ins_id) {
+	for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
+		alarm_time_node[i] = other.alarm_time_node[i];
+	}
+	__object_alarm_clock_timer_ = other.__object_alarm_clock_timer_;
+	alarmEvents = other.alarmEvents;
+}
+
+Object& Object::operator=(const Object& other) {
+	if (this != &other) {
+		_m_obj_pro = other._m_obj_pro;
+		_m_obj_name = other._m_obj_name;
+		x = other.x;
+		y = other.y;
+		m_block = other.m_block;
+		m_angle = other.m_angle;
+		m_origin = other.m_origin;
+		image_alpha = other.image_alpha;
+		image_color = other.image_color;
+		image_xscale = other.image_xscale;
+		image_yscale = other.image_yscale;
+		depth = other.depth;
+		image_index = other.image_index;
+		sprite_index = other.sprite_index;  // 使用拷贝赋值运算符
+		_ins_id = other._ins_id;
+
+		for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
+			alarm_time_node[i] = other.alarm_time_node[i];
+		}
+		__object_alarm_clock_timer_ = other.__object_alarm_clock_timer_;
+		alarmEvents = other.alarmEvents;
+	}
+	return *this;
+}
+
+
+
+
+Object::~Object() {
+	sprite_index.~Sprite(); // 释放纹理数组
 }
 
 void Object::reset_alarm_clock()
@@ -98,6 +188,12 @@ bool Object::Is_Meeting(float _x, float _y, const Object* other)
 
 	return floatapi_math::GJK_Collision(a, b);
 }
+void Object::Draw_Self()
+{
+	if (sprite_index.FrameCount() > 0 && image_index<sprite_index.FrameCount()) {
+		F_Render::Draw_Sprite_Ex(sprite_index.GetAllFrame(), image_index, x, y, image_xscale, image_yscale, m_origin.x, m_origin.y, m_angle, image_alpha, image_color);
+	}
+}
 void Object::onEvent_User(int index)
 {
 	switch (index) {
@@ -112,7 +208,7 @@ void Object::onEvent_User(int index)
 void Object::onEnter(){}
 void Object::onUpdate(){}
 void Object::onRenderBefore(){}
-void Object::onRender(){}
+void Object::onRender() { Draw_Self(); }
 void Object::onRenderNext(){}
 void Object::onBeginCamera(){}
 void Object::onEndCamera(){}

@@ -16,7 +16,7 @@
 #include <array>
 #include <functional>
 
-#define FOBJECT_BODY() float x, y; float image_index; Texture* sprite_index; int depth; Size m_block; float m_angle; Vector2 m_origin;
+#define FOBJECT_BODY() float x, y; float image_index; Sprite sprite_index; int depth; Size m_block; float m_angle; Vector2 m_origin;float image_xscale;float image_yscale;float image_alpha;Color image_color;
 
  /**
   * @class Object
@@ -88,14 +88,18 @@ protected:
      */
     bool Is_Meeting(float _x, float _y, const Object* other);
 
+    /**
+	* @brief 绘制自身
+    */
+    void Draw_Self();
 public:
     int _ins_id; ///< 实例ID
     FOBJECT_BODY()
 
-        /**
-         * @brief 构造函数
-         */
-        Object();
+    /**
+        * @brief 构造函数
+    */
+    Object();
 
     /**
      * @brief 构造函数
@@ -104,6 +108,25 @@ public:
      * @param pro 对象属性
      */
     Object(const char* name, int ins_id, int pro = OBJPRO.Normal);
+  
+    /**
+      * @brief 移动构造函数
+      * @param other 要移动的对象
+     */
+    Object(Object&& other) noexcept;
+
+    /**
+     * @brief 拷贝构造函数
+     * @param other 要拷贝的对象
+     */
+    Object(const Object& other) ;
+
+    /**
+     * @brief 拷贝赋值运算符
+     * @param other 要拷贝的对象
+     * @return 拷贝后的对象引用
+     */
+    Object& operator=(const Object& other);
 
     /**
      * @brief 析构函数

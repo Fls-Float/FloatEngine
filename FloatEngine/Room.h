@@ -17,15 +17,13 @@ public:
 	void RunInstance(const char* event);
 	template<class T>
 	inline T* CreateFromTemplate() {
-		// 使用传入实例进行拷贝构造
+		// 使用智能指针管理对象
 		T* inst = new T;
 		inst->_ins_id = _counts;
-		objects.push_back(inst);
-			// 返回新对象
+		objects.push_back(inst); 
 		_counts++;
 		return static_cast<T*>(objects.back());
 	}
-
 	Object* Create(Object* instance);
 	Object* AddIns(Object* instance);
 	int FindOne(const char* name);
@@ -56,8 +54,8 @@ inline T* Create_InstanceTemplate(float x, float y, const char* name = "NONE") {
 	// 创建对象并使用传入的 instance 初始化
 	T* t = room->CreateFromTemplate<T>();
 	// 设置额外属性
-	t->setObjName(name);
 	t->onEnter();
+	t->setObjName(name);
 	t->x = x;
 	t->y = y;
 
@@ -73,8 +71,8 @@ inline T* Create_InstanceTemplate(const char* name = "NONE") {
 	// 创建对象并使用传入的 instance 初始化
 	T* t = room->CreateFromTemplate<T>();
 	// 设置额外属性
-	t->setObjName(name);
 	t->onEnter();
+	t->setObjName(name);
 
 	// 将对象添加到房间并返回存储的指针
 	return t;

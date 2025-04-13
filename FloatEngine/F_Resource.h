@@ -16,7 +16,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#include <future>
  /**
   * @enum ResourceType
   * @ingroup Resource
@@ -31,6 +31,13 @@ enum ResourceType {
     ResFont,    ///< 字体资源
     ResData     ///< 数据资源
 };
+
+typedef struct {
+    unsigned char* buffer; ///< 内存缓冲区指针
+    size_t size;           ///< 缓冲区当前大小
+    size_t capacity;       ///< 缓冲区总容量
+    size_t position;       ///< 当前读写位置
+} MemoryBuffer;
 
 /**
  * @class F_Resource
@@ -51,6 +58,8 @@ class F_Resource {
     const char* _password;
     std::string _zip_path;
     bool has_password;
+    std::vector<unsigned char> _zip_data;  // 存储内存中的 ZIP 数据
+    bool _use_memory_zip = false;          // 标记是否使用内存 ZIP
 public:
     /**
      * @brief 构造函数
@@ -67,6 +76,12 @@ public:
      * @param path zip文件路径
      */
     void SetZipPath(const std::string& path);
+
+    /**
+     * @brief 设置zip文件Data
+     * @param data zip文件数据
+     */
+    void SetZipData(std::vector<unsigned char> data);
 
     /**
      * @brief 设置压缩包密码
@@ -100,7 +115,7 @@ public:
      */
     bool LoadResource(const std::string& path, const std::string& id, ResourceType type);
 
-    /**
+   /**
      * @brief 加载字体资源
      * @param path 字体路径
      * @param id 资源ID
@@ -110,7 +125,7 @@ public:
      * @return 成功返回true，否则返回false
      */
     bool LoadFontResource(const std::string& path, const std::string& id, int font_size, int* codepoints, int codepoints_size);
-
+   
     /**
      * @brief 加入资源
      * @param id 资源ID

@@ -20,11 +20,12 @@ Actor::~Actor()
 {
 }
 
-void Actor::UpdatePhysics(float deltaTime)
+void Actor::onUpdate()
 {
+    _timer;
     if (enableGravity)
     {
-        float timeInSeconds = deltaTime;
+        float timeInSeconds = _timer*GetFrameTime()*_time_scale;
 
         // 计算初始速度
         float initialVelocityX = cos(moveDirection * PI / 180) * moveVelocity;

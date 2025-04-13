@@ -71,8 +71,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(LocalDebuggerWorkingDirectory)imgui;$(IncludePath)</IncludePath>
-    <LibraryPath>$(LocalDebuggerWorkingDirectory)imgui;$(LocalDebuggerWorkingDirectory)RRes\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <LibraryPath>$(LibraryPath)</LibraryPath>
     <raylib_LibraryType>StaticMonolithRelease</raylib_LibraryType>
     <Linkage-zlib_static>
     </Linkage-zlib_static>
@@ -156,6 +156,7 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Room.cpp" />
+    <ClCompile Include="Sprite.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Actor.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Room.h" />
+    <ClInclude Include="Sprite.h" />
     <ClInclude Include="winfuns.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

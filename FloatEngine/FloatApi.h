@@ -11,11 +11,12 @@
  * - 摄像机管理
  * - 音频播放
  * - 文件处理
- * - INI文件处理
+ * - INI/JSON文件处理(1.4.2)
+ * - Lua支持(1.4.3)
  */
 
 #pragma once
-#define FLOAT_API_VERSION "1.4.1"
+#define FLOAT_API_VERSION "1.4.3"
 #define _CRT_SECURE_NO_WARNINGS
 #define LINK_WINFUNS
 #include "raylib.hpp"
@@ -33,7 +34,10 @@
 #include "F_Font.h"
 #include "F_Anim.h"
 #include "Enum.h"
-
+#include "Sprite.h"
+#include <chrono>
+#include "lua/include/lua.hpp"
+#include "LuaBridge/LuaBridge.h"
  /**
   * @class F_Debug
   * @ingroup FloatApi
@@ -70,6 +74,7 @@ public:
      * @return 如果开启返回true，否则返回false
      */
     static bool IsOpen();
+
 };
 
 /**
@@ -136,14 +141,62 @@ Font Load_Font_File_Codepoints(const char* filePath, int size, const char* codeP
  */
 class F_Input {
 public:
+    /**
+ * @brief 检查鼠标按钮是否按下
+ * @param mb 鼠标按钮
+ * @return 如果按下返回true，否则返回false
+ */
     static bool mb_down(int mb);
+
+    /**
+     * @brief 检查鼠标按钮是否刚刚按下
+     * @param mb 鼠标按钮
+     * @return 如果刚刚按下返回true，否则返回false
+     */
     static bool mb_pressed(int mb);
+
+    /**
+     * @brief 检查鼠标按钮是否刚刚释放
+     * @param mb 鼠标按钮
+     * @return 如果刚刚释放返回true，否则返回false
+     */
     static bool mb_released(int mb);
+
+    /**
+     * @brief 检查鼠标按钮是否未按下
+     * @param mb 鼠标按钮
+     * @return 如果未按下返回true，否则返回false
+     */
     static bool mb_up(int mb);
+
+    /**
+     * @brief 检查键盘按键是否刚刚按下
+     * @param key 键盘按键
+     * @return 如果刚刚按下返回true，否则返回false
+     */
     static bool keyboard_pressed(int key);
+
+    /**
+     * @brief 检查键盘按键是否按下
+     * @param key 键盘按键
+     * @return 如果按下返回true，否则返回false
+     */
     static bool keyboard_down(int key);
+
+    /**
+     * @brief 检查键盘按键是否刚刚释放
+     * @param key 键盘按键
+     * @return 如果刚刚释放返回true，否则返回false
+     */
     static bool keyboard_released(int key);
+
+    /**
+     * @brief 检查键盘按键是否重复按下
+     * @param key 键盘按键
+     * @return 如果重复按下返回true，否则返回false
+     */
     static bool keyboard_pressed_repeat(int key);
+
 
     /**
      * @brief 字母转换为键值
@@ -391,21 +444,34 @@ public:
      */
     static void Draw_Set_Line_Thick(float thick);
     /**
- * @brief 绘制精灵
- * @param img 图片纹理
- * @param ind 帧索引
- * @param x x坐标
- * @param y y坐标
- * @param x_scale x轴缩放
- * @param y_scale y轴缩放
- * @param x_origin x轴原点
- * @param y_origin y轴原点
- * @param angle 旋转角度
- * @param alpha 透明度
- * @param col 颜色
- */
+     * @brief 绘制精灵
+     * @param img 图片纹理
+     * @param ind 帧索引
+     * @param x x坐标
+     * @param y y坐标
+     * @param x_scale x轴缩放
+     * @param y_scale y轴缩放
+     * @param x_origin x轴原点
+     * @param y_origin y轴原点
+     * @param angle 旋转角度
+     * @param alpha 透明度
+     * @param col 颜色
+     */
     static void Draw_Sprite_Ex(struct Texture* img, int ind, float x, float y, float x_scale, float y_scale, float x_origin, float y_origin, float angle, float alpha, struct Color col);
-
+    /**
+    * @brief 绘制精灵
+    * @param spr 精灵对象
+    * @param x x坐标
+    * @param y y坐标
+    * @param x_scale x轴缩放
+    * @param y_scale y轴缩放
+    * @param x_origin x轴原点
+    * @param y_origin y轴原点
+    * @param angle 旋转角度
+    * @param alpha 透明度
+    * @param col 颜色
+    */
+    static void Draw_Sprite(Sprite spr, float x, float y, float x_scale, float y_scale, float x_origin, float y_origin, float angle, float alpha, struct Color col);
     /**
      * @brief 绘制文本
      * @param font 字体
@@ -1319,6 +1385,13 @@ namespace F_Json {
          * @throw std::logic_error 当前类型不是Array时抛出
          */
         Json get(size_t index) const;
+        /**
+         * @brief 获取数组元素（仅当当前为数组类型时有效）
+         * @param index 元素索引
+         * @return 对应位置的JSON元素，无效索引返回Null类型
+         * @throw std::logic_error 当前类型不是Array时抛出
+         */
+        Json operator[](size_t index) const;
 
         /**
          * @brief 设置/更新对象中的键值对
@@ -1357,6 +1430,23 @@ namespace F_Json {
          * @see has() 方法用于检查键是否存在
          */
         Json get(const std::string& key) const;
+        /**
+         * @brief 获取对象中指定键对应的值
+         * @param key 要查找的键（大小写敏感）
+         * @return 存在该键则返回对应值的Json对象，否则返回Null类型的Json对象
+         *
+         * @note 使用模式建议：
+         * \code
+         * if (obj.has("key")) {
+         *     Json value = obj["key"];
+         *     // 安全使用value
+         * }
+         * \endcode
+         *
+         * @note 返回值的生命周期由当前Json对象管理
+         * @see has() 方法用于检查键是否存在
+         */
+        Json operator[](const std::string& key) const;
 
         /**
          * @brief 序列化为JSON字符串
@@ -1395,3 +1485,135 @@ namespace F_Json {
         size_t size() const;
     };
 }
+
+/**
+ * @class F_Lua
+ * @brief Lua虚拟机封装类，提供脚本执行、函数绑定、跨语言调用等核心功能
+ *
+ * 封装Lua C API，通过RAII管理资源，集成LuaBridge简化C++与Lua的交互。
+ * 支持异常安全操作，包含基础错误处理机制。
+ */
+class F_Lua {
+public:
+    /**
+     * @brief 构造函数，初始化Lua虚拟机
+     * @throws std::runtime_error 当无法创建Lua状态机时抛出
+     */
+    F_Lua();
+
+    /**
+     * @brief 析构函数，安全关闭Lua虚拟机
+     */
+    ~F_Lua();
+
+    // 禁用拷贝语义
+    F_Lua(const F_Lua&) = delete;            ///< 禁用拷贝构造
+    F_Lua& operator=(const F_Lua&) = delete; ///< 禁用拷贝赋值
+
+    /**
+     * @brief 执行Lua脚本文件
+     * @param filepath Lua脚本文件路径
+     * @return true 执行成功，false 执行失败
+     * @note 错误信息会通过HandleError输出到stderr
+     */
+    bool ExecuteScript(const std::string& filepath);
+
+    /**
+     * @brief 执行Lua代码字符串
+     * @param code 要执行的Lua代码
+     * @return true 执行成功，false 执行失败
+     * @note 支持多行代码和复杂逻辑
+     */
+    bool ExecuteString(const std::string& code);
+
+    /**
+     * @brief 注册C++函数到Lua全局命名空间
+     * @tparam Func 可调用对象类型（函数指针、lambda等）
+     * @param name 在Lua中使用的函数名
+     * @param func 要绑定的C++函数
+     * @code
+     * lua.RegisterFunction("Add", [](int a, int b){ return a + b; });
+     * @endcode
+     */
+    template <typename Func>
+    void RegisterFunction(const std::string& name, Func func) {
+        luabridge::getGlobalNamespace(L)
+            .addFunction(name.c_str(), func);
+    }
+
+    /**
+     * @brief 注册C++类到Lua环境
+     * @tparam T 要注册的类类型
+     * @param name 在Lua中使用的类名
+     * @note 需要后续通过addFunction/addProperty添加成员
+     * @see LuaBridge文档
+     */
+    template <typename T>
+    void RegisterClass(const std::string& name) {
+        luabridge::getGlobalNamespace(L)
+            .beginClass<T>(name.c_str())
+            .addConstructor<void(*)()>()
+            .endClass();
+    }
+
+    /**
+     * @brief 获取Lua全局变量
+     * @tparam T 变量类型（自动推导）
+     * @param name 全局变量名
+     * @return 变量的C++类型值
+     * @throws std::runtime_error 当变量不存在或类型不匹配时
+     */
+    template <typename T>
+    T GetGlobal(const std::string& name) {
+        return luabridge::getGlobal(L, name.c_str());
+    }
+
+    /**
+     * @brief 调用无返回值的Lua函数
+     * @tparam Args 参数类型包
+     * @param funcName Lua函数名
+     * @param args 调用参数列表
+     * @note 静默忽略不存在的函数
+     */
+    template <typename... Args>
+    void CallVoidFunction(const std::string& funcName, Args... args) {
+        auto func = luabridge::getGlobal(L, funcName.c_str());
+        if (func.isFunction()) {
+            func(args...);
+        }
+    }
+
+    /**
+     * @brief 调用带返回值的Lua函数
+     * @tparam Ret 返回值类型
+     * @tparam Args 参数类型包
+     * @param funcName Lua函数名
+     * @param args 调用参数列表
+     * @return 函数返回值，如函数不存在返回默认构造的Ret类型值
+     */
+    template <typename Ret, typename... Args>
+    Ret CallFunction(const std::string& funcName, Args... args) {
+        auto func = luabridge::getGlobal(L, funcName.c_str());
+        if (func.isFunction()) {
+            return func(args...);
+        }
+        return Ret();
+    }
+
+    /**
+     * @brief 获取底层Lua状态机
+     * @return 原始lua_State指针
+     * @warning 需谨慎操作底层API
+     */
+    lua_State* GetState() const { return L; }
+
+private:
+    lua_State* L; ///< Lua虚拟机状态指针
+
+    /**
+     * @brief 统一错误处理
+     * @param status Lua API调用返回状态码
+     * @note 自动输出错误信息到stderr，并清理堆栈
+     */
+    void HandleError(int status);
+};

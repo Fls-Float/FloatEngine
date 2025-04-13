@@ -27,6 +27,9 @@
   * @endcode
   */
 class Game {
+    double frame_time; ///< 帧时间
+    double now_time; ///<当前时间
+    std::chrono::high_resolution_clock::time_point start_time; ///<开始时间
     int _fps; ///< 游戏帧率
     int _w; ///< 窗口宽度
     int _h; ///< 窗口高度
@@ -77,6 +80,11 @@ public:
      * @return 帧率
      */
     int GetFPS() const;
+    /**
+     * @brief 获取真实帧率
+     * @return 帧率
+     */
+    int GetRealFPS() const;
 
     /**
      * @brief 设置窗口坐标
@@ -138,5 +146,18 @@ public:
      * @param filePathList 图标文件路径列表
      */
     void Set_Icons_Pre(FilePathList filePathList);
+
+    /*
+     * @brief 获取当前时间（毫秒）
+    */
+    double Get_Now_Time();
+    /*
+     * @brief 获取当前帧时间（毫秒）
+    */
+    double Get_Frame_Time();
+    /*
+     * @brief 重置计时器
+    */
+    void Reset_Clock();
 };
 

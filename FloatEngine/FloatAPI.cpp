@@ -106,6 +106,12 @@ void F_Render::Draw_Sprite_Ex(Texture* img, int ind, float x, float y, float x_s
 	else DrawTexturePro(img[ind], { 0,0,img[ind].width * 1.0f ,img[ind].height * 1.0f }, { x,y,img[ind].width * x_scale,img[ind].height * y_scale }, { x_origin * img[ind].width * x_scale,y_origin * img[ind].height * y_scale }, angle, ColorAlpha(col, alpha));
 }
 
+void F_Render::Draw_Sprite(Sprite spr, float x, float y, float x_scale, float y_scale, float x_origin, float y_origin, float angle, float alpha, Color col)
+{
+	Texture img = spr.GetCurrentFrame();
+	DrawTexturePro(img, { 0,0,(img).width * 1.0f,(img).height * 1.0f }, { x,y,(img).width * x_scale,(img).height * y_scale }, { x_origin * (img).width * x_scale,y_origin * (img).height * y_scale }, angle, ColorAlpha(col, alpha));
+}
+
 void Audio_Play(F_Audio audio) {
 	AudioMode am = audio.GetAudioMode();
 	switch (am) {
@@ -1115,6 +1121,11 @@ namespace F_Json {
 		return Json(p->get(index));
 	}
 
+	Json Json::operator[](size_t index) const
+	{
+		return get(index);
+	}
+
 	Json& Json::set(const std::string& key, const Json& v) {
 		auto p = dynamic_cast<JsonObject*>(val.get());
 		if (!p) throw std::runtime_error("Not an object");
@@ -1126,6 +1137,11 @@ namespace F_Json {
 		auto p = dynamic_cast<JsonObject*>(val.get());
 		if (!p) throw std::runtime_error("Not an object");
 		return Json(p->get(key));
+	}
+
+	Json Json::operator[](const std::string& key) const
+	{
+		return get(key);
 	}
 
 	std::string Json::serialize() const { return val->serialize(); }
@@ -1328,4 +1344,45 @@ namespace F_Json {
 		throw std::runtime_error("Not a container type");
 	}
 
+}
+
+
+F_Lua::F_Lua() {
+	L = luaL_newstate();
+	if (!L) {
+		throw std::runtime_error("Failed to create Lua state");
+	}
+	luaL_openlibs(L); // 加载标准库
+}
+
+F_Lua::~F_Lua() {
+	if (L) {
+		lua_close(L);
+	}
+}
+
+bool F_Lua::ExecuteScript(const std::string& filepath) {
+	int status = luaL_dofile(L, filepath.c_str());
+	if (status != LUA_OK) {
+		HandleError(status);
+		return false;
+	}
+	return true;
+}
+
+bool F_Lua::ExecuteString(const std::string& code) {
+	int status = luaL_dostring(L, code.c_str());
+	if (status != LUA_OK) {
+		HandleError(status);
+		return false;
+	}
+	return true;
+}
+
+void F_Lua::HandleError(int status) {
+	if (status != LUA_OK) {
+		const char* errorMsg = lua_tostring(L, -1);
+		std::cerr << "[Lua Error] " << errorMsg << std::endl;
+		lua_pop(L, 1); // 清除错误信息
+	}
 }

@@ -28,6 +28,8 @@
 class Actor : public Object
 {
 protected:
+	float _timer; ///< 计时器
+	float _time_scale; ///< 时间缩放
 public:
     /**
      * @brief 构造函数
@@ -48,10 +50,6 @@ public:
 
     FVec2 gravity; ///< 角色的重力
     bool enableGravity; ///< 是否启用重力
-    /**
-      * @brief 处理物理的函数
-      * @param deltaTime 每帧的时间
-      */
-    void UpdatePhysics(float deltaTime);
     
+    void onUpdate() override; 
 };

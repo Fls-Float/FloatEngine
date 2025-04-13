@@ -75,7 +75,17 @@ void Game::Play(int fps)
 		_fps = fps;
 		SetTargetFPS(_fps);
 	}
+	start_time = std::chrono::high_resolution_clock::now();
+	double last_time = 0;
 	while (!WindowShouldClose()) {
+
+		auto end_time = std::chrono::high_resolution_clock::now();
+		now_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
+		frame_time = now_time - last_time;
+		last_time = now_time;
+		GetRealFPS();
+		GetFrameTime();
+		GetTime();
 		//enter
 		Room_Run_Now("onEnter");
 		//step
@@ -226,6 +236,21 @@ void Game::Set_Icons_Pre(FilePathList filePathList) {
 	_load_icon_pre = 1;
 }
 
+double Game::Get_Now_Time()
+{
+	return now_time;
+}
+
+double Game::Get_Frame_Time()
+{
+	return frame_time;
+}
+
+void Game::Reset_Clock()
+{
+	start_time = std::chrono::high_resolution_clock::now();
+}
+
 
 void Game::SetFPS(int fps) {
 	::SetTargetFPS(fps);
@@ -233,6 +258,10 @@ void Game::SetFPS(int fps) {
 }
 int Game::GetFPS()const {
 	return _fps;
+}
+int Game::GetRealFPS() const
+{
+	return ::GetFPS();
 }
 void Game::Set_Window_Pos(int x,int y) {
 	if (x == -1 && y == -1)

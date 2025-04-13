@@ -66,6 +66,9 @@
     <Filter Include="源文件\Font">
       <UniqueIdentifier>{944a4af2-63d2-4fd1-ad7a-8538f3de30e5}</UniqueIdentifier>
     </Filter>
+    <Filter Include="thirdparty">
+      <UniqueIdentifier>{5cf6af6e-bdf2-4593-9928-4866ba4826ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config">
@@ -114,6 +117,9 @@
     </ClCompile>
     <ClCompile Include="F_Text.cpp">
       <Filter>源文件\Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Sprite.cpp">
+      <Filter>源文件\Control</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -170,6 +176,9 @@
     </ClInclude>
     <ClInclude Include="F_Font.h">
       <Filter>头文件\Font</Filter>
+    </ClInclude>
+    <ClInclude Include="Sprite.h">
+      <Filter>头文件\Control</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
