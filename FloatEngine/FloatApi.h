@@ -1604,7 +1604,7 @@ public:
      * @return ClassRegistrar<T> 用于链式添加成员的对象
      */
     template <typename T>
-    ClassRegistrar<T> RegisterClass(const std::string& name) {
+    ClassRegistrar<T> RegisterClassEx(const std::string& name) {
         return ClassRegistrar<T>(L, name);
     }
     /**
