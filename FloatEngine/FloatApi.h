@@ -1494,6 +1494,48 @@ namespace F_Json {
  * 支持异常安全操作，包含基础错误处理机制。
  */
 class F_Lua {
+    template <typename T>
+    class ClassRegistrar {
+    public:
+        ClassRegistrar(lua_State* L, const std::string& name)
+            : class_(luabridge::getGlobalNamespace(L).beginClass<T>(name.c_str())) {
+        }
+
+        ~ClassRegistrar() {
+            class_.endClass();
+        }
+
+        /// 添加构造函数
+        template <typename... Args>
+        ClassRegistrar& addConstructor() {
+            class_.template addConstructor<Args...>();
+            return *this;
+        }
+
+        /// 添加成员函数
+        template <typename Func>
+        ClassRegistrar& addFunction(const std::string& name, Func func) {
+            class_.addFunction(name.c_str(), func);
+            return *this;
+        }
+
+        /// 添加属性
+        template <typename Prop>
+        ClassRegistrar& addProperty(const std::string& name, Prop prop) {
+            class_.addProperty(name.c_str(), prop);
+            return *this;
+        }
+
+        /// 添加静态函数
+        template <typename Func>
+        ClassRegistrar& addStaticFunction(const std::string& name, Func func) {
+            class_.addStaticFunction(name.c_str(), func);
+            return *this;
+        }
+
+    private:
+        luabridge::Namespace::Class<T> class_;
+    };
 public:
     /**
      * @brief 构造函数，初始化Lua虚拟机
@@ -1555,7 +1597,16 @@ public:
             .addConstructor<void(*)()>()
             .endClass();
     }
-
+    /**
+     * @brief 注册C++类到Lua环境，返回类注册器用于链式调用
+     * @tparam T 要注册的类类型
+     * @param name 在Lua中使用的类名
+     * @return ClassRegistrar<T> 用于链式添加成员的对象
+     */
+    template <typename T>
+    ClassRegistrar<T> RegisterClass(const std::string& name) {
+        return ClassRegistrar<T>(L, name);
+    }
     /**
      * @brief 获取Lua全局变量
      * @tparam T 变量类型（自动推导）
