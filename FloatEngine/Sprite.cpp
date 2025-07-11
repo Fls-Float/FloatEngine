@@ -2,7 +2,7 @@
 #include "Sprite.h"
 #include <algorithm>
 
-extern void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1);
+extern void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1,bool =1);
 Sprite::Sprite() {
     frames = std::vector<Texture>();
     currentFrame = 0;

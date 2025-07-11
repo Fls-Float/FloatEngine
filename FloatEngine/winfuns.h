@@ -71,6 +71,7 @@ namespace WinFuns {
 			WPARAM wParam,
 			LPARAM lParam
 		);
+		void* GetCapture();
 	}
 #define LoadIcon LoadIconA
 #define MessageBox MessageBoxA

@@ -17,6 +17,7 @@
 #include <string>
 #include <vector>
 #include <future>
+
  /**
   * @enum ResourceType
   * @ingroup Resource
@@ -105,6 +106,18 @@ public:
         SetPassword(password);
         has_password = _has_password;
     }
+    /**
+     * @brief 从资源配置文件中读取资源(.json)
+     * @param path 资源配置文件
+     * @return 成功返回true，否则返回false
+     */
+    bool LoadResources(const std::string& path);
+    /**
+     * @brief 从资源配置文件中读取字体(.json)
+     * @param path 字体资源配置文件
+     * @return 成功返回true，否则返回false
+     */
+    bool LoadFontResourceFromConfigFile(const std::string& path);
 
     /**
      * @brief 加载资源
@@ -114,7 +127,15 @@ public:
      * @return 成功返回true，否则返回false
      */
     bool LoadResource(const std::string& path, const std::string& id, ResourceType type);
-
+    /**
+     * @brief 加载所有资源(此时的id为文件名)
+	 * @param mode 加载模式(0:音频加载为sound优先,1:音频加载为music优先,2:音频文件同时为music和sound加载)
+     */
+    bool LoadAllResource(int mode);
+    /**
+     * @brief 根据id得到path 
+    */
+    std::string GetResPath(const std::string& id);
    /**
      * @brief 加载字体资源
      * @param path 字体路径
@@ -237,7 +258,41 @@ public:
      * @brief 卸载所有资源
      */
     void UnloadAllResources();
+    /**
+     * @brief 获取Texture的资源缓存
+    */
+	std::map<std::string, Texture> GetTextureCache() {return textures;}
+	/**
+	 * @brief 获取Sound的资源缓存
+	*/
+	std::map<std::string, Sound> GetSoundCache() { return sounds; }
+	/**
+	 * @brief 获取Music的资源缓存
+	*/
+	std::map<std::string, Music> GetMusicCache() { return musics; }
 
+	/**
+	 * @brief 获取Font的资源缓存
+	*/
+	std::map<std::string, Font> GetFontCache() { return fonts; }
+	/**
+	 * @brief 获取Text的资源缓存
+	*/
+	std::map<std::string, std::string> GetTextCache() { return texts; }
+	/**
+	 * @brief 获取Data的资源缓存
+	*/
+	std::map<std::string, std::vector<unsigned char>> GetDataCache() { return datas; }
+	/**
+	 * @brief 获取压缩包数据
+	 * @return 压缩包数据
+	 */
+	std::vector<unsigned char> GetZipData() { return _zip_data; }
+	/**
+	 * @brief 获取压缩包路径
+	 * @return 压缩包路径
+	 */
+	std::string GetZipPath() { return _zip_path; }
 private:
     // 资源缓存
     std::map<std::string, Texture2D> textures;
@@ -246,7 +301,8 @@ private:
     std::map<std::string, Font> fonts;
     std::map<std::string, std::string> texts;
     std::map<std::string, std::vector<unsigned char>> datas;
-
+    //path缓存
+	std::map<std::string, std::string> paths;
     // 资源加载辅助函数
     bool LoadTextureFromZlib(const std::string& path, const std::string& id);
     bool LoadSoundFromZlib(const std::string& path, const std::string& id);
@@ -268,4 +324,26 @@ private:
     bool DecompressZlibWithPassword(const std::string& path, std::vector<unsigned char>& out_data, const char* password);
 };
 
+/**
+ * @brief 将文本内容保存到 ZIP 文件的指定路径
+ *
+ * @param zipfile ZIP 文件路径
+ * @param filename ZIP 内文件路径
+ * @param text 文本内容
+ * @return true 保存成功
+ * @return false 保存失败
+ */
+bool SaveFileTextToZip(const char* zipfile,const char*filename, const char* text);
+
+/***
+ * @brief 将二进制数据保存到 ZIP 文件的指定路径
+ *
+ * @param zipfile ZIP 文件路径
+ * @param filename ZIP 内文件路径
+ * @param data 二进制数据
+ * @param data_size 数据大小
+ * @return true 保存成功
+ * @return false 保存失败
+ */
+bool SaveFileDataToZip(const char* zipfile, const char* filename, const unsigned char* data, int data_size);
 #endif // F_RESOURCE_H

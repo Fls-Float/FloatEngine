@@ -1,5 +1,48 @@
 #include "FloatApi.h"
 int F_Debug::m_debug = 1;
+bool F_Debug::m_showConsole = true;
+std::vector<F_Debug::Log_Info> F_Debug::m_logs;
+std::vector<std::string> F_Debug::m_commandHistory;
+char F_Debug::m_inputBuffer[256] = "";
+int F_Debug::m_historyPos = -1;
+bool F_Debug::m_scrollToBottom = false;
+std::vector<F_Debug::DebugCommand> F_Debug::m_commands;
+std::unordered_map<std::string, std::string> F_Debug::m_commandAliases;
+std::unordered_set<std::string> F_Debug::m_logFilters;
+bool F_Debug::m_showFilteredLogsOnly = false;
+std::vector<F_Debug::WatchedVariable> F_Debug::m_watchedVariables;
+std::unordered_map<std::string, std::function<std::string(const std::string&)>> F_Debug::m_expressionHandlers;
+void F_Debug::RegisterExpressionHandler(const std::string& prefix, std::function<std::string(const std::vector<std::string>&)> handler)
+{
+	m_expressionHandlers[prefix] = [handler](const std::string& expr) {
+		std::vector<std::string> tokens;
+		TokenizeCommand(expr, tokens);
+		if (tokens.empty()) return std::string("Invalid expression");
+		return handler(tokens);
+		};
+}
+
+std::string F_Debug::EvaluateExpression(const std::string& expression)
+{
+	// 查找匹配的表达式处理器
+	for (const auto& [prefix, handler] : m_expressionHandlers) {
+		if (expression.find(prefix) == 0) {
+			return handler(expression.substr(prefix.length()));
+		}
+	}
+
+	// 默认处理：尝试作为变量名
+	for (const auto& var : m_watchedVariables) {
+		if (var.name == expression) {
+			return var.getter();
+		}
+	}
+
+	return "未知";
+	
+}
+
+
 
 void F_Debug::Init(bool debug)
 {
@@ -26,57 +69,752 @@ void F_Debug::Close() {
 bool F_Debug::IsOpen() {
 	return m_debug == 1;
 }
+void F_Debug::ShowDebugConsole() {
+	if (!IsOpen() || !m_showConsole) return;
 
-void DEBUG_LOG(int lv, const char* text, bool english, bool auto_enter) {
-	if (!F_Debug::IsOpen()) {
+	const float footer_height = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+	ImGui::SetNextWindowSize(ImVec2(600, 450), ImGuiCond_FirstUseEver);
+
+	if (ImGui::Begin("调试控制台", &m_showConsole)) {
+		// 工具栏
+		if (ImGui::Button("清空")) {
+			m_logs.clear();
+		}
+		ImGui::SameLine();
+
+		// 日志过滤选项
+		ImGui::Checkbox("启用过滤", &m_showFilteredLogsOnly);
+		ImGui::SameLine();
+
+		// 添加过滤关键词按钮
+		static char filterBuf[128] = "";
+		ImGui::PushItemWidth(120);
+		ImGui::InputText("##FilterInput", filterBuf, IM_ARRAYSIZE(filterBuf));
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+		if (ImGui::Button("新建过滤内容")) {
+			if (filterBuf[0] != '\0') {
+				AddLogFilter(filterBuf);
+				filterBuf[0] = '\0';
+			}
+		}
+
+		// 显示当前过滤关键词
+		if (!m_logFilters.empty()) {
+			ImGui::SameLine();
+			ImGui::Text("过滤内容: ");
+			for (const auto& filter : m_logFilters) {
+				ImGui::SameLine();
+				ImGui::Text("%s", filter.c_str());
+				ImGui::SameLine();
+				if (ImGui::SmallButton("删除")) {
+					RemoveLogFilter(filter);
+				}
+			}
+		}
+
+		// 分隔线
+		ImGui::Separator();
+
+		// 日志显示区域
+		ImGui::BeginChild("日志区", ImVec2(0, -footer_height), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+		// 显示日志（应用过滤）
+		for (const auto& logIf : m_logs) {
+			const std::string& log = logIf.log;
+			// 应用过滤
+			bool shouldShow = !m_showFilteredLogsOnly || ShouldShowLog(log);
+
+			if (shouldShow) {
+				// 根据日志类型着色
+				if (logIf.lv == 3) {
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 50, 50, 255));
+				}
+				else if (logIf.lv == 2) {
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 200, 50, 255));
+				}
+				else if (logIf.lv == 1) {
+					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(50, 255, 50, 255));
+				}
+
+				ImGui::TextUnformatted(log.c_str());
+
+				if (logIf.lv ==1 || logIf.lv ==2 || logIf.lv==3) {
+					ImGui::PopStyleColor();
+				}
+			}
+		}
+
+		// 自动滚动到底部
+		if (m_scrollToBottom) {
+			ImGui::SetScrollHereY(1.0f);
+			m_scrollToBottom = false;
+		}
+		ImGui::EndChild();
+
+		// 分隔线
+		ImGui::Separator();
+
+		// 变量监控显示
+		if (!m_watchedVariables.empty()) {
+			ImGui::Text("变量监视:");
+			for (const auto& var : m_watchedVariables) {
+				if (var.showInConsole) {
+					ImGui::Text("%s: %s", var.name.c_str(), var.getter().c_str());
+				}
+			}
+			ImGui::Separator();
+		}
+
+		// 命令输入区域
+		bool reclaim_focus = false;
+		ImGui::PushItemWidth(-1);
+		if (ImGui::InputText("##Input", m_inputBuffer, IM_ARRAYSIZE(m_inputBuffer),
+			ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CallbackCompletion | ImGuiInputTextFlags_CallbackHistory,
+			[](ImGuiInputTextCallbackData* data) -> int {
+				return F_Debug::TextEditCallback(data);
+			}))
+		{
+			// 执行命令
+			if (m_inputBuffer[0] != '\0') {
+				ExecuteCommand(m_inputBuffer);
+
+				// 保存到历史记录
+				m_commandHistory.push_back(m_inputBuffer);
+				if (m_commandHistory.size() > 100) {
+					m_commandHistory.erase(m_commandHistory.begin());
+				}
+
+				// 重置输入
+				strcpy(m_inputBuffer, "");
+				reclaim_focus = true;
+			}
+		}
+		ImGui::PopItemWidth();
+
+		// 自动聚焦到输入框
+		ImGui::SetItemDefaultFocus();
+		if (reclaim_focus) {
+			ImGui::SetKeyboardFocusHere(-1);
+		}
+	}
+	ImGui::End();
+}
+
+
+/**
+ * @brief 添加日志消息
+ * @param message 日志内容
+ * @param level 日志级别 (0=none,1=info, 2=warn, 3=error)
+ */
+void F_Debug::Log(const std::string& message, int level) {
+	if (!IsOpen()) return;
+	// 添加时间戳
+	time_t now = time(0);
+	tm* ltm = localtime(&now);
+	char timeBuf[20];
+	strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", ltm);
+
+	// 格式化日志
+	const char* levelStr = "";
+	if (level == 1) levelStr = "[INFO] ";
+	else if (level == 2) levelStr = "[WARN] ";
+	else if(level==3) levelStr = "[ERROR] ";
+	m_logs.push_back({ std::string(timeBuf) + " " + levelStr + message ,level});
+	if (m_logs.size() > 500) {
+		m_logs.erase(m_logs.begin());
+	}
+
+	m_scrollToBottom = true;
+}
+
+void F_Debug::ClearLog()
+{
+	m_logs.clear();
+}
+
+/**
+ * @brief 注册调试命令
+ * @param name 命令名称
+ * @param description 命令描述
+ * @param action 命令执行函数
+ */
+void F_Debug::RegisterCommand(const std::string& name, const std::string& description,
+	std::function<void(const std::vector<std::string>&)> action)
+{
+	m_commands.push_back({ name, description, action });
+}
+
+std::vector<F_Debug::DebugCommand> F_Debug::GetCommands()
+{
+	return m_commands;
+}
+
+F_Debug::DebugCommand F_Debug::GetCommand(const std::string& name)
+{
+	F_Debug::DebugCommand cmd;
+	auto it = std::find_if(m_commands.begin(), m_commands.end(),
+		[&](const DebugCommand& c) { return c.name == name; });
+	if (it != m_commands.end()) {
+		cmd = *it;
+	}
+	else {
+		Log("未知命令: " + name,2);
+		return F_Debug::DebugCommand();
+	}
+	return cmd;
+}
+
+/**
+* @brief 执行调试命令
+* @param command 完整命令字符串
+*/
+void F_Debug::ExecuteCommand(const std::string& command) {
+	// 添加日志
+	Log(" [指令]> " + command);
+
+	// 解析命令和参数
+	std::vector<std::string> tokens;
+	TokenizeCommand(command, tokens);
+
+	if (tokens.empty()) return;
+
+	// 查找命令
+	std::string cmdName = tokens[0];
+	tokens.erase(tokens.begin()); // 移除命令名，保留参数
+
+	auto it = std::find_if(m_commands.begin(), m_commands.end(),
+		[&](const DebugCommand& cmd) { return cmd.name == cmdName; });
+
+	if (it != m_commands.end()) {
+		try {
+			it->action(tokens);
+		}
+		catch (const std::exception& e) {
+			Log("执行命令错误: " + std::string(e.what()), 3);
+		}
+	}
+	else {
+		Log("未知命令: " + cmdName, 2);
+	}
+}
+
+void F_Debug::InitCommand()
+{
+	F_Debug::RegisterCommand("clear", "清空所有日志\n", [](const auto& args) {
+		F_Debug::ClearLog();
+		});
+	F_Debug::RegisterCommand("help", "帮助\n", [](const auto& args) {
+		F_Debug::Log("可用的调试命令:");
+		std::string tmp = "\n";
+		for (auto cmd : F_Debug::GetCommands()) {
+			tmp += (TextFormat("%s:\n    %s", cmd.name.c_str(), cmd.description.c_str()));
+		}
+		F_Debug::Log(tmp);
+		});
+	F_Debug::RegisterCommand("logsave",
+		"保存日志到文件\n",
+		[](const auto& args) {
+
+			std::string filename = "logs.txt";
+			bool filtered = false;
+			if (args[0] == "/?") {
+				F_Debug::Log("保存日志到文件\n    logsave [filename] [filtered]\n    filename - 文件名(可省略)\n    filtered - 指定保存过滤的日志(可省略)\n    例:logsave logs.txt filtered");
+				return;
+			}
+			if (args.size() > 0) filename = args[0];
+			if (args.size() > 1 && args[1] == "filtered") filtered = true;
+
+			F_Debug::SaveLogsToFile(filename, filtered);
+		});
+	F_Debug::RegisterCommand("filter", "管理日志过滤\n", [](const auto& args) {
+		if (args.empty() || args[0] == "/?") {
+			F_Debug::Log("管理日志过滤\n    用法: filter [add|remove|list] [keyword]\n    例:filter add [ERROR]\n    filter remove [WARN]");
+			return;
+		}
+
+		if (args[0] == "add" && args.size() > 1) {
+			F_Debug::AddLogFilter(args[1]);
+		}
+		else if (args[0] == "remove" && args.size() > 1) {
+			F_Debug::RemoveLogFilter(args[1]);
+		}
+		else if (args[0] == "list") {
+			if (F_Debug::m_logFilters.empty()) {
+				F_Debug::Log("没有有效的过滤内容");
+			}
+			else {
+				F_Debug::Log("有效的过滤内容:");
+				for (const auto& filter : F_Debug::m_logFilters) {
+					F_Debug::Log("  " + filter);
+				}
+			}
+		}
+		});
+	RegisterCommand("watch", "管理监视的变量\n", [](const std::vector<std::string>& args) {
+		if (args.empty() || args[0]=="/?") {
+			std::string tmp = "";
+			tmp += ("用法:\n");
+			tmp += ("  watch list                     - 列出所有被监视的变量\n");
+			tmp += ("  watch add <name> <expression>  - 添加一个新的被监视的变量\n");
+			tmp += ("  watch remove <name>            - 移除一个被监视的变量\n");
+			tmp += ("  watch show <name>              - 显示一个被监视的变量\n");
+			tmp += ("  watch hide <name>              - 隐藏一个被监视的变量\n");
+			tmp += ("  watch eval <expression>        - 计算表达式\n");
+			Log(tmp);
+			return;
+		}
+
+		const std::string& action = args[0];
+
+		if (action == "list") {
+			if (m_watchedVariables.empty()) {
+				Log("没有被监视的变量");
+			}
+			else {
+				Log("被监视的变量:");
+				for (const auto& var : m_watchedVariables) {
+					Log("  " + var.name + " = " + var.lastValue +
+						" (" + var.expression + ")" +
+						" [显示状态: " + (var.showInConsole ? "显示" : "不显示") + "]");
+				}
+			}
+		}
+		else if (action == "add" && args.size() >= 3) {
+			std::string name = args[1];
+			std::string expr = args[2];
+			// 合并剩余参数作为表达式
+			for (int i = 3; i < args.size(); i++) {
+				expr += " " + args[i];
+			}
+			WatchVariable(name, expr);
+		}
+		else if (action == "remove" && args.size() >= 2) {
+			UnwatchVariable(args[1]);
+		}
+		else if (action == "show" && args.size() >= 2) {
+			SetVariableVisibility(args[1], true);
+		}
+		else if (action == "hide" && args.size() >= 2) {
+			SetVariableVisibility(args[1], false);
+		}
+		else if (action == "eval" && args.size() >= 2) {
+			std::string expr = args[1];
+			for (int i = 2; i < args.size(); i++) {
+				expr += " " + args[i];
+			}
+			Log("结果为: " + EvaluateExpression(expr));
+		}
+		else {
+			Log("无效的命令", 1);
+		}
+		});
+
+	RegisterExpressionHandler("Math.", [](const std::vector<std::string>& tokens) {
+		// 示例：math.sin(1.57), math.add(5,3)
+		if (tokens.size() < 2) return std::string("Invalid math expression");
+
+		try {
+			if (tokens[0] == "sin") {
+				float value = std::stof(tokens[1]);
+				return std::to_string(sinf(value));
+			}
+			else if (tokens[0] == "cos") {
+				float value = std::stof(tokens[1]);
+				return std::to_string(cosf(value));
+			}
+			else if (tokens[0] == "tan") {
+				float value = std::stof(tokens[1]);
+				return std::to_string(tanf(value));
+			}
+			else if (tokens[0] == "sqrt") {
+				float value = std::stof(tokens[1]);
+				if (value < 0) return std::string("负数不能开方");
+				return std::to_string(sqrtf(value));
+			}
+			else if (tokens[0] == "abs") {
+				float value = std::stof(tokens[1]);
+				return std::to_string(fabsf(value));
+			}
+			else if (tokens[0] == "pow" && tokens.size() > 2) {
+				float base = std::stof(tokens[1]);
+				float exponent = std::stof(tokens[2]);
+				return std::to_string(powf(base, exponent));
+			}
+			else if (tokens[0] == "log" && tokens.size() > 1) {
+				float value = std::stof(tokens[1]);
+				if (value <= 0) return std::string("对数的输入必须大于0");
+				return std::to_string(logf(value));
+			}
+			else if (tokens[0] == "exp" && tokens.size() > 1) {
+				float value = std::stof(tokens[1]);
+				return std::to_string(expf(value));
+			}
+			else if (tokens[0] == "ceil" && tokens.size() > 1) {
+				float value = std::stof(tokens[1]);
+				return std::to_string(ceilf(value));
+			}
+			else if (tokens[0] == "floor" && tokens.size() > 1) {
+				float value = std::stof(tokens[1]);
+				return std::to_string(floorf(value));
+			}
+			else if (tokens[0] == "round" && tokens.size() > 1) {
+				float value = std::stof(tokens[1]);
+				return std::to_string(roundf(value));
+			}
+			else if (tokens[0] == "max" && tokens.size() > 2) {
+				float a = std::stof(tokens[1]);
+				float b = std::stof(tokens[2]);
+				return std::to_string(std::max(a, b));
+			}
+			else if (tokens[0] == "min" && tokens.size() > 2) {
+				float a = std::stof(tokens[1]);
+				float b = std::stof(tokens[2]);
+				return std::to_string(std::min(a, b));
+			}
+
+			else if (tokens[0] == "add" && tokens.size() > 2) {
+				float a = std::stof(tokens[1]);
+				float b = std::stof(tokens[2]);
+				return std::to_string(a + b);
+			}
+			else if (tokens[0] == "sub" && tokens.size() > 2) {
+				float a = std::stof(tokens[1]);
+				float b = std::stof(tokens[2]);
+				return std::to_string(a - b);
+			}
+		}
+		catch (...) {
+			return std::string("数学表达式错误");
+		}
+		return "未知数学函数: " + tokens[0];
+		});
+	RegisterExpressionHandler("System.", [](const std::vector<std::string>& tokens) {
+		// 示例：system.fps, system.memory
+		if (tokens.empty()) return std::string("Invalid system expression");
+
+		if (tokens[0] == "fps") {
+			return std::to_string(GetFPS());
+		}
+		else if (tokens[0] == "time") {
+			return std::to_string(GetTime());
+		}
+		return "未知系统属性: " + tokens[0];
+		});
+}
+
+/**
+* @brief 命令分词
+* @param input 输入命令
+* @param tokens 输出分词结果
+*/
+void F_Debug::TokenizeCommand(const std::string& input, std::vector<std::string>& tokens) {
+	tokens.clear();
+	char* str = const_cast<char*>(input.c_str());
+	char* token = strtok(str, " ");
+
+	while (token != nullptr) {
+		tokens.push_back(token);
+		token = strtok(nullptr, " ");
+	}
+}
+
+void F_Debug::AddLogFilter(const std::string& keyword)
+{
+	m_logFilters.insert(keyword);
+//	Log("添加了日志过滤内容: " + keyword,1);
+}
+
+void F_Debug::RemoveLogFilter(const std::string& keyword)
+{
+	std::string tmp = keyword;
+	if (m_logFilters.erase(keyword) > 0) {
+	//	Log("移除了日志过滤内容: " + tmp,1);
+	}
+}
+
+bool F_Debug::ShouldShowLog(const std::string& log)
+{
+	if (m_logFilters.empty()) return true;
+
+	for (const auto& filter : m_logFilters) {
+		if (log.find(filter) != std::string::npos) {
+			return true;
+		}
+	}
+	return false;
+}
+void F_Debug::SaveLogsToFile(const std::string& filename, bool filtered)
+{
+	std::ofstream file(filename);
+	if (!file.is_open()) {
+		Log("打开日志文件失败: " + filename, 3);
 		return;
 	}
-	using std::cout;
+
+	int count = 0;
+	for (const auto& logIf : m_logs) {
+		auto log = logIf.log;
+		if (!filtered || ShouldShowLog(log)) {
+			file << log << "\n";
+			count++;
+		}
+	}
+
+	file.close();
+	Log("保存 " + std::to_string(count) + " 条日志到 " + filename,1);
+}
+void F_Debug::RegisterAlias(const std::string& alias, const std::string& command)
+{
+	m_commandAliases[alias] = command;
+	Log("注册命令别名: " + alias + " -> " + command);
+}
+void F_Debug::WatchVariable(const std::string& name, std::function<std::string()> getter, bool showInConsole)
+{
+	auto it = std::find_if(m_watchedVariables.begin(), m_watchedVariables.end(),
+		[&](const WatchedVariable& v) { return v.name == name; });
+
+	if (it != m_watchedVariables.end()) {
+		Log("变量 '" + name + "' 以及被监视了", 1);
+		return;
+	}
+
+	WatchedVariable t;
+	t.expression = "";
+	t.getter = getter;
+	t.lastValue = getter();
+	t.name = name;
+	t.showInConsole = showInConsole;
+	m_watchedVariables.push_back(t);
+	Log("开始监听变量: " + name);
+}
+void F_Debug::WatchVariable(const std::string& name, const std::string& expression, bool showInConsole)
+
+{
+	// 检查是否已存在同名变量
+	auto it = std::find_if(m_watchedVariables.begin(), m_watchedVariables.end(),
+		[&](const WatchedVariable& v) { return v.name == name; });
+
+	if (it != m_watchedVariables.end()) {
+		Log("变量 '" + name + "' 以及被监视了", 1);
+		return;
+	}
+
+	// 创建获取函数
+	auto getter = [expression]() -> std::string {
+		return EvaluateExpression(expression);
+		};
+
+	// 获取初始值
+	std::string initialValue;
+	try {
+		initialValue = getter();
+	}
+	catch (...) {
+		initialValue = "Error";
+	}
+
+	// 添加监视变量
+	m_watchedVariables.push_back({
+		name,
+		expression,
+		getter,
+		showInConsole,
+		initialValue
+		});
+
+	Log("开始监听变量: " + name);
+}
+void F_Debug::UnwatchVariable(const std::string& name)
+{
+	auto it = std::remove_if(m_watchedVariables.begin(), m_watchedVariables.end(),
+		[&](const WatchedVariable& v) { return v.name == name; });
+
+	if (it != m_watchedVariables.end()) {
+		m_watchedVariables.erase(it, m_watchedVariables.end());
+		Log("停止监视变量: " + name);
+	}
+	else {
+		Log("未找到变量: " + name, 1);
+	}
+}
+void F_Debug::SetVariableVisibility(const std::string& name, bool show)
+{
+	for (auto& var : m_watchedVariables) {
+		if (var.name == name) {
+			var.showInConsole = show;
+			Log("'" + name + "'的可视状态设置为" + (show ? "显示" : "隐藏"));
+			return;
+		}
+	}
+	Log("没有找到变量: " + name, 1);
+}
+void F_Debug::UpdateWatchedVariables()
+{
+	static int frameCount = 0;
+	frameCount++;
+
+	// 每5帧更新一次，避免性能开销
+	if (frameCount % 5 == 0) {
+		for (auto& var : m_watchedVariables) {
+			try {
+				std::string currentValue = var.getter();
+
+				// 检测值变化
+				if (var.lastValue != currentValue) {
+					// 记录变化日志
+					Log(var.name + " 变化: " + var.lastValue + " -> " + currentValue);
+					var.lastValue = currentValue;
+				}
+			}
+			catch (const std::exception& e) {
+				Log("表达式计算错误 " + var.name + ": " + e.what(), 2);
+			}
+		}
+	}
+}
+/**
+* @brief 输入框回调函数 (处理自动补全和历史记录)
+* @param data ImGui回调数据
+*/
+int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
+	switch (data->EventFlag) {
+	case ImGuiInputTextFlags_CallbackHistory: {
+		// 上/下方向键处理历史记录
+		const int prev_history_pos = m_historyPos;
+		if (data->EventKey == ImGuiKey_UpArrow) {
+			if (m_historyPos == -1) {
+				m_historyPos = (int)m_commandHistory.size() - 1;
+			}
+			else if (m_historyPos > 0) {
+				m_historyPos--;
+			}
+		}
+		else if (data->EventKey == ImGuiKey_DownArrow) {
+			if (m_historyPos != -1) {
+				if (++m_historyPos >= (int)m_commandHistory.size()) {
+					m_historyPos = -1;
+				}
+			}
+		}
+
+		// 应用历史记录
+		if (prev_history_pos != m_historyPos) {
+			const char* history_str = (m_historyPos >= 0) ? m_commandHistory[m_historyPos].c_str() : "";
+			data->DeleteChars(0, data->BufTextLen);
+			data->InsertChars(0, history_str);
+		}
+		break;
+	}
+	case ImGuiInputTextFlags_CallbackCompletion: {
+		// Tab键自动补全
+		const char* word_end = data->Buf + data->CursorPos;
+		const char* word_start = word_end;
+		while (word_start > data->Buf) {
+			const char c = word_start[-1];
+			if (c == ' ' || c == '\t') break;
+			word_start--;
+		}
+
+		// 收集匹配的命令
+		std::vector<std::string> candidates;
+		const std::string partial(word_start, word_end);
+
+		for (const auto& cmd : m_commands) {
+			if (cmd.name.find(partial) == 0) {
+				candidates.push_back(cmd.name);
+			}
+		}
+
+		if (!candidates.empty()) {
+			// 自动补全
+			if (candidates.size() == 1) {
+				data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
+				data->InsertChars(data->CursorPos, candidates[0].c_str());
+				data->InsertChars(data->CursorPos, " ");
+			}
+			// 显示多个匹配项
+			else {
+				Log("可能结果:");
+				for (const auto& candidate : candidates) {
+					Log("  " + candidate);
+				}
+			}
+		}
+		break;
+	}
+	}
+	return 0;
+}
+std::mutex log_mutex; // 全局互斥锁
+
+void DEBUG_LOG(int lv, const char* text, bool english, bool auto_enter , bool with_imgui_console ) {
+	if (!F_Debug::IsOpen()) return;
+
+	std::lock_guard<std::mutex> lock(log_mutex); // 自动加锁
+
+	char buffer[1024];
+	size_t pos = 0;
+
+	// 构建前缀
+	auto append = [&](const char* str) {
+		size_t len = snprintf(buffer + pos, sizeof(buffer) - pos, "%s", str);
+		pos += std::min(len, sizeof(buffer) - pos - 1);
+		};
+
 	switch (lv) {
 	case LOG_ALL:
 		if (english)
-			cout << "LOG:";
-		else cout << "日志:";
+			append("LOG:");
+		else append("日志:");
 		break;
 	case LOG_DEBUG:
 		if (english)
-			cout << "DEBUG:";
-		else cout << "调试：";
+			append("DEBUG:");
+		else append("调试：");
 		break;
 	case LOG_ERROR:
 		if (english)
-			cout << "ERROR:";
-		else cout << "错误:";
+			append("ERROR:");
+		else append("错误:");
 		break;
 	case LOG_FATAL:
 		if (english)
-			cout << "FATAL:";
-		else cout << "致命错误:";
+			append("FATAL:");
+		else append("致命错误:");
 		break;
 	case LOG_INFO:
 		if (english)
-			cout << "INFO:";
-		else cout << "信息:";
+			append("INFO:");
+		else append("信息:");
 		break;
 	case LOG_NONE:
 		if (english)
-			cout << "NONE:";
-		else cout << "无:";
+			append("NONE:");
+		else append("无:");
 		break;
 	case LOG_WARNING:
 		if (english)
-			cout << "WARNING:";
-		else cout << "警告:";
+			append("WARNING:");
+		else append("警告:");
 		break;
 	default:
 		if (english)
-			cout << "NONE:";
-		else cout << "无:";
+			append("NONE:");
+		else append("无:");
 		break;
-	}
-	printf("%s", text);
-	if (auto_enter) {
-		cout << "\n";
+	};
+	append(text);
+	if (auto_enter) append("\n");
+
+	fwrite(buffer, 1, pos, stdout); // 单次原子操作
+	if (with_imgui_console) {
+		append("\0");
+		if (lv == LOG_INFO) lv = 1;
+		else if (lv == LOG_WARNING) lv = 2;
+		else if (lv == LOG_ERROR) lv = 3;
+		else lv = 0;
+		F_Debug::Log(buffer, lv); // 添加到调试控制台
 	}
 }
 int letter_to_kv(char letter)
@@ -749,6 +1487,8 @@ typedef struct tagOFNW {
 #define OPENFILENAME OPENFILENAMEA
 extern "C" int GetOpenFileNameA(OPENFILENAME* ofn);
 extern "C" int GetOpenFileNameW(OPENFILENAMEW* ofn);
+extern "C" int GetSaveFileNameA(OPENFILENAME* ofn);
+extern "C" int GetSaveFileNameW(OPENFILENAMEW* ofn);
 #define TCHAR wchar_t
 std::string F_File::Get_Open_File_Name(std::string strFilter)
 {
@@ -780,14 +1520,74 @@ std::string F_File::Get_Open_File_Name(std::string strFilter)
 }
 bool F_File::loaded = false;
 FilePathList F_File::drop_list = FilePathList();
+#include <fstream>
 std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 {
 	using namespace WinFuns;
-	OPENFILENAME ofn;
-	char szFile[260] = { 0 };
+	OPENFILENAMEA ofn;
+	char szFile[260] = ""; // 文件名缓冲区
+	memset(&ofn, 0, sizeof(ofn));
+	ofn.lStructSize = sizeof(ofn);
+	ofn.hwndOwner = GetWindowHandle(); // 如果是窗口程序，可传入窗口句柄
+	ofn.lpstrFile = szFile;  // 将文件名缓冲区绑定到结构体
+	ofn.nMaxFile = sizeof(szFile);
+	// 设置文件过滤器
+	ofn.lpstrFilter = strFilter.c_str();
+	ofn.Flags = flag;
+
+	// 打开“打开文件”对话框
+	if (GetOpenFileNameA(&ofn)) {
+		std::ifstream file(ofn.lpstrFile);
+		if (file.is_open()) {
+			file.close();
+			return ofn.lpstrFile;
+		}
+		else {
+			std::cerr << "Failed to open file: " << ofn.lpstrFile << std::endl;
+		}
+	}
+	else {
+		std::cerr << "Open file dialog canceled or failed." << std::endl;
+	}
+	return "";
+}
+
+std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter)
+{
+	using namespace WinFuns;
+	OPENFILENAMEW ofn;
+	wchar_t szFile[260] = { 0 };
 
 	// 初始化OPENFILENAME结构体
-	memset(&ofn, sizeof(ofn),0);
+	memset(&ofn, sizeof(ofn), 0);
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.hwndOwner = GetWindowHandle();
+	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
+	// 显示文件对话框
+	if (GetOpenFileNameW(&ofn) == 1) {
+		return std::wstring(ofn.lpstrFile);
+	}
+	else {
+		return L"";  // 用户取消选择或发生错误
+	}
+}
+
+std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter, unsigned int flag)
+{
+	using namespace WinFuns;
+	OPENFILENAMEW ofn;
+	wchar_t szFile[260] = { 0 };
+
+	// 初始化OPENFILENAME结构体
+	memset(&ofn, sizeof(ofn), 0);
 	ofn.lStructSize = sizeof(ofn);
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
@@ -800,7 +1600,36 @@ std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 	ofn.hwndOwner = GetWindowHandle();
 	ofn.Flags = flag;
 	// 显示文件对话框
-	if (GetOpenFileNameA(&ofn) == 1) {
+	if (GetOpenFileNameW(&ofn) == 1) {
+		return std::wstring(ofn.lpstrFile);
+	}
+	else {
+		return L"";  // 用户取消选择或发生错误
+	}
+}
+
+std::string F_File::Get_Save_File_Name(std::string strFilter)
+{
+	using namespace WinFuns;
+	OPENFILENAME ofn;
+	char szFile[260] = { 0 };
+
+	// 初始化OPENFILENAME结构体
+	memset(&ofn, sizeof(ofn), 0);
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = strFilter.c_str();
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.hwndOwner = GetWindowHandle();
+	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
+
+	// 显示文件对话框
+	if (GetSaveFileNameA(&ofn) == 1) {
 		return std::string(ofn.lpstrFile);
 	}
 	else {
@@ -808,7 +1637,63 @@ std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 	}
 }
 
-std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter, unsigned int flag)
+std::string F_File::Get_Save_File_Name(std::string strFilter, unsigned int flag)
+{
+	using namespace WinFuns;
+	OPENFILENAME ofn;
+	char szFile[260] = { 0 };
+
+	// 初始化OPENFILENAME结构体
+	memset(&ofn, sizeof(ofn), 0);
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.hwndOwner = GetWindowHandle();
+	ofn.Flags = flag;
+	// 显示文件对话框
+	if (GetSaveFileNameA(&ofn) == 1) {
+		return std::string(ofn.lpstrFile);
+	}
+	else {
+		return "";  // 用户取消选择或发生错误
+	}
+}
+
+std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter)
+{
+	using namespace WinFuns;
+	OPENFILENAMEW ofn;
+	wchar_t szFile[260] = { 0 };
+
+	// 初始化OPENFILENAME结构体
+	memset(&ofn, sizeof(ofn), 0);
+	ofn.lStructSize = sizeof(ofn);
+	ofn.lpstrFile = szFile;
+	ofn.lpstrFile[0] = '\0';
+	ofn.nMaxFile = sizeof(szFile);
+	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.nFilterIndex = 1;
+	ofn.lpstrFileTitle = NULL;
+	ofn.nMaxFileTitle = 0;
+	ofn.lpstrInitialDir = NULL;
+	ofn.hwndOwner = GetWindowHandle();
+	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
+	// 显示文件对话框
+	if (GetOpenFileNameW(&ofn) == 1) {
+		return std::wstring(ofn.lpstrFile);
+	}
+	else {
+		return L"";  // 用户取消选择或发生错误
+	}
+}
+
+std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter, unsigned int flag)
 {
 	using namespace WinFuns;
 	OPENFILENAMEW ofn;
@@ -995,18 +1880,18 @@ namespace F_Json {
 
 	// JsonNull 实现
 	JsonType JsonNull::type() const { return JsonType::Null; }
-	std::string JsonNull::serialize() const { return "null"; }
+	std::string JsonNull::serialize(bool no_name) const { return "null"; }
 
 	// JsonBoolean 实现
 	JsonBoolean::JsonBoolean(bool v) : val(v) {}
 	JsonType JsonBoolean::type() const { return JsonType::Boolean; }
-	std::string JsonBoolean::serialize() const { return val ? "true" : "false"; }
+	std::string JsonBoolean::serialize(bool no_name) const { return val ? "true" : "false"; }
 	bool JsonBoolean::value() const { return val; }
 
 	// JsonNumber 实现
 	JsonNumber::JsonNumber(double v) : val(v) {}
 	JsonType JsonNumber::type() const { return JsonType::Number; }
-	std::string JsonNumber::serialize() const {
+	std::string JsonNumber::serialize(bool no_name) const {
 		std::ostringstream oss;
 		if (val == static_cast<int>(val)) {
 			oss << static_cast<int>(val);
@@ -1021,7 +1906,7 @@ namespace F_Json {
 	// JsonString 实现
 	JsonString::JsonString(std::string v) : val(std::move(v)) {}
 	JsonType JsonString::type() const { return JsonType::String; }
-	std::string JsonString::serialize() const {
+	std::string JsonString::serialize(bool no_name) const {
 		std::ostringstream oss;
 		oss << '"';
 		for (char c : val) {
@@ -1043,7 +1928,7 @@ namespace F_Json {
 
 	// JsonArray 实现
 	JsonType JsonArray::type() const { return JsonType::Array; }
-	std::string JsonArray::serialize() const {
+	std::string JsonArray::serialize(bool no_name) const {
 		std::string res = "[";
 		for (size_t i = 0; i < vals.size(); ++i) {
 			if (i > 0) res += ", ";
@@ -1057,12 +1942,14 @@ namespace F_Json {
 
 	// JsonObject 实现
 	JsonType JsonObject::type() const { return JsonType::Object; }
-	std::string JsonObject::serialize() const {
+	std::string JsonObject::serialize(bool no_name) const {
 		std::string res = "{";
 		bool first = true;
 		for (const auto& [k, v] : vals) {
 			if (!first) res += ", ";
-			res += JsonString(k).serialize() + ": " + v->serialize();
+			if(no_name==0)
+				res += JsonString(k).serialize() + ": " + v->serialize();
+			else res+= v->serialize();
 			first = false;
 		}
 		return res + "}";
@@ -1100,6 +1987,16 @@ namespace F_Json {
 		return p->value();
 	}
 
+	void Json::setNoName()
+	{
+		no_name = 1;
+	}
+
+	void Json::setHasName()
+	{
+		no_name = 0;
+	}
+
 	std::string Json::asString() const {
 		auto p = dynamic_cast<JsonString*>(val.get());
 		if (!p) throw std::runtime_error("Not a string");
@@ -1132,7 +2029,6 @@ namespace F_Json {
 		p->set(key, v.val);
 		return *this;
 	}
-
 	Json Json::get(const std::string& key) const {
 		auto p = dynamic_cast<JsonObject*>(val.get());
 		if (!p) throw std::runtime_error("Not an object");
@@ -1144,7 +2040,59 @@ namespace F_Json {
 		return get(key);
 	}
 
-	std::string Json::serialize() const { return val->serialize(); }
+	std::string Json::serialize() const { return val->serialize(no_name); }
+
+	std::string Json::serialize_with_format() const
+	{
+		std::string json = val->serialize(no_name);
+		std::string formatted;
+		int indent_level = 0;
+		bool in_quotes = false;
+
+		for (char c : json) {
+			if (c == '\"') in_quotes = !in_quotes;
+
+			if (!in_quotes) {
+				if (c == '{' ) {
+					formatted += "{\n";
+					indent_level++;
+					formatted += std::string(indent_level, '\t');
+				}
+				else if (c == '}') {
+					formatted += "\n";
+					indent_level--;
+					formatted += std::string(indent_level, '\t') + "}";
+				}
+				else if (c == '[') {
+					formatted += "[\n";
+					indent_level++;
+					formatted += std::string(indent_level, '\t');
+				}
+				else if (c == ']') {
+					formatted += "\n";
+					indent_level--;
+					formatted += std::string(indent_level, '\t') + "]";
+				}
+				else if (c == ',') {
+					formatted += ",\n" + std::string(indent_level, '\t');
+				}
+				else if (c == ':') {
+					formatted += ": ";
+				}
+				else if (c == ' ') {
+					continue;
+				}
+				else {
+					formatted += c;
+				}
+			}
+			else {
+				formatted += c;
+			}
+		}
+		return formatted;
+		
+	}
 
 	// 解析相关辅助函数
 	namespace {
@@ -1344,6 +2292,31 @@ namespace F_Json {
 		throw std::runtime_error("Not a container type");
 	}
 
+	Json& Json::operator=(double n)
+	{
+		val = std::make_shared<JsonNumber>(n);
+		return *this;
+	}
+	Json& Json::operator=(const std::string& s)
+	{
+		val = std::make_shared<JsonString>(s);
+		return *this;
+	}
+	Json& Json::operator=(const char* s)
+	{
+		val = std::make_shared<JsonString>(s);
+		return *this;
+	}
+	Json& Json::operator=(bool b)
+	{
+		val = std::make_shared<JsonBoolean>(b);
+		return *this;
+	}
+	Json& Json::operator=(const Json& j)
+	{
+		val = j.val;
+		return *this;
+	}
 }
 
 
@@ -1384,5 +2357,231 @@ void F_Lua::HandleError(int status) {
 		const char* errorMsg = lua_tostring(L, -1);
 		std::cerr << "[Lua Error] " << errorMsg << std::endl;
 		lua_pop(L, 1); // 清除错误信息
+	}
+}
+
+
+
+// 全局状态
+static std::map<std::string, F_Gui::CustomWidgetFunc> customWidgets;
+static ImGuiStyle defaultStyle;
+
+namespace F_Gui {
+	void Init() {
+		rlImGuiSetup(true);  // 启用深色主题
+		defaultStyle = ImGui::GetStyle();
+	}
+
+	void Shutdown() {
+		rlImGuiShutdown();
+	}
+
+	void BeginFrame() {
+		rlImGuiBegin();
+	}
+
+	void EndFrame() {
+		rlImGuiEnd();
+	}
+
+	// 窗口管理
+	void BeginWindow(const char* title, bool* p_open, int flags) {
+		ImGui::Begin(title, p_open, flags);
+	}
+
+	void EndWindow() {
+		ImGui::End();
+	}
+
+	// 基础控件
+	bool Button(const char* label, const Vector2& size) {
+		return ImGui::Button(label, ImVec2(size.x, size.y));
+	}
+
+	void Text(const char* fmt, ...) {
+		va_list args;
+		va_start(args, fmt);
+		ImGui::TextV(fmt, args);
+		va_end(args);
+	}
+
+	bool Checkbox(const char* label, bool* v) {
+		return ImGui::Checkbox(label, v);
+	}
+
+	bool SliderFloat(const char* label, float* v, float v_min, float v_max) {
+		return ImGui::SliderFloat(label, v, v_min, v_max);
+	}
+
+	bool ColorEdit3(const char* label, float col[3]) {
+		return ImGui::ColorEdit3(label, col);
+	}
+
+	// 布局控件
+	void BeginGroup(const char* id) {
+		ImGui::BeginGroup();
+		ImGui::PushID(id);
+	}
+
+	void EndGroup() {
+		ImGui::PopID();
+		ImGui::EndGroup();
+	}
+
+	void SameLine(float offset_x, float spacing) {
+		ImGui::SameLine(offset_x, spacing);
+	}
+
+	// 高级控件
+	bool TreeNode(const char* label) {
+		return ImGui::TreeNode(label);
+	}
+
+	void TreePop() {
+		ImGui::TreePop();
+	}
+
+	void PlotLines(const char* label, const float* values, int values_count,
+		float scale_min, float scale_max, Vector2 size) {
+		ImGui::PlotLines(label, values, values_count, 0, NULL, scale_min, scale_max, ImVec2(size.x, size.y));
+	}
+
+	// 游戏引擎专用组件
+	void Vector3Control(const char* label, Vector3& values, float resetValue) {
+		ImGui::PushID(label);
+		ImGui::Columns(2);
+		ImGui::SetColumnWidth(0, 100.0f);
+		ImGui::Text("%s", label);
+		ImGui::NextColumn();
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		float totalWidth = ImGui::CalcItemWidth();
+		float itemWidth = (totalWidth - style.ItemSpacing.x * 2) / 3.0f;
+		float buttonSize = ImGui::GetFontSize() + style.FramePadding.y * 2.0f;
+
+		ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2{ 0, 5 });
+
+		// X
+		ImGui::PushItemWidth(itemWidth);
+		if (ImGui::Button("X", ImVec2{ buttonSize, buttonSize })) values.x = resetValue;
+		ImGui::SameLine();
+		ImGui::DragFloat("##X", &values.x, 0.1f);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		// Y
+		ImGui::PushItemWidth(itemWidth);
+		if (ImGui::Button("Y", ImVec2{ buttonSize, buttonSize })) values.y = resetValue;
+		ImGui::SameLine();
+		ImGui::DragFloat("##Y", &values.y, 0.1f);
+		ImGui::PopItemWidth();
+		ImGui::SameLine();
+
+		// Z
+		ImGui::PushItemWidth(itemWidth);
+		if (ImGui::Button("Z", ImVec2{ buttonSize, buttonSize })) values.z = resetValue;
+		ImGui::SameLine();
+		ImGui::DragFloat("##Z", &values.z, 0.1f);
+		ImGui::PopItemWidth();
+
+		ImGui::PopStyleVar();
+		ImGui::Columns(1);
+		ImGui::PopID();
+	}
+
+	void TexturePreview(Texture2D texture, Vector2 size) {
+		rlImGuiImageSize(&texture, size.x, size.y);
+	}
+
+	void FrameRateOverlay() {
+		const float PAD = 10.0f;
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImVec2 work_pos = viewport->WorkPos;
+		ImVec2 work_size = viewport->WorkSize;
+		ImVec2 window_pos, window_pos_pivot;
+		window_pos.x = work_pos.x + work_size.x - PAD;
+		window_pos.y = work_pos.y + PAD;
+		window_pos_pivot.x = 1.0f;
+		window_pos_pivot.y = 0.0f;
+
+		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+		ImGui::SetNextWindowBgAlpha(0.35f);
+
+		if (ImGui::Begin("FPS Overlay", NULL,
+			ImGuiWindowFlags_NoMove |
+			ImGuiWindowFlags_NoDecoration |
+			ImGuiWindowFlags_AlwaysAutoResize |
+			ImGuiWindowFlags_NoSavedSettings |
+			ImGuiWindowFlags_NoFocusOnAppearing |
+			ImGuiWindowFlags_NoNav))
+		{
+			ImGui::Text("FPS: %.1f", GetFPS());
+			ImGui::Text("Frame: %.3f ms", GetFrameTime() * 1000.0f);
+			ImGui::Separator();
+			ImGui::Text("Renderer: width=%.1f,height=%.1f,name:%s",  GetRenderWidth(),GetRenderHeight(),GetMonitorName(GetCurrentMonitor()));
+		}
+		ImGui::End();
+	}
+
+	// 样式系统
+	void PushStyleColor(Color idx, Color color) {
+		ImColor i = ImColor((int)color.r, (int)color.g, (int)color.b, (int)color.a);
+		ImGui::PushStyleColor(i, ImVec4(
+			color.r / 255.0f,
+			color.g / 255.0f,
+			color.b / 255.0f,
+			color.a / 255.0f
+		));
+	}
+
+	void PopStyleColor(int count) {
+		ImGui::PopStyleColor(count);
+	}
+
+	void LoadTheme(const char* name) {
+		if (strcmp(name, "dark") == 0) {
+			ImGui::StyleColorsDark();
+		}
+		else if (strcmp(name, "light") == 0) {
+			ImGui::StyleColorsLight();
+		}
+		else if (strcmp(name, "classic") == 0) {
+			ImGui::StyleColorsClassic();
+		}
+		else {
+			ImGui::GetStyle() = defaultStyle;
+		}
+	}
+
+	// 自定义绘制
+	void DrawLine(const Vector2& start, const Vector2& end, Color color, float thickness) {
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		drawList->AddLine(
+			ImVec2(start.x, start.y),
+			ImVec2(end.x, end.y),
+			IM_COL32(color.r, color.g, color.b, color.a),
+			thickness
+		);
+	}
+
+	void DrawRect(const Rectangle& rect, Color color, float rounding) {
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		drawList->AddRect(
+			ImVec2(rect.x, rect.y),
+			ImVec2(rect.x + rect.width, rect.y + rect.height),
+			IM_COL32(color.r, color.g, color.b, color.a),
+			rounding
+		);
+	}
+
+	// 扩展系统
+	void RegisterWidget(const char* name, CustomWidgetFunc func) {
+		customWidgets[name] = func;
+	}
+
+	void ShowWidget(const char* name) {
+		if (customWidgets.find(name) != customWidgets.end()) {
+			customWidgets[name]();
+		}
 	}
 }

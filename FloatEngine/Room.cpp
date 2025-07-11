@@ -1,4 +1,13 @@
 #include "Room.h"
+class InstanceException : public std::exception {
+protected:
+	std::string context;
+public:
+	InstanceException(const std::string& ctx) : context(ctx) {}
+	const char* what() const noexcept override {
+		return context.c_str();
+	}
+};
 void EventInstance(Object* inst, const char* event) {
 	using namespace WinFuns;
 	void* hWnd = GetWindowHandle();
@@ -9,7 +18,7 @@ void EventInstance(Object* inst, const char* event) {
 	if (inst == (void*)(0)) return;
 	try {
 		if (inst->_ins_id==-1) {
-			throw std::exception("instance id error");
+			throw InstanceException("instance id error");
 		}
 		if (TextIsEqual(event, "onEnter")) {
 			inst->onEnter();
@@ -43,14 +52,16 @@ void EventInstance(Object* inst, const char* event) {
 			MessageBox(hWnd, TextFormat("Event %s Is Error", event), "Error", 0);
 		}
 	}
-	catch (std::exception& e) {
+	catch (InstanceException& e) {
 		std::string name = "Error";
 		int pro = -1;
 		if (inst) {
 			name = inst->getObjName();
 			pro = inst->getObjPro();
 		}
-		DEBUG_LOG(LOG_FATAL, TextFormat("实例运行错误:%s  ,  object name = %s   , pro = %d", e.what(),name.c_str(), pro));
+		auto t = TextFormat("实例运行错误:%s  ,  object name = %s   , pro = %d", e.what(), name.c_str(), pro);
+		DEBUG_LOG(LOG_FATAL, t);
+		MessageBox(hWnd, t, "Fatal Error!", 0);
 	}
 }
 

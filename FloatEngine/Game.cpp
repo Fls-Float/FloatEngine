@@ -3,7 +3,6 @@
 #include <string>
 #include "F_Console.h"
 
-
 Game::Game()
 {
 	_fps = _w = _h = 0;
@@ -16,6 +15,81 @@ Game::Game()
 	_load_icon_pre = 0;
 	_icon_path.capacity = 20;
 }
+
+void ApplyGuiStyle() {
+	ImGuiStyle& style = ImGui::GetStyle();
+	ImVec4* colors = style.Colors;
+	colors[ImGuiCol_Text] = ImVec4(0.95f, 0.96f, 0.98f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.36f, 0.42f, 0.47f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.11f, 0.13f, 0.15f, 1.00f);
+	colors[ImGuiCol_ChildBg] = ImVec4(0.15f, 0.17f, 0.19f, 1.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.08f, 0.09f, 0.10f, 0.95f);
+	colors[ImGuiCol_Border] = ImVec4(0.08f, 0.10f, 0.12f, 1.00f);
+	colors[ImGuiCol_FrameBg] = ImVec4(0.20f, 0.22f, 0.24f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.25f, 0.27f, 0.29f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.30f, 0.32f, 0.34f, 1.00f);
+	colors[ImGuiCol_TitleBg] = ImVec4(0.09f, 0.10f, 0.12f, 1.00f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.13f, 0.14f, 0.16f, 1.00f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.15f, 0.17f, 0.19f, 1.00f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+	colors[ImGuiCol_CheckMark] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	colors[ImGuiCol_SliderGrab] = ImVec4(0.24f, 0.52f, 0.88f, 1.00f);
+	colors[ImGuiCol_SliderGrabActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	colors[ImGuiCol_Button] = ImVec4(0.20f, 0.22f, 0.24f, 1.00f);
+	colors[ImGuiCol_ButtonHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.40f);
+	colors[ImGuiCol_ButtonActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+	colors[ImGuiCol_Header] = ImVec4(0.26f, 0.59f, 0.98f, 0.31f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+	colors[ImGuiCol_HeaderActive] = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+	colors[ImGuiCol_Separator] = ImVec4(0.43f, 0.43f, 0.50f, 0.50f);
+	colors[ImGuiCol_SeparatorHovered] = ImVec4(0.10f, 0.40f, 0.75f, 0.78f);
+	colors[ImGuiCol_SeparatorActive] = ImVec4(0.10f, 0.40f, 0.75f, 1.00f);
+	colors[ImGuiCol_ResizeGrip] = ImVec4(0.26f, 0.59f, 0.98f, 0.25f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+	colors[ImGuiCol_ResizeGripActive] = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+	colors[ImGuiCol_Tab] = ImVec4(0.18f, 0.20f, 0.22f, 0.86f);
+	colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
+	colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.22f, 0.24f, 1.00f);
+	colors[ImGuiCol_DockingPreview] = ImVec4(0.26f, 0.59f, 0.98f, 0.70f);
+	// 样式参数调整
+	style.WindowPadding = ImVec2(8, 8);
+	style.FramePadding = ImVec2(5, 3);
+	style.CellPadding = ImVec2(6, 4);
+	style.ItemSpacing = ImVec2(6, 4);
+	style.ItemInnerSpacing = ImVec2(6, 4);
+	style.TouchExtraPadding = ImVec2(0, 0);
+	style.IndentSpacing = 21;
+	style.ScrollbarSize = 16;
+	style.GrabMinSize = 10;
+	style.WindowBorderSize = 1;
+	style.ChildBorderSize = 1;
+	style.PopupBorderSize = 1;
+	style.FrameBorderSize = 0;
+	style.TabBorderSize = 0;
+	style.WindowRounding = 3;
+	style.ChildRounding = 3;
+	style.FrameRounding = 2;
+	style.PopupRounding = 3;
+	style.ScrollbarRounding = 3;
+	style.GrabRounding = 2;
+	style.TabRounding = 2;
+}
+void LoadGuiFont(float dpi_scale = 1.0f) {
+	ImGuiIO& io = ImGui::GetIO();
+	const float base_font_size = 16.0f * dpi_scale;
+	ImFontConfig font_cfg;
+	font_cfg.OversampleH = 3;
+	font_cfg.OversampleV = 2;
+	font_cfg.RasterizerMultiply = 1.2f;
+	// 加载主字体
+	io.FontDefault = io.Fonts->AddFontFromFileTTF("C://windows//fonts//msyh.ttc",
+		base_font_size, &font_cfg,
+		io.Fonts->GetGlyphRangesChineseFull());
+	rlImGuiReloadFonts();
+}
 void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
 {
 	F_Debug::Init(debug);
@@ -23,7 +97,13 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
 	SetConfigFlags(flags);
 	Init_FConsole();
 	InitWindow(w, h, "Create With FloatEngine");
-	PollInputEvents();
+	BeginDrawing(); EndDrawing();
+	F_Gui::Init();
+	F_Debug::InitCommand();
+	LoadGuiFont();
+	BeginDrawing(); EndDrawing();
+
+	ApplyGuiStyle();
 	if (_load_icon) {
 		SetWindowIcons(_icons, _icon_number);
 	}
@@ -61,7 +141,7 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
 	InitAudioDevice();
 	_w = w; _h = h;
 	TextCopy(_title, title);
-	PollInputEvents();
+	BeginDrawing();EndDrawing();
 	DEBUG_LOG(LOG_INFO, "Game_Create_Window:窗口创建成功，当前状态:未激活(使用ShowWindow来手动激活)",0);
 }
 bool Game::CanStart()
@@ -78,7 +158,6 @@ void Game::Play(int fps)
 	start_time = std::chrono::high_resolution_clock::now();
 	double last_time = 0;
 	while (!WindowShouldClose()) {
-
 		auto end_time = std::chrono::high_resolution_clock::now();
 		now_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
 		frame_time = now_time - last_time;
@@ -96,7 +175,9 @@ void Game::Play(int fps)
 		BeginDrawing(); {
 			Room_Run_Now("onBeginCamera");
 			ClearBackground(background_col);
+			rlImGuiBegin();
 			Room_Run_Now("onRender");
+			rlImGuiEnd();
 			Room_Run_Now("onEndCamera");
 		}EndDrawing();
 		Room_Run_Now("onRenderNext");
@@ -109,6 +190,7 @@ void Game::Destroy()
 	Room* t = Room_Get_Now();
 	delete t;
 	delete _title;
+	F_Gui::Shutdown();
 	CloseAudioDevice();
 	CloseWindow();
 }

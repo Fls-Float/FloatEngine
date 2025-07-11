@@ -121,6 +121,9 @@
     <ClCompile Include="Sprite.cpp">
       <Filter>源文件\Control</Filter>
     </ClCompile>
+    <ClCompile Include="miniz.c">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FloatEngine.h">

@@ -154,6 +154,7 @@
     <ClCompile Include="F_Shader.cpp" />
     <ClCompile Include="F_Text.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="miniz.c" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Room.cpp" />
     <ClCompile Include="Sprite.cpp" />

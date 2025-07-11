@@ -63,7 +63,7 @@ namespace floatapi_font {
         int count;
         int *cps_chinese = LoadCommonCodepoints(count);
         int size;
-        unsigned char* data = LoadFileData("C:\\windows\\fonts\\msyh.ttc", &size);
+        unsigned char* data = LoadFileData("C:\\windows\\fonts\\simhei.ttf", &size);
         Font temp = LoadFontRaylibFromData(data,size, ".ttc", 30, cps_chinese, count);
         MemFree(cps_chinese);
         return temp;

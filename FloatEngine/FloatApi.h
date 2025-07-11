@@ -38,6 +38,10 @@
 #include <chrono>
 #include "lua/include/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
+#include "gui/include/imgui.h"
+#include "gui/include/rlImGui.h"
+#include <unordered_set>
+#include <fstream>
  /**
   * @class F_Debug
   * @ingroup FloatApi
@@ -52,6 +56,43 @@
   */
 class F_Debug {
     static int m_debug;
+    static bool m_showConsole;
+
+    struct Log_Info{
+        std::string log;
+        int lv;
+    };
+    // 控制台状态
+    static std::vector<Log_Info> m_logs;
+    static std::vector<std::string> m_commandHistory;
+    static char m_inputBuffer[256];
+    static int m_historyPos;
+    static bool m_scrollToBottom;
+    
+    // 命令系统
+    struct DebugCommand {
+        std::string name;
+        std::string description;
+        std::function<void(const std::vector<std::string>&)> action;
+    };
+    static std::vector<DebugCommand> m_commands;
+    static std::unordered_map<std::string, std::string> m_commandAliases; // 命令别名
+public:
+    // 日志过滤系统
+    static std::unordered_set<std::string> m_logFilters;
+    static bool m_showFilteredLogsOnly;
+
+    // 变量监控系统
+    struct WatchedVariable {
+        std::string name;
+        std::string expression; // 原始表达式
+        std::function<std::string()> getter;
+        bool showInConsole;
+        std::string lastValue;
+    };
+    static std::vector<WatchedVariable> m_watchedVariables;
+    static std::unordered_map<std::string, std::function<std::string(const std::string&)>> m_expressionHandlers;
+
 public:
     /**
      * @brief 初始化调试功能
@@ -75,7 +116,166 @@ public:
      */
     static bool IsOpen();
 
+    /**
+     * @brief 启用imgui的console窗口
+    */
+    static void ShowDebugConsole();
+
+    /**
+     * @brief 添加日志消息
+     * @param message 日志内容
+     * @param level 日志级别 (0=none,1=info, 2=warn, 3=error)
+     */
+    static void Log(const std::string& message, int level = 0);
+    /**
+     * @brief 清空日志消息
+     */
+    static void ClearLog();
+    /**
+     * @brief 注册调试命令
+     * @param name 命令名称
+     * @param description 命令描述
+     * @param action 命令执行函数
+     */
+    static void RegisterCommand(const std::string& name, const std::string& description,
+        std::function<void(const std::vector<std::string>&)> action);
+    /**
+    * @brief 获取所有调试命令
+    */
+    static std::vector<DebugCommand> GetCommands();
+
+    /**
+    * @brief 获取指定调试命令
+    */
+    static DebugCommand GetCommand(const std::string& name);
+    /**
+     * @brief 执行调试命令
+     * @param command 完整命令字符串
+     */
+    static void ExecuteCommand(const std::string& command);
+    
+    /**
+    * @brief 初始化命令
+    */
+    static void InitCommand();
+
+    /**
+    * @brief 输入框回调函数 (处理自动补全和历史记录)
+    * @param data ImGui回调数据
+    */
+    static int TextEditCallback(ImGuiInputTextCallbackData* data);
+
+    /**
+    * @brief 命令分词
+    * @param input 输入命令
+    * @param tokens 输出分词结果
+    */
+
+    static void TokenizeCommand(const std::string& input, std::vector<std::string>& tokens);
+
+    /**
+     * @brief 添加日志过滤关键词
+     * @param keyword 过滤关键词（大小写敏感）
+     */
+    static void AddLogFilter(const std::string& keyword);
+
+    /**
+     * @brief 移除日志过滤关键词
+     * @param keyword 要移除的关键词
+     */
+    static void RemoveLogFilter(const std::string& keyword);
+
+    /**
+     * @brief 判断日志是否应该显示
+     * @param log 日志内容
+     * @return 如果日志匹配任何过滤关键词则返回true
+     */
+    static bool ShouldShowLog(const std::string& log);
+    
+
+    /**
+     * @brief 保存日志到文件
+     * @param filename 文件名
+     * @param filtered 是否只保存过滤后的日志
+     */
+    static void SaveLogsToFile(const std::string& filename, bool filtered = false);
+
+    /**
+     * @brief 注册命令别名
+     * @param alias 别名
+     * @param command 实际执行的命令
+     */
+    static void RegisterAlias(const std::string& alias, const std::string& command);
+
+    /**
+     * @brief 注册变量监控
+     * @param name 变量名称（显示用）
+     * @param getter 获取变量值的函数
+     * @param showInConsole 是否在控制台显示
+     */
+    static void WatchVariable(const std::string& name,
+        std::function<std::string()> getter,
+        bool showInConsole = true);
+    /**
+     * @brief 注册变量监控
+     * @param name 变量名称（唯一标识）
+     * @param expression 表达式或变量名
+     * @param showInConsole 是否在控制台显示
+     */
+    static void WatchVariable(const std::string& name,
+        const std::string& expression,
+        bool showInConsole = true);
+    /**
+     * @brief 移除变量监控
+     * @param name 变量名称
+     */
+    static void UnwatchVariable(const std::string& name);
+    /**
+    * @brief 设置变量在控制台的显示状态
+    * @param name 变量名称
+    * @param show 是否显示
+    */
+    static void SetVariableVisibility(const std::string& name, bool show);
+    /**
+     * @brief 更新所有监控变量（应在每帧调用）
+     */
+    static void UpdateWatchedVariables();
+    /**
+    * @brief 注册表达式处理函数
+    * @param prefix 表达式前缀
+    * @param handler 处理函数
+    * @code
+    *  RegisterExpressionHandler("player.", [](const std::vector<std::string>& tokens) {
+        // 示例：player.health, player.position.x
+        if (tokens.empty()) return std::string("Invalid player expression");
+        
+        if (tokens[0] == "health") {
+            return std::to_string(GetPlayerHealth());
+        }
+        else if (tokens[0] == "position") {
+            Vector3 pos = GetPlayerPosition();
+            if (tokens.size() > 1) {
+                if (tokens[1] == "x") return std::to_string(pos.x);
+                if (tokens[1] == "y") return std::to_string(pos.y);
+                if (tokens[1] == "z") return std::to_string(pos.z);
+            }
+            return "(" + std::to_string(pos.x) + ", " + std::to_string(pos.y) + ", " + std::to_string(pos.z) + ")";
+        }
+        return "Unknown player property: " + tokens[0];
+    });
+    */
+    static void RegisterExpressionHandler(const std::string& prefix,
+        std::function<std::string(const std::vector<std::string>&)> handler);
+
+    /**
+     * @brief 解析并执行表达式
+     * @param expression 表达式字符串
+     * @return 表达式结果
+     */
+    static std::string EvaluateExpression(const std::string& expression);
+
 };
+
 
 /**
  * @brief 打印调试日志
@@ -84,7 +284,7 @@ public:
  * @param english 是否使用英文
  * @param auto_enter 是否自动换行
  */
-void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1);
+void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1,bool with_imgui_console = 1);
 
 #define repeat(n) for(int __r_i__=0;__r_i__<int(n);__r_i__++)
 typedef float Float;
@@ -900,6 +1100,7 @@ void Audio_Music_Update(F_Audio audio);
  * @note 使用示例：
  * @code
  * std::string filename = F_File::Get_Open_File_Name("*.txt");
+ * //filter = Text Files (*.txt)\0*.txt\0   
  * @endcode
  */
 class F_File {
@@ -907,27 +1108,63 @@ class F_File {
     static bool loaded;
 public:
     /**
-     * @brief 选择文件
+     * @brief 选择打开文件
      * @param strFilter 文件过滤器
      * @return 文件名（失败返回空字符串）
      */
     static std::string Get_Open_File_Name(std::string strFilter);
 
     /**
-     * @brief 选择文件
+     * @brief 选择打开文件
      * @param strFilter 文件过滤器
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
     static std::string Get_Open_File_Name(std::string strFilter, unsigned int flag);
+    /**
+     * @brief 选择打开文件
+     * @param strFilter 文件过滤器
+     * @param flag 标志
+     * @return 文件名（失败返回空字符串）
+     */
+    static std::wstring Get_Open_File_NameW(std::wstring strFilter);
 
     /**
-     * @brief 选择文件
+     * @brief 选择打开文件
      * @param strFilter 文件过滤器
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
     static std::wstring Get_Open_File_NameW(std::wstring strFilter, unsigned int flag);
+    /**
+    * @brief 保存文件
+    * @param strFilter 文件过滤器
+    * @return 文件名（失败返回空字符串）
+    */
+    static std::string Get_Save_File_Name(std::string strFilter);
+
+    /**
+     * @brief 选择保存文件
+     * @param strFilter 文件过滤器
+     * @param flag 标志
+     * @return 文件名（失败返回空字符串）
+     */
+    static std::string Get_Save_File_Name(std::string strFilter, unsigned int flag);
+    /**
+     * @brief 选择保存文件
+     * @param strFilter 文件过滤器
+     * @param flag 标志
+     * @return 文件名（失败返回空字符串）
+     */
+    static std::wstring Get_Save_File_NameW(std::wstring strFilter);
+
+    /**
+     * @brief 选择保存文件
+     * @param strFilter 文件过滤器
+     * @param flag 标志
+     * @return 文件名（失败返回空字符串）
+     */
+    static std::wstring Get_Save_File_NameW(std::wstring strFilter, unsigned int flag);
 
     /**
      * @brief 刷新拖放文件列表
@@ -1061,7 +1298,7 @@ namespace F_Json {
          * @brief 将JSON值序列化为字符串
          * @return 符合JSON规范的字符串表示
          */
-        virtual std::string serialize() const = 0;
+        virtual std::string serialize(bool no_name = 0) const = 0;
     };
 
     /**
@@ -1078,7 +1315,7 @@ namespace F_Json {
         /**
          * @brief 序列化为"null"字符串
          */
-        std::string serialize() const override;
+        std::string serialize(bool no_name = 0) const override;
     };
 
     /**
@@ -1095,7 +1332,7 @@ namespace F_Json {
         explicit JsonBoolean(bool v);
 
         JsonType type() const override;
-        std::string serialize() const override;
+        std::string serialize(bool no_name = 0) const override;
 
         /**
          * @brief 获取存储的布尔值
@@ -1145,7 +1382,7 @@ namespace F_Json {
          * - 自动选择最紧凑的表示形式
          * - 不添加任何数字分隔符
          */
-        std::string serialize() const override;
+        std::string serialize(bool no_name = 0) const override;
 
         /**
          * @brief 获取存储的原始数值
@@ -1193,7 +1430,7 @@ namespace F_Json {
          * - 存储值：Hello "World"
          * - 序列化结果："Hello \"World\""
          */
-        std::string serialize() const override;
+        std::string serialize(bool no_name = 0) const override;
 
         /**
          * @brief 获取原始字符串值（未转义的内部表示）
@@ -1214,7 +1451,7 @@ namespace F_Json {
         std::vector<std::shared_ptr<JsonValue>> vals;
     public:
         JsonType type() const override;
-        std::string serialize() const override;
+        std::string serialize(bool no_name = 0) const override;
 
         /**
          * @brief 向数组添加元素
@@ -1262,7 +1499,7 @@ namespace F_Json {
          * - 值使用各自的serialize()方法
          * - 空对象序列化为"{}"
          */
-        std::string serialize() const override;
+        std::string serialize(bool no_name = 0) const override;
 
         /**
          * @brief 设置/更新键值对
@@ -1308,7 +1545,7 @@ namespace F_Json {
     class Json {
         std::shared_ptr<JsonValue> val;
         explicit Json(std::shared_ptr<JsonValue> v);
-
+        bool no_name = 0;
     public:
         /**
          * @brief 默认构造为Null类型
@@ -1353,6 +1590,14 @@ namespace F_Json {
          *          需要先确认类型正确再调用
          */
         double asNumber() const;
+        /**
+         * @brief 标记为没有名字 
+        */
+        void setNoName();
+        /**
+         * @brief 标记为有名字
+        */
+        void setHasName();
 
         /**
          * @brief 将当前JSON值转换为字符串
@@ -1412,23 +1657,23 @@ namespace F_Json {
          * @warning 键字符串不会自动转义，需确保符合JSON键格式要求
          */
         Json& set(const std::string& key, const Json& v);
-
+       
         /**
-         * @brief 获取对象中指定键对应的值
-         * @param key 要查找的键（大小写敏感）
-         * @return 存在该键则返回对应值的Json对象，否则返回Null类型的Json对象
-         *
-         * @note 使用模式建议：
-         * \code
-         * if (obj.has("key")) {
-         *     Json value = obj.get("key");
-         *     // 安全使用value
-         * }
-         * \endcode
-         *
-         * @note 返回值的生命周期由当前Json对象管理
-         * @see has() 方法用于检查键是否存在
-         */
+        * @brief 获取对象中指定键对应的值
+        * @param key 要查找的键（大小写敏感）
+        * @return 存在该键则返回对应值的Json对象，否则返回Null类型的Json对象
+        *
+        * @note 使用模式建议：
+        * \code
+        * if (obj.has("key")) {
+        *     Json value = obj.get("key");
+        *     // 安全使用value
+        * }
+        * \endcode
+        *
+        * @note 返回值的生命周期由当前Json对象管理
+        * @see has() 方法用于检查键是否存在
+        */
         Json get(const std::string& key) const;
         /**
          * @brief 获取对象中指定键对应的值
@@ -1447,14 +1692,16 @@ namespace F_Json {
          * @see has() 方法用于检查键是否存在
          */
         Json operator[](const std::string& key) const;
-
         /**
          * @brief 序列化为JSON字符串
          * @return 符合JSON规范的字符串
          * @throw 序列化失败时可能抛出异常
          */
         std::string serialize() const;
-
+        /**
+		 * @brief 序列化为JSON字符串并格式化
+        */
+		std::string serialize_with_format() const;
         /**
          * @brief 解析JSON字符串
          * @param s 要解析的JSON字符串
@@ -1483,8 +1730,30 @@ namespace F_Json {
          * @throw std::runtime_error 当前值不是Array或Object时抛出
          */
         size_t size() const;
+        
+        /*
+         * @brief 直接赋值数字
+        */
+        Json& operator=(double n);
+		/*
+		 * @brief 直接赋值字符串
+		*/
+		Json& operator=(const char* str);
+        /*
+         * @brief 直接赋值字符串
+        */
+        Json& operator=(const std::string& s);
+		/*
+		 * @brief 直接赋值布尔值
+		*/
+		Json& operator=(bool b);
+
+		/*
+		 * @brief 直接赋值Json
+		*/
+        Json& operator=(const Json& j);
     };
-}
+};
 
 /**
  * @class F_Lua
@@ -1497,14 +1766,24 @@ class F_Lua {
     template <typename T>
     class ClassRegistrar {
     public:
-        ClassRegistrar(lua_State* L, const std::string& name)
-            : class_(luabridge::getGlobalNamespace(L).beginClass<T>(name.c_str())) {
+        ClassRegistrar(lua_State* L, const std::string& name,bool is_parent = 0){
+            if(!is_parent)
+                class_ = luabridge::getGlobalNamespace(L).beginClass<T>(name.c_str());
+            else
+                class_ = luabridge::getGlobalNamespace(L).deriveClass<T>(name.c_str());
         }
-
+        
         ~ClassRegistrar() {
             class_.endClass();
         }
-
+        template <typename T>
+        ClassRegistrar<T>& enableSharedPtr() {
+            static_assert(std::is_base_of_v<std::enable_shared_from_this<T>, T>,
+                "T must inherit enable_shared_from_this");
+            class_.addFunction("new", +[]() { return std::make_shared<T>(); });
+            class_.addFunction("__gc", +[](T* obj) { delete obj; }); // 显式释放
+            return *this;
+        }
         /// 添加构造函数
         template <typename... Args>
         ClassRegistrar& addConstructor() {
@@ -1518,7 +1797,12 @@ class F_Lua {
             class_.addFunction(name.c_str(), func);
             return *this;
         }
-
+        /// 添加析构
+        template <typename T>
+        ClassRegistrar<T>& addDestructor() {
+            class_.addFunction("__gc", +[](T* obj) { obj->~T(); });
+            return *this;
+        }
         /// 添加属性
         template <typename Prop>
         ClassRegistrar& addProperty(const std::string& name, Prop prop) {
@@ -1536,6 +1820,7 @@ class F_Lua {
     private:
         luabridge::Namespace::Class<T> class_;
     };
+   
 public:
     /**
      * @brief 构造函数，初始化Lua虚拟机
@@ -1584,28 +1869,14 @@ public:
     }
 
     /**
-     * @brief 注册C++类到Lua环境
-     * @tparam T 要注册的类类型
-     * @param name 在Lua中使用的类名
-     * @note 需要后续通过addFunction/addProperty添加成员
-     * @see LuaBridge文档
-     */
-    template <typename T>
-    void RegisterClass(const std::string& name) {
-        luabridge::getGlobalNamespace(L)
-            .beginClass<T>(name.c_str())
-            .addConstructor<void(*)()>()
-            .endClass();
-    }
-    /**
      * @brief 注册C++类到Lua环境，返回类注册器用于链式调用
      * @tparam T 要注册的类类型
      * @param name 在Lua中使用的类名
      * @return ClassRegistrar<T> 用于链式添加成员的对象
      */
     template <typename T>
-    ClassRegistrar<T> RegisterClassEx(const std::string& name) {
-        return ClassRegistrar<T>(L, name);
+    ClassRegistrar<T> RegisterClass(const std::string& name,bool is_parent) {
+        return ClassRegistrar<T>(L, name,is_parent);
     }
     /**
      * @brief 获取Lua全局变量
@@ -1618,7 +1889,7 @@ public:
     T GetGlobal(const std::string& name) {
         return luabridge::getGlobal(L, name.c_str());
     }
-
+    
     /**
      * @brief 调用无返回值的Lua函数
      * @tparam Args 参数类型包
@@ -1667,4 +1938,54 @@ private:
      * @note 自动输出错误信息到stderr，并清理堆栈
      */
     void HandleError(int status);
+};
+
+namespace F_Gui {
+    // 初始化与状态管理
+    void Init();
+    void Shutdown();
+    void BeginFrame();
+    void EndFrame();
+
+    // 窗口管理
+    void BeginWindow(const char* title, bool* p_open = nullptr, int flags = 0);
+    void EndWindow();
+
+    // 基础控件
+    bool Button(const char* label, const Vector2& size = { 0,0 });
+    void Text(const char* fmt, ...);
+    bool Checkbox(const char* label, bool* v);
+    bool SliderFloat(const char* label, float* v, float v_min, float v_max);
+    bool ColorEdit3(const char* label, float col[3]);
+
+    // 布局控件
+    void BeginGroup(const char* id);
+    void EndGroup();
+    void SameLine(float offset_x = 0.0f, float spacing = -1.0f);
+
+    // 高级控件
+    bool TreeNode(const char* label);
+    void TreePop();
+    void PlotLines(const char* label, const float* values, int values_count,
+        float scale_min = FLT_MAX, float scale_max = FLT_MAX,
+        Vector2 size = { 0,0 });
+
+    // 游戏引擎专用组件
+    void Vector3Control(const char* label, Vector3& value, float resetValue = 0.0f);
+    void TexturePreview(Texture2D texture, Vector2 size = { 100,100 });
+    void FrameRateOverlay();
+
+    // 样式系统
+    void PushStyleColor(Color idx, Color color);
+    void PopStyleColor(int count = 1);
+    void LoadTheme(const char* name); // "dark", "light", "classic"
+
+    // 自定义绘制
+    void DrawLine(const Vector2& start, const Vector2& end, Color color, float thickness = 1.0f);
+    void DrawRect(const Rectangle& rect, Color color, float rounding = 0.0f);
+
+    // 扩展系统
+    using CustomWidgetFunc = std::function<void()>;
+    void RegisterWidget(const char* name, CustomWidgetFunc func);
+    void ShowWidget(const char* name);
 };
