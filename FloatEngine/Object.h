@@ -37,6 +37,9 @@ class Object {
     int __object_alarm_clock_timer_; ///< 计时器
 
 protected:
+    bool object_mode_no_destroy_sprite;
+
+
     static const int ALARM_EVENT_COUNT = 11; ///< 计时器事件数量
 
     /**

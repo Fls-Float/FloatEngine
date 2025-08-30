@@ -137,8 +137,8 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
 		}
 	}
 	//≥ı ºªØ
-	floatapi_font::InitDefaultFont();
 	InitAudioDevice();
+	floatapi_font::InitDefaultFont();
 	_w = w; _h = h;
 	TextCopy(_title, title);
 	BeginDrawing();EndDrawing();
@@ -173,12 +173,12 @@ void Game::Play(int fps)
 		//draw
 		Room_Run_Now("onRenderBefore");
 		BeginDrawing(); {
+			rlImGuiBegin();
 			Room_Run_Now("onBeginCamera");
 			ClearBackground(background_col);
-			rlImGuiBegin();
 			Room_Run_Now("onRender");
-			rlImGuiEnd();
 			Room_Run_Now("onEndCamera");
+			rlImGuiEnd();
 		}EndDrawing();
 		Room_Run_Now("onRenderNext");
 	}

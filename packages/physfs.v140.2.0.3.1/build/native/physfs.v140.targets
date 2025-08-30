@@ -1,0 +1,92 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" InitialTargets="physfs_v140_init">
+  <PropertyGroup Label="Debug and static and RuntimeLibraryNull" Condition="( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 ) And '$(Linkage-physfs_v140.ToLower())' == 'static' And ('$(RuntimeLibrary)' == '')">
+    <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+  </PropertyGroup>
+  <PropertyGroup Label="Release and static and RuntimeLibraryNull" Condition="( $(Configuration.ToLower().IndexOf('debug')) == -1 ) And '$(Linkage-physfs_v140.ToLower())' == 'static' And ('$(RuntimeLibrary)' == '')">
+    <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+  </PropertyGroup>
+  <PropertyGroup Label="Default initializers for properties">
+    <Linkage-physfs_v140 Condition="'$(Linkage-physfs_v140)' == ''">dynamic</Linkage-physfs_v140>
+    <CallingConvention-physfs_v140 Condition="'$(CallingConvention-physfs_v140)' == ''">cdecl</CallingConvention-physfs_v140>
+  </PropertyGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)\default-propertiesui.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)\physfs.v140-propertiesui-1c77d4a4-34fe-42ae-a2e1-2e50c723f264.xml" />
+  </ItemGroup>
+  <ItemDefinitionGroup Label="static" Condition="'$(Linkage-physfs_v140.ToLower())' == 'static'">
+    <ClCompile>
+      <RuntimeLibrary>$(RuntimeLibrary)</RuntimeLibrary>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and Release" Condition="'$(Platform.ToLower())' == 'win32' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\Release\physfs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Win32 and Debug" Condition="'$(Platform.ToLower())' == 'win32' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/Win32\Debug\physfs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and Release" Condition="'$(Platform.ToLower())' == 'x64' And ( $(Configuration.ToLower().IndexOf('debug')) == -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\Release\physfs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="x64 and Debug" Condition="'$(Platform.ToLower())' == 'x64' And ( $(Configuration.ToLower().IndexOf('debug')) &gt; -1 )">
+    <Link>
+      <AdditionalDependencies>$(MSBuildThisFileDirectory)../..//build/native/lib/x64\Debug\physfs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../..//build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ResourceCompile>
+      <AdditionalIncludeDirectories>$(MSBuildThisFileDirectory)../..//build/native/include/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <UsingTask TaskName="physfs_v140_Contains" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll" TaskFactory="CodeTaskFactory">
+    <ParameterGroup>
+      <Text Output="false" ParameterType="System.String" />
+      <Library Output="false" Required="true" ParameterType="System.String" />
+      <Value Output="false" Required="true" ParameterType="System.String" />
+      <Result Output="true" ParameterType="System.String" />
+    </ParameterGroup>
+    <Task>
+      <Code>Result = ((Text ?? "").Split(';').Contains(Library) ) ? Value : String.Empty;</Code>
+    </Task>
+  </UsingTask>
+  <Target Name="physfs_v140_init">
+    <physfs_v140_Contains Text="Linkage-dynamic" Library="physfs_v140" Value="dynamic" Condition="'$(Linkage-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="Linkage-static" Library="physfs_v140" Value="static" Condition="'$(Linkage-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="Linkage-ltcg" Library="physfs_v140" Value="ltcg" Condition="'$(Linkage-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="Linkage-sxs" Library="physfs_v140" Value="sxs" Condition="'$(Linkage-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="Linkage-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="CallingConvention-cdecl" Library="physfs_v140" Value="cdecl" Condition="'$(CallingConvention-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="CallingConvention-stdcall" Library="physfs_v140" Value="stdcall" Condition="'$(CallingConvention-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="CallingConvention-fastcall" Library="physfs_v140" Value="fastcall" Condition="'$(CallingConvention-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="CallingConvention-thiscall" Library="physfs_v140" Value="thiscall" Condition="'$(CallingConvention-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-physfs_v140" />
+    </physfs_v140_Contains>
+    <physfs_v140_Contains Text="CallingConvention-clrcall" Library="physfs_v140" Value="clrcall" Condition="'$(CallingConvention-physfs_v140)'==''">
+      <Output TaskParameter="Result" PropertyName="CallingConvention-physfs_v140" />
+    </physfs_v140_Contains>
+  </Target>
+</Project>

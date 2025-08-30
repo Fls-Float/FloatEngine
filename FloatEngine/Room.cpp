@@ -171,21 +171,21 @@ std::string Room::GetName(int id)
 	}
 	return "NONE";
 }
-int Room::Delete(int index) {
+int Room::Delete(int index, bool delete_object) {
 	if (index >= 0 && index < objects.size()) {
 		objects[index]->onDestroy();
-		delete objects[index]; // 增加对象释放
+		if(delete_object )delete objects[index]; // 增加对象释放
 		objects.erase(objects.begin() + index);
 		return 1;
 	}
 	DEBUG_LOG(LOG_ERROR, "Room:在Delete(int index)函数中index不在合法范围内", 0);
 	return 0;
 }
-int Room::DeleteID(int id) {
+int Room::DeleteID(int id, bool delete_object ) {
 	int index = Find(id);
 	if (index != -1) {
 		objects[index]->onDestroy();
-		delete objects[index]; 
+		if (delete_object)delete objects[index];
 		objects.erase(objects.begin() + index);
 		return 1;
 	}
@@ -315,9 +315,9 @@ int Destroy_Instance(const char* name, int num)
 	return room->Delete(name, num);
 }
 
-int Destroy_Instance(int id)
+int Destroy_Instance(int id, bool delete_object )
 {
-	return Room_Get_Now()->DeleteID(id);
+	return Room_Get_Now()->DeleteID(id,  delete_object );
 }
 
 bool IsExist_Instance(const char* name)

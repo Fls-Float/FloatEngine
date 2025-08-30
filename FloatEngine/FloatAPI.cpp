@@ -1327,8 +1327,11 @@ void F_Render::Draw_Text_Ex(F_Font font, const char* text, float x, float y, flo
 }
 void F_Render::Draw_Text(const char* text, float x, float y, float o_x, float o_y, float rot, float size, Color col, float alpha)
 {
-	extern Font f_default_font;
-	Draw_Text_Ex(f_default_font, text, x, y, o_x, o_y, rot, 0, size, col, alpha);
+	extern F_Font f_default_font;
+	if (f_default_font.ContainsText(text)) {
+		f_default_font.CheckAndAddCodepoints(text);
+	}
+	Draw_Text_Ex(f_default_font.to_raylib_font(), text, x, y, o_x, o_y, rot, 0, size, col, alpha);
 }
 void Load_FCamera( float w, float h, F_Camera* camera)
 {
@@ -2584,4 +2587,277 @@ namespace F_Gui {
 			customWidgets[name]();
 		}
 	}
+}
+
+F_NetWork::F_NetWork() {
+}
+
+F_NetWork::~F_NetWork() {
+	Shutdown();
+}
+
+bool F_NetWork::Initialize() {
+	ClearError();
+	int a = enet_initialize();
+	if(a != 0) {
+		DEBUG_LOG(LOG_ERROR,"ENet initialization failed!");
+		SetError(NetErrorCode::INIT_FAILED, a,
+			"ENet初始化失败",
+			"请检查网络库依赖是否正确安装");
+		return false;
+	}
+	return true;
+}
+std::string F_NetWork::GetEnetErrorString(int errorCode) {
+	switch (errorCode) {
+	case 0: return "成功";
+	case 1: return "不兼容的协议版本";
+	case 2: return "内存不足";
+	case 3: return "无效参数";
+	case 4: return "对等连接数已达上限";
+	case 5: return "连接失败";
+	case 6: return "已经连接";
+	case 7: return "未连接";
+	case 8: return "连接丢失";
+	case 9: return "超时";
+	case 10: return "数据包太大";
+	case 11: return "在错误的线程调用";
+	default: return "未知错误";
+	}
+}
+
+// 辅助函数：设置错误信息
+void F_NetWork::SetError(NetErrorCode code, int enetError,
+	const std::string& message,
+	const std::string& details = "") {
+	lastError.code = code;
+	lastError.enetError = enetError;
+	lastError.message = message;
+	lastError.details = details;
+
+	// 输出到日志
+	std::stringstream ss;
+	ss << "网络错误 [" << static_cast<int>(code) << "]: "
+		<< message << " (ENet: " << enetError << " - "
+		<< GetEnetErrorString(enetError) << ")";
+	if (!details.empty()) {
+		ss << "\n详情: " << details;
+	}
+
+	TraceLog(LOG_ERROR, "%s", ss.str().c_str());
+}
+bool F_NetWork::CreateServer(int port, int maxClients) {
+	ClearError();
+	if (host) Shutdown(); // 关闭现有连接
+
+	ENetAddress address;
+	address.host = ENET_HOST_ANY;
+	address.port = port;
+	
+	host = enet_host_create(&address, maxClients, 2, 0, 0);
+	if (!host) {
+		std::cerr << "Failed to create server on port " << port << std::endl;
+		int enetErr = WinFuns::WSAGetLastError();
+		SetError(NetErrorCode::SERVER_CREATE_FAILED, enetErr,
+			"服务器创建失败",
+			"端口: " + std::to_string(port) +
+			", 最大客户端: " + std::to_string(maxClients));
+		return false;
+	}
+
+	mode = NetMode::SERVER;
+	std::cout << "Server started on port " << port << std::endl;
+	return true;
+}
+
+bool F_NetWork::ConnectToServer(const char* hostAddress, int port, int timeout) {
+	if (host) Shutdown(); // 关闭现有连接
+
+	host = enet_host_create(nullptr, 1, 2, 0, 0);
+	if (!host) {
+		std::cerr << "Failed to create client" << std::endl;
+		return false;
+	}
+	
+	ENetAddress address;
+	enet_address_set_host(&address, hostAddress);
+	address.port = port;
+
+	ENetPeer* peer = enet_host_connect(host, &address, 2, 0);
+	if (!peer) {
+		std::cerr << "Failed to connect to " << hostAddress << ":" << port << std::endl;
+		return false;
+	}
+
+	// 等待连接建立
+	ENetEvent event;
+	if (enet_host_service(host, &event, timeout) > 0 &&
+		event.type == ENET_EVENT_TYPE_CONNECT) {
+		mode = NetMode::CLIENT;
+		std::cout << "Connected to server " << hostAddress << ":" << port << std::endl;
+		return true;
+	}
+
+	enet_peer_reset(peer);
+	std::cerr << "Connection timeout to " << hostAddress << ":" << port << std::endl;
+	return false;
+}
+
+void F_NetWork::Shutdown() {
+	if (host) {
+		enet_host_destroy(host);
+		host = nullptr;
+	}
+	mode = NetMode::NONE;
+}
+
+void F_NetWork::SendPacket(ENetPeer* peer, const void* data, size_t dataLength,
+	bool reliable, uint8_t channel) {
+	if (!peer || !data || dataLength == 0) return;
+
+	ENetPacket* packet = enet_packet_create(
+		data,
+		dataLength,
+		reliable ? ENET_PACKET_FLAG_RELIABLE : ENET_PACKET_FLAG_UNSEQUENCED
+	);
+
+	enet_peer_send(peer, channel, packet);
+}
+
+void F_NetWork::BroadcastPacket(const void* data, size_t dataLength,
+	bool reliable, uint8_t channel) {
+	if (!host || mode != NetMode::SERVER) return;
+
+	ENetPacket* packet = enet_packet_create(
+		data,
+		dataLength,
+		reliable ? ENET_PACKET_FLAG_RELIABLE : ENET_PACKET_FLAG_UNSEQUENCED
+	);
+
+	enet_host_broadcast(host, channel, packet);
+}
+
+NetEvent F_NetWork::Service(int timeout) {
+	NetEvent netEvent;
+	if (!host) return netEvent;
+
+	ENetEvent enetEvent;
+	if (enet_host_service(host, &enetEvent, timeout) <= 0) {
+		return netEvent; // 无事件
+	}
+
+	// 转换事件类型
+	switch (enetEvent.type) {
+	case ENET_EVENT_TYPE_CONNECT:
+		netEvent.type = NetEventType::CONNECT;
+		netEvent.peer = enetEvent.peer;
+		break;
+
+	case ENET_EVENT_TYPE_DISCONNECT:
+		netEvent.type = NetEventType::DISCONNECT;
+		netEvent.peer = enetEvent.peer;
+		netEvent.data = enetEvent.data;
+		break;
+
+	case ENET_EVENT_TYPE_RECEIVE:
+		netEvent.type = NetEventType::RECEIVE;
+		netEvent.peer = enetEvent.peer;
+		netEvent.packet = enetEvent.packet;
+		break;
+
+	default:
+		break;
+	}
+
+	// 调用自定义回调
+	if (eventCallback) {
+		eventCallback(netEvent);
+	}
+
+	return netEvent;
+}
+
+bool F_NetWork::ConnectToServerDomain(const std::string& domain, int port, int timeout) {
+	// 解析域名
+	DNSResult result = ResolveDomain(domain);
+
+	if (result.error) {
+		std::cerr << "DNS resolution failed for " << domain
+			<< ": " << result.error.message() << std::endl;
+		return false;
+	}
+
+	if (result.ip_addresses.empty()) {
+		std::cerr << "No IP addresses found for domain: " << domain << std::endl;
+		return false;
+	}
+
+	std::cout << "Resolved " << domain << " to IPs: ";
+	for (const auto& ip : result.ip_addresses) {
+		std::cout << ip << " ";
+	}
+	std::cout << std::endl;
+
+	// 尝试连接所有解析出的IP地址
+	for (const auto& ip : result.ip_addresses) {
+		std::cout << "Trying to connect to " << ip << ":" << port << std::endl;
+		if (ConnectToServer(ip.c_str(), port, timeout)) {
+			lastConnectedIP = ip; // 记录成功连接的IP
+			return true;
+		}
+	}
+
+	std::cerr << "Failed to connect to any IP address for domain: " << domain << std::endl;
+	return false;
+}
+
+DNSResult F_NetWork::ResolveDomain(const std::string& domain, int timeout_ms) {
+	DNSResult result;
+	result.hostname = domain;
+
+	// 使用互斥锁和条件变量实现超时机制
+	std::mutex mtx;
+	std::condition_variable cv;
+	bool resolved = false;
+	std::string resolved_ip;
+
+	// 在独立线程中执行解析
+	std::thread resolver([&]() {
+		ENetAddress address;
+
+		// 使用ENet内置的域名解析
+		if (enet_address_set_host(&address, domain.c_str()) == 0) {
+			// 将解析出的IP地址转换为字符串
+			char ip_str[16] = { 0 }; // 足够存放IPv4地址
+			enet_address_get_host_ip(&address, ip_str, sizeof(ip_str));
+			resolved_ip = ip_str;
+		}
+
+		// 标记解析完成
+		{
+			std::lock_guard<std::mutex> lock(mtx);
+			resolved = true;
+		}
+		cv.notify_one();
+		});
+
+	// 设置线程为分离状态（防止资源泄漏）
+	resolver.detach();
+
+	// 等待解析完成或超时
+	std::unique_lock<std::mutex> lock(mtx);
+	if (cv.wait_for(lock, std::chrono::milliseconds(timeout_ms), [&] { return resolved; })) {
+		if (!resolved_ip.empty()) {
+			result.ip_addresses.push_back(resolved_ip);
+		}
+		else {
+			result.error = std::make_error_code(std::errc::address_not_available);
+		}
+	}
+	else {
+		// 超时处理
+		result.error = std::make_error_code(std::errc::timed_out);
+	}
+
+	return result;
 }

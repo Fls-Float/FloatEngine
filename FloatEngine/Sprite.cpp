@@ -86,7 +86,7 @@ Sprite& Sprite::operator=(Sprite&& other) noexcept {
     return *this;
 }
 
-void Sprite::AddFrame(Texture2D&& texture) {
+void Sprite::AddFrame(const Texture2D&& texture) {
     frames.push_back(texture);
 }
 
@@ -99,10 +99,11 @@ bool Sprite::LoadFrame(const char* filePath) {
     return true;
 }
 
-bool Sprite::LoadFrameFromResource(F_Resource* resource, const char* name)
+bool Sprite::LoadFrameFromResource(const F_Resource* resource, const char* name)
 {
-    if (resource->HasResource(name, ResTexture)) {
-        Texture t = resource->GetTexture(name);
+    const F_Resource *res = resource;
+    if (res->HasResource(name, ResTexture)) {
+        Texture t = res->GetTexture(name);
 		frames.push_back(t);
 		return true;
     }

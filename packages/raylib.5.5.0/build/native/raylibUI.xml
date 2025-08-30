@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Rule Name="raylib_Settings" PageTemplate="tool" DisplayName="raylib" SwitchPrefix="/" Order="10"
+  xmlns="http://schemas.microsoft.com/build/2009/properties"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <Rule.Categories>
+    <Category Name="LibraryType" DisplayName="Library Type" />
+  </Rule.Categories>
+  <Rule.DataSource>
+    <DataSource Persistence="ProjectFile" ItemType="" />
+  </Rule.DataSource>
+  <EnumProperty Name="raylib_LibraryType" DisplayName="Library Type"
+    Description="Select which library to link to" Category="LibraryType"
+    Default="StaticMonolithRelease">
+    <EnumValue Name="StaticMonolithRelease" DisplayName="Static" />
+    <EnumValue Name="DynamicRelease" DisplayName="Dynamic" />
+  </EnumProperty>
+</Rule>

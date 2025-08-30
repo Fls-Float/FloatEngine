@@ -66,7 +66,7 @@ public:
      * @brief 添加帧
      * @param texture 要添加的纹理
      */
-    void AddFrame(Texture2D&& texture);
+    void AddFrame(const Texture2D&& texture);
 
     /**
      * @brief 从文件加载帧
@@ -80,7 +80,7 @@ public:
     * @param name 资源名称
     * @return 加载成功返回true，否则返回false
     */
-    bool LoadFrameFromResource(F_Resource* resource, const char* name);
+    bool LoadFrameFromResource(const F_Resource* resource, const char* name);
     /**
      * @brief 设置当前帧
      * @param index 帧索引

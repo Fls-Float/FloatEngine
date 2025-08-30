@@ -161,6 +161,12 @@ public:
      * @return 纹理资源
      */
     Texture2D GetTexture(const std::string& id);
+    /**
+     * @brief (const)获取纹理资源
+     * @param id 资源ID
+     * @return 纹理资源
+     */
+    Texture2D GetTexture(const std::string& id)const;
 
     /**
      * @brief 获取声音资源
@@ -211,7 +217,13 @@ public:
      * @return 存在返回true，否则返回false
      */
     bool HasResource(const std::string& id, ResourceType type);
-
+    /**
+     * @brief (const版本)判断资源是否存在
+     * @param id 资源ID
+     * @param type 资源类型
+     * @return 存在返回true，否则返回false
+     */
+    bool HasResource(const std::string& id, ResourceType type) const;
     /**
      * @brief 获取纹理资源指针
      * @param id 资源ID

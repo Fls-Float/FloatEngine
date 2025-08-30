@@ -11,6 +11,8 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <string>
 #include "raylib.hpp"
 
  /**
@@ -28,6 +30,8 @@
 class F_Font {
     Font _rayfnt;
     unsigned char* _temp_data;
+    char* _temp_path;
+    std::vector<int> _codepoints;
 public:
     /**
      * @brief 默认构造函数
@@ -57,15 +61,44 @@ public:
      * @param filename 文件名
      * @param type 文件类型
      * @param font_size 字体大小
-     * @param codepoints 码点数组
-     * @param codepoints_count 码点数组大小
+     * @param codepoints 初始码点数组
+     * @param codepoints_count 初始码点数组大小
      */
     void Load(const char* filename, const char* type, int font_size, int* codepoints, int codepoints_count);
 
     /**
+    * @brief 从数据中加载字体
+	* @param data 字体数据
+	* @param data_size 数据大小
+    * @param type 字体类型
+	* @param font_size 字体大小
+    * @param codepoints 初始码点数组
+    * @param codepoints_count 初始码点数组大小
+
+   */
+    void LoadFromData(const unsigned char* data, int data_size, const char* type, int font_size, int* codepoints, int codepoints_count);
+    /**
      * @brief 卸载字体
      */
     void Unload();
+	/**
+	 * @brief 获取字体的码点数组
+	 * @return 码点数组
+	 */
+    int* GetCoepoints() { return _codepoints.data(); }
+    /**
+	* @brief 添加码点并重新加载字体
+    */
+    void ReloadWithNewCodepoints(int* codepoints);
+    /**
+	* @brief 检测文本中的Unicode字符是否在字体的码点数组中,没有则加入
+    */
+	void CheckAndAddCodepoints(const std::string& text);
+
+    /**
+    * @brief 检查_codepoints是否包含文本
+    */
+    bool ContainsText(const std::string& text) const;
 };
 
 /**
@@ -103,6 +136,11 @@ namespace floatapi_font {
      */
     Font LoadFontRaylibFromData(const unsigned char* data, int data_size, const char* type, int font_size, int* codepoints, int codepoints_count);
 
+    /**
+     * @brief 加载默认中文字体
+     * @return 加载的F_Font对象
+     */
+    F_Font LoadChineseF_FontDefault();
     /**
      * @brief 加载默认中文字体
      * @return 加载的Font对象

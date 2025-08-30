@@ -1,0 +1,15 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "f:\\visual studio\\c++\\floatstudio\\floatengine\\floatengine\\a.ixx",
+        "ProvidedModule": "",
+        "Includes": [],
+        "ImportedModules": [
+            {
+                "Name": "std",
+                "BMI": "F:\\Visual Studio\\C++\\FloatStudio\\FloatEngine\\FloatEngine\\x64\\Release\\microsoft\\STL\\std.ixx.ifc"
+            }
+        ],
+        "ImportedHeaderUnits": []
+    }
+}

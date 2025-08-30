@@ -31,8 +31,8 @@ public:
 	int GetCount(const char* name) const;
 	int GetCount(int id) const;
 	int Delete(const char*name,int num);
-	int Delete(int index);
-	int DeleteID(int id);
+	int Delete(int index, bool delete_object = 1);
+	int DeleteID(int id,bool delete_object =1);
 	int GetCount() const;
 	auto GetObjList() { return objects; }
 	std::string GetName(int id);
@@ -82,7 +82,7 @@ inline T* Create_InstanceTemplate(const char* name = "NONE") {
 Object* Create_Instance(Object* instance, const char* name);
 
 int Destroy_Instance(const char* name, int num = 0);
-int Destroy_Instance(int id);
+int Destroy_Instance(int id,  bool delete_object = 1);
 bool IsExist_Instance(const char* name);
 bool IsExist_Instance(int id);
 int Count_Instance(const char* name);

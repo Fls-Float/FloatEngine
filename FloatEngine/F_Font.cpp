@@ -4,16 +4,37 @@ F_Font::F_Font()
 {
     _rayfnt = Font();
     _temp_data = new unsigned char[2];
+	_codepoints.clear();
+    _temp_path = nullptr;
 }
 F_Font::F_Font(const F_Font& font)
 {
     this->_rayfnt = font._rayfnt;
-    this->_temp_data = nullptr;
+    this->_temp_data = (unsigned char*)MemAlloc(sizeof font._temp_data);
+    this->_temp_data = font._temp_data;
+    _codepoints.assign( font._codepoints.begin(),font._codepoints.end());
+    TextCopy( _temp_path, font._temp_path);
+
 }
 F_Font::F_Font(const Font& _rfont)
 {
     this->_rayfnt = _rfont;
     this->_temp_data = new unsigned char[2];
+    _codepoints.clear();
+    _temp_path = nullptr;
+	if (_rfont.glyphCount > 0) {
+		_codepoints.reserve(_rfont.glyphCount);
+		for (int i = 0; i < _rfont.glyphCount; i++) {
+			_codepoints.push_back(_rfont.glyphs[i].value);
+		}
+	}
+	else {
+		// 如果没有glyphs，则加载常用码点
+		int count;
+		int* cps_chinese = floatapi_font::LoadCommonCodepoints(count);
+		_codepoints.assign(cps_chinese, cps_chinese + count);
+		delete[] cps_chinese;
+	}
 }
 Font F_Font::to_raylib_font()
 {
@@ -26,8 +47,37 @@ void F_Font::Load(const char* filename, const char*type,int font_size,int*
     _temp_data = LoadFileData(filename, &data_size);
     _rayfnt = LoadFontFromMemory(type, _temp_data, data_size, font_size, codepoints, codepoints_count);
     UnloadFileData(_temp_data);
+    //将codepoints赋值给_codepoints
+	_codepoints.clear();
+	if (codepoints != nullptr && codepoints_count > 0) {
+		_codepoints.reserve(codepoints_count);
+		for (int i = 0; i < codepoints_count; i++) {
+			_codepoints.push_back(codepoints[i]);
+		}
+	}
+	else {
+		// 如果没有提供码点，则加载常用码点
+		int count;
+		int* cps_chinese = floatapi_font::LoadCommonCodepoints(count);
+		_codepoints.assign(cps_chinese, cps_chinese + count);
+		delete[] cps_chinese;
+	}
+	TextCopy(_temp_path, filename);
 }
 
+void F_Font::LoadFromData(const unsigned char* data, int data_size, const char* type, int font_size, int* codepoints, int codepoints_count){
+   _temp_data = new unsigned char[data_size];
+    std::copy(data, data + data_size, _temp_data);
+    _rayfnt = LoadFontFromMemory(type, _temp_data, data_size, font_size, codepoints, codepoints_count);
+    // 将codepoints赋值给_codepoints
+    _codepoints.clear();
+    if (codepoints != nullptr && codepoints_count > 0) {
+        _codepoints.reserve(codepoints_count);
+        for (int i = 0; i < codepoints_count; i++) {
+            _codepoints.push_back(codepoints[i]);
+        }
+	}
+}
 void F_Font::Unload()
 {
     UnloadFont(_rayfnt);
@@ -35,13 +85,77 @@ void F_Font::Unload()
         delete []_temp_data;
     }
 }
+extern void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1, bool with_imgui_console = 1);
 
-Font f_default_font;
+
+void F_Font::ReloadWithNewCodepoints(int* codepoints)
+{
+	if (codepoints == nullptr) {
+		DEBUG_LOG(LOG_ERROR, "F_Font::ReloadWithNewCodepoints: codepoints is null", 0);
+		return;
+	}
+	for (int i = 0; codepoints[i] != 0; i++) {
+		if (std::find(_codepoints.begin(), _codepoints.end(), codepoints[i]) == _codepoints.end()) {
+			_codepoints.push_back(codepoints[i]);
+		}
+	}
+    std::sort(_codepoints.begin(), _codepoints.end());
+    _codepoints.erase(std::unique(_codepoints.begin(), _codepoints.end()), _codepoints.end());
+	if (_rayfnt.glyphCount > 0) {
+		// 重新加载字体
+		UnloadFont(_rayfnt);
+		unsigned char* data = _temp_data;
+		_rayfnt = LoadFontFromMemory(".ttf", data, sizeof data, 30, _codepoints.data(), _codepoints.size());
+		delete[] data;
+	}
+}
+
+void F_Font::CheckAndAddCodepoints(const std::string& text)
+{
+	for (char c : text) {
+		int codepoint = static_cast<unsigned char>(c);
+		if (std::find(_codepoints.begin(), _codepoints.end(), codepoint) == _codepoints.end()) {
+			_codepoints.push_back(codepoint);
+		}
+	}
+	if (text.empty()) return;
+	for (size_t i = 0; i < text.size(); i++) {
+		int codepoint = static_cast<unsigned char>(text[i]);
+		if (floatapi_font::IsValidUnicodeCodepoint(codepoint)) {
+			if (std::find(_codepoints.begin(), _codepoints.end(), codepoint) == _codepoints.end()) {
+				_codepoints.push_back(codepoint);
+			}
+		}
+	}
+	// 确保码点数组是唯一的
+	std::sort(_codepoints.begin(), _codepoints.end());
+	_codepoints.erase(std::unique(_codepoints.begin(), _codepoints.end()), _codepoints.end());
+	if (_rayfnt.glyphCount > 0) {
+		// 重新加载字体
+		UnloadFont(_rayfnt);
+        unsigned char* data = _temp_data;
+		_rayfnt = LoadFontFromMemory(".ttf", data, sizeof data, 30, _codepoints.data(), _codepoints.size());
+		delete[] data;
+	}
+}
+
+bool F_Font::ContainsText(const std::string& text) const
+{
+    for (const char& c : text) {
+        int codepoint = static_cast<unsigned char>(c);
+        if (std::find(_codepoints.begin(), _codepoints.end(), codepoint) == _codepoints.end()) {
+            return false;
+        }
+    }
+    return true;
+}
+
+F_Font f_default_font;
 
 namespace floatapi_font {
     void InitDefaultFont()
     {
-        f_default_font = LoadChineseFontDefault();
+        f_default_font = LoadChineseF_FontDefault();
     }
     Font LoadFontRaylib(const char* filename, const char* type, int font_size, int*
         codepoints, int codepoints_count)
@@ -58,14 +172,19 @@ namespace floatapi_font {
         return  LoadFontFromMemory(type, data, data_size, font_size, codepoints, codepoints_count);
 
     }
+    F_Font LoadChineseF_FontDefault()
+    {
+        int count;
+        int* cps_chinese = LoadUnicodeCodepoints(count);
+        F_Font temp;
+        temp.Load("C:\\windows\\fonts\\simhei.ttf", ".ttf", 30, cps_chinese, count);
+        return temp;
+    }
     Font LoadChineseFontDefault()
     {
         int count;
         int *cps_chinese = LoadCommonCodepoints(count);
-        int size;
-        unsigned char* data = LoadFileData("C:\\windows\\fonts\\simhei.ttf", &size);
-        Font temp = LoadFontRaylibFromData(data,size, ".ttc", 30, cps_chinese, count);
-        MemFree(cps_chinese);
+		Font temp = LoadFontRaylib("C:\\windows\\fonts\\simhei.ttf", ".ttf", 30, cps_chinese, count);
         return temp;
     }
     // 加载常用字符的 Unicode 码点

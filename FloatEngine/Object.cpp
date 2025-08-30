@@ -1,6 +1,7 @@
 #include "Object.h"
 Object::Object()
 {
+	object_mode_no_destroy_sprite = 0;
 	m_block = { 0,0 };
 	m_angle = 0.0f;
 	m_origin = { 0,0 };
@@ -151,7 +152,7 @@ Object& Object::operator=(const Object& other) {
 
 
 Object::~Object() {
-	sprite_index.~Sprite(); // 释放纹理数组
+	if(!object_mode_no_destroy_sprite)sprite_index.~Sprite(); // 释放纹理数组
 }
 
 void Object::reset_alarm_clock()

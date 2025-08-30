@@ -1,0 +1,11 @@
+{
+    "Version": "1.1",
+    "Data": {
+        "Source": "f:\\visual studio\\c++\\floatstudio\\floatengine\\floatengine\\a.ixx",
+        "ProvidedModule": "",
+        "ImportedModules": [
+            "std"
+        ],
+        "ImportedHeaderUnits": []
+    }
+}

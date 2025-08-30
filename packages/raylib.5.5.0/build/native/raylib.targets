@@ -1,0 +1,49 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <raylibLib>$(MSBuildThisFileDirectory)lib\$(Platform)\</raylibLib>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(raylib_LibraryType)'=='DynamicRelease'">
+    <raylibSuffix>dll</raylibSuffix>
+  </PropertyGroup>
+  <PropertyGroup>
+    <raylib_CoreLibs>
+      $(raylibLib)raylib$(raylibSuffix).lib;
+      winmm.lib
+    </raylib_CoreLibs>
+    <raylib_CoreDLLs>$(raylibLib)raylib.dll</raylib_CoreDLLs>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <PreprocessorDefinitions>
+        %(PreprocessorDefinitions);
+        PLATFORM_DESKTOP;
+        GRAPHICS_API_OPENGL_33
+      </PreprocessorDefinitions>
+    </ClCompile>
+    <ClCompile>
+      <AdditionalIncludeDirectories>
+        $(MSBuildThisFileDirectory)include\;
+        %(AdditionalIncludeDirectories)
+      </AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup>
+    <Link>
+      <AdditionalDependencies>
+        $(raylib_CoreLibs);
+        %(AdditionalDependencies)
+      </AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)\raylibUI.xml" />
+  </ItemGroup>
+  <Target Name="CopyDLLs" AfterTargets="AfterBuild"
+    Condition="'$(raylib_LibraryType)'=='DynamicRelease'">
+    <PropertyGroup>
+      <AllDLLs>$(raylib_CoreDLLs);</AllDLLs>
+    </PropertyGroup>
+    <Copy SourceFiles="$(AllDLLs)" DestinationFolder="$(TargetDir)" SkipUnchangedFiles="true" />
+  </Target>
+</Project>

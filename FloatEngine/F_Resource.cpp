@@ -392,6 +392,9 @@ void F_Resource::AddResource(const std::string& id, ResourceType type, void* res
 Texture2D F_Resource::GetTexture(const std::string& id) {
     return textures[id];
 }
+Texture2D F_Resource::GetTexture(const std::string& id) const {
+    return textures.at(id);
+}
 
 Sound F_Resource::GetSound(const std::string& id) {
     return sounds[id];
@@ -439,6 +442,26 @@ bool F_Resource::HasResource(const std::string& id)
 }
 
 bool F_Resource::HasResource(const std::string& id, ResourceType type)
+{
+    switch (type) {
+    case ResTexture:
+        return textures.count(id) != 0;
+    case ResSound:
+        return sounds.count(id) != 0;
+    case ResMusic:
+        return musics.count(id) != 0;
+    case ResFont:
+        return fonts.count(id) != 0;
+    case ResText:
+        return texts.count(id) != 0;
+    case ResData:
+        return datas.count(id) != 0;
+    default:
+        return 0;
+    }
+}
+
+bool F_Resource::HasResource(const std::string& id, ResourceType type) const
 {
     switch (type) {
     case ResTexture:
@@ -672,32 +695,32 @@ bool F_Resource::DecompressZlibWithPassword(const std::string& path, std::vector
     }
     if (unzLocateFile(zipfile, path.c_str(), 0) != UNZ_OK) {
         DEBUG_LOG(LOG_ERROR,
-            "F_Resource:在压缩文件中定位文件失败", 0);
+           TextFormat( "F_Resource:在压缩文件中定位文件失败:%s",path.c_str()), 0);
         unzClose(zipfile);
         return false;
     }
     if (has_password) {
         if (unzOpenCurrentFilePassword(zipfile, password) != UNZ_OK) {
             DEBUG_LOG(LOG_ERROR,
-                "F_Resource:使用密码在压缩文件中打开文件失败", 0);
+             TextFormat(  "F_Resource:使用密码在压缩文件中打开文件失败:%s", path.c_str()), 0);
             unzClose(zipfile);
             return false;
         }
     }
     else if (unzOpenCurrentFile(zipfile) != UNZ_OK) {
         DEBUG_LOG(LOG_ERROR,
-            "F_Resource:不使用密码在压缩文件中打开文件失败", 0);
+           TextFormat( "F_Resource:不使用密码在压缩文件中打开文件失败:%s",path.c_str()), 0);
         unzClose(zipfile);
         return false;
     }
     DEBUG_LOG(LOG_INFO,
-     "F_Resource:成功打开文件在压缩文件中", 0);
+    TextFormat("F_Resource:成功打开文件在压缩文件中:%s", path.c_str()), 0);
 
     unz_file_info file_info;
     if (unzGetCurrentFileInfo(zipfile, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK) {
 
         DEBUG_LOG(LOG_WARNING,
-            "F_Resource:无法获取压缩文件信息", 0); unzCloseCurrentFile(zipfile);
+           TextFormat("F_Resource:无法获取压缩文件信息:%s", path.c_str()), 0); unzCloseCurrentFile(zipfile);
         unzClose(zipfile);
         return false;
     }
@@ -709,7 +732,7 @@ bool F_Resource::DecompressZlibWithPassword(const std::string& path, std::vector
   
     if (result != file_info.uncompressed_size) {
         DEBUG_LOG(LOG_WARNING,
-            "F_Resource:文件解压缩数据不完整或失败", 0);
+           TextFormat("F_Resource:文件解压缩数据不完整或失败:%s", path.c_str()), 0);
         unzCloseCurrentFile(zipfile);
         unzClose(zipfile);
         return false;
