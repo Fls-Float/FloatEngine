@@ -16,16 +16,37 @@
  */
 
 #pragma once
-#define FLOAT_API_VERSION "1.4.3"
+#define FLOAT_API_VERSION "1.4.6"
 #define _CRT_SECURE_NO_WARNINGS
 #define LINK_WINFUNS
-#include "raylib.hpp"
+
+
 #include <iostream>
 #include <vector>
 #include <memory>
 #include <string>
 #include <map>
 #include <stdexcept>
+#include <chrono>
+#include <unordered_set>
+#include <fstream>
+#include <functional>
+#include <unordered_map>
+#include <type_traits>
+#include <any>
+
+#ifdef _MSC_VER
+#define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
+#define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
+#endif
+#define SOL_ALL_SAFETIES_ON 1
+#define SOL_STRINGS_ARE_NUMBERS 1
+#define SOL_PRINT_ERRORS 1
+#include "lua/sol.hpp"
+#include "raylib.h"
+#include "gui/include/imgui.h"
+#include "gui/include/rlImGui.h"
+
 #include "F_Resource.h"
 #include "FMath.h"
 #include "F_Audio.h"
@@ -35,13 +56,6 @@
 #include "F_Anim.h"
 #include "Enum.h"
 #include "Sprite.h"
-#include <chrono>
-#include "lua/include/lua.hpp"
-#include "LuaBridge/LuaBridge.h"
-#include "gui/include/imgui.h"
-#include "gui/include/rlImGui.h"
-#include <unordered_set>
-#include <fstream>
  /**
   * @class F_Debug
   * @ingroup FloatApi
@@ -286,6 +300,33 @@ public:
  */
 void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1,bool with_imgui_console = 1);
 
+
+template<typename... Args>
+inline void DEBUG_LOGF(int lv, bool english, const char* fmt, Args&&... args) {
+    if (!fmt) {
+        DEBUG_LOG(lv, "(null fmt)", english, 1,1);
+        return;
+    }
+    const char* formatted = TextFormat(fmt, std::forward<Args>(args)...);
+    if (!formatted) formatted = "(format error)";
+
+    DEBUG_LOG(lv, formatted, english, 1, 1);
+}
+#define FLOG_ALLF(fmt, ...)   DEBUG_LOGF(LOG_ALL,    true,  fmt, ##__VA_ARGS__)
+#define FLOG_DEBUGF(fmt, ...) DEBUG_LOGF(LOG_DEBUG,  true,  fmt, ##__VA_ARGS__)
+#define FLOG_INFOF(fmt, ...)  DEBUG_LOGF(LOG_INFO,   true,  fmt, ##__VA_ARGS__)
+#define FLOG_WARNF(fmt, ...)  DEBUG_LOGF(LOG_WARNING,true,  fmt, ##__VA_ARGS__)
+#define FLOG_ERRORF(fmt, ...) DEBUG_LOGF(LOG_ERROR,  true,  fmt, ##__VA_ARGS__)
+#define FLOG_FATALF(fmt, ...) DEBUG_LOGF(LOG_FATAL,  true,  fmt, ##__VA_ARGS__)
+
+#define FLOG_INFOF_CN(fmt, ...) DEBUG_LOGF(LOG_INFO, false, fmt, ##__VA_ARGS__)
+
+#define FLOG_ALL(msg)   DEBUG_LOG(LOG_ALL,    msg, true, 1, 1)
+#define FLOG_DEBUG(msg) DEBUG_LOG(LOG_DEBUG,  msg, true, 1, 1)
+#define FLOG_INFO(msg)  DEBUG_LOG(LOG_INFO,   msg, true, 1, 1)
+#define FLOG_WARN(msg)  DEBUG_LOG(LOG_WARNING,msg, true, 1, 1)
+#define FLOG_ERROR(msg) DEBUG_LOG(LOG_ERROR,  msg, true, 1, 1)
+#define FLOG_FATAL(msg) DEBUG_LOG(LOG_FATAL,  msg, true, 1, 1)
 #define repeat(n) for(int __r_i__=0;__r_i__<int(n);__r_i__++)
 typedef float Float;
 
@@ -856,6 +897,10 @@ public:
      * @param alpha 透明度
      */
     static void Draw_Text(const char* text, float x, float y, float o_x, float o_y, float rot, float size, struct Color col, float alpha = 1.0f);
+    /**
+     * @brief 设置默认字体
+     */
+    static void Set_Default_Font(Font font);
 
     /**
      * @brief 绘制线条
@@ -1112,7 +1157,7 @@ public:
      * @param strFilter 文件过滤器
      * @return 文件名（失败返回空字符串）
      */
-    static std::string Get_Open_File_Name(std::string strFilter);
+    static std::string Get_Open_File_Name(const char* strFilter);
 
     /**
      * @brief 选择打开文件
@@ -1120,14 +1165,14 @@ public:
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
-    static std::string Get_Open_File_Name(std::string strFilter, unsigned int flag);
+    static std::string Get_Open_File_Name(const char* strFilter, unsigned int flag);
     /**
      * @brief 选择打开文件
      * @param strFilter 文件过滤器
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
-    static std::wstring Get_Open_File_NameW(std::wstring strFilter);
+    static std::wstring Get_Open_File_NameW(const wchar_t* strFilter);
 
     /**
      * @brief 选择打开文件
@@ -1135,13 +1180,13 @@ public:
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
-    static std::wstring Get_Open_File_NameW(std::wstring strFilter, unsigned int flag);
+    static std::wstring Get_Open_File_NameW(const wchar_t* strFilter, unsigned int flag);
     /**
     * @brief 保存文件
     * @param strFilter 文件过滤器
     * @return 文件名（失败返回空字符串）
     */
-    static std::string Get_Save_File_Name(std::string strFilter);
+    static std::string Get_Save_File_Name(const char* strFilter);
 
     /**
      * @brief 选择保存文件
@@ -1149,14 +1194,14 @@ public:
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
-    static std::string Get_Save_File_Name(std::string strFilter, unsigned int flag);
+    static std::string Get_Save_File_Name(const char*strFilter, unsigned int flag);
     /**
      * @brief 选择保存文件
      * @param strFilter 文件过滤器
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
-    static std::wstring Get_Save_File_NameW(std::wstring strFilter);
+    static std::wstring Get_Save_File_NameW(const wchar_t* strFilter);
 
     /**
      * @brief 选择保存文件
@@ -1164,7 +1209,7 @@ public:
      * @param flag 标志
      * @return 文件名（失败返回空字符串）
      */
-    static std::wstring Get_Save_File_NameW(std::wstring strFilter, unsigned int flag);
+    static std::wstring Get_Save_File_NameW(const wchar_t* strFilter, unsigned int flag);
 
     /**
      * @brief 刷新拖放文件列表
@@ -1755,75 +1800,161 @@ namespace F_Json {
     };
 };
 
+
 /**
  * @class F_Lua
- * @brief Lua虚拟机封装类，提供脚本执行、函数绑定、跨语言调用等核心功能
+ * @brief 基于sol2的Lua虚拟机封装类，提供增强的脚本执行、函数绑定、跨语言调用等核心功能
  *
- * 封装Lua C API，通过RAII管理资源，集成LuaBridge简化C++与Lua的交互。
- * 支持异常安全操作，包含基础错误处理机制。
+ * 封装sol2现代C++ Lua绑定库，通过RAII管理资源，提供类型安全的C++与Lua交互。
+ * 支持异常安全操作，包含完整的错误处理机制，自动内存管理和高级特性。
  */
 class F_Lua {
+public:
+    /**
+     * @brief 类注册器，用于链式注册C++类到Lua环境
+     */
     template <typename T>
     class ClassRegistrar {
     public:
-        ClassRegistrar(lua_State* L, const std::string& name,bool is_parent = 0){
-            if(!is_parent)
-                class_ = luabridge::getGlobalNamespace(L).beginClass<T>(name.c_str());
-            else
-                class_ = luabridge::getGlobalNamespace(L).deriveClass<T>(name.c_str());
+        ClassRegistrar(sol::state& lua, const std::string& name, bool is_derived = false)
+            : lua_(lua), class_name_(name), is_derived_(is_derived) {
         }
-        
-        ~ClassRegistrar() {
-            class_.endClass();
-        }
-        template <typename T>
+
+        /**
+         * @brief 启用std::shared_ptr智能指针管理
+         */
         ClassRegistrar<T>& enableSharedPtr() {
-            static_assert(std::is_base_of_v<std::enable_shared_from_this<T>, T>,
-                "T must inherit enable_shared_from_this");
-            class_.addFunction("new", +[]() { return std::make_shared<T>(); });
-            class_.addFunction("__gc", +[](T* obj) { delete obj; }); // 显式释放
+            use_shared_ptr_ = true;
             return *this;
         }
-        /// 添加构造函数
+
+        /**
+         * @brief 添加构造函数
+         */
         template <typename... Args>
         ClassRegistrar& addConstructor() {
-            class_.template addConstructor<Args...>();
+            constructors_ = std::make_tuple<Args...>();
             return *this;
         }
 
-        /// 添加成员函数
+        /**
+         * @brief 添加成员函数
+         */
         template <typename Func>
         ClassRegistrar& addFunction(const std::string& name, Func func) {
-            class_.addFunction(name.c_str(), func);
-            return *this;
-        }
-        /// 添加析构
-        template <typename T>
-        ClassRegistrar<T>& addDestructor() {
-            class_.addFunction("__gc", +[](T* obj) { obj->~T(); });
-            return *this;
-        }
-        /// 添加属性
-        template <typename Prop>
-        ClassRegistrar& addProperty(const std::string& name, Prop prop) {
-            class_.addProperty(name.c_str(), prop);
+            functions_[name] = func;
             return *this;
         }
 
-        /// 添加静态函数
+        /**
+         * @brief 添加属性
+         */
+        template <typename Prop>
+        ClassRegistrar& addProperty(const std::string& name, Prop prop) {
+            properties_[name] = prop;
+            return *this;
+        }
+
+        /**
+         * @brief 添加静态函数
+         */
         template <typename Func>
         ClassRegistrar& addStaticFunction(const std::string& name, Func func) {
-            class_.addStaticFunction(name.c_str(), func);
+            static_functions_[name] = func;
             return *this;
+        }
+
+        /**
+         * @brief 添加析构函数定制
+         */
+        template <typename Destructor>
+        ClassRegistrar& addDestructor(Destructor dtor) {
+            destructor_ = dtor;
+            return *this;
+        }
+
+        /**
+         * @brief 完成类注册
+         */
+        void endClass() {
+            // 实际的注册逻辑在析构函数中执行
+        }
+
+        ~ClassRegistrar() {
+            registerClass();
         }
 
     private:
-        luabridge::Namespace::Class<T> class_;
+        void registerClass() {
+            if (is_derived_) {
+                // 派生类注册
+                auto usertype = lua_.new_usertype<T>(
+                    class_name_,
+                    sol::base_classes, sol::bases<std::remove_const_t<std::remove_pointer_t<decltype(getBaseClass<T>())>>>()...
+                );
+                setupUsertype(usertype);
+            }
+            else {
+                // 基类注册
+                auto usertype = lua_.new_usertype<T>(class_name_);
+                setupUsertype(usertype);
+            }
+        }
+
+        template <typename U>
+        void setupUsertype(sol::usertype<U>& usertype) {
+            // 注册构造函数
+            std::apply([&](auto... args) {
+                usertype.set(sol::call_constructor, sol::constructors<args...>());
+                }, constructors_);
+
+            // 注册成员函数
+            for (const auto& [name, func] : functions_) {
+                usertype.set(name, func);
+            }
+
+            // 注册属性
+            for (const auto& [name, prop] : properties_) {
+                usertype.set(name, prop);
+            }
+
+            // 注册静态函数
+            for (const auto& [name, func] : static_functions_) {
+                usertype.set(name, func);
+            }
+
+            // 注册析构函数
+            if (destructor_) {
+                usertype.set(sol::meta_function::garbage_collect, destructor_);
+            }
+
+            // 如果启用shared_ptr，添加相应的工厂函数
+            if (use_shared_ptr_) {
+                lua_[class_name_]["create"] = [](auto&&... args) {
+                    return std::make_shared<T>(std::forward<decltype(args)>(args)...);
+                    };
+            }
+        }
+
+        // 辅助函数用于获取基类类型
+        template <typename U>
+        static auto getBaseClass() -> void;
+
+    private:
+        sol::state& lua_;
+        std::string class_name_;
+        bool is_derived_;
+        bool use_shared_ptr_ = false;
+        std::tuple<> constructors_;
+        std::unordered_map<std::string, std::function<void()>> functions_;
+        std::unordered_map<std::string, std::function<void()>> properties_;
+        std::unordered_map<std::string, std::function<void()>> static_functions_;
+        std::function<void(T*)> destructor_;
     };
-   
+
 public:
     /**
-     * @brief 构造函数，初始化Lua虚拟机
+     * @brief 构造函数，初始化Lua虚拟机并加载标准库
      * @throws std::runtime_error 当无法创建Lua状态机时抛出
      */
     F_Lua();
@@ -1834,14 +1965,18 @@ public:
     ~F_Lua();
 
     // 禁用拷贝语义
-    F_Lua(const F_Lua&) = delete;            ///< 禁用拷贝构造
-    F_Lua& operator=(const F_Lua&) = delete; ///< 禁用拷贝赋值
+    F_Lua(const F_Lua&) = delete;
+    F_Lua& operator=(const F_Lua&) = delete;
+
+    // 支持移动语义
+    F_Lua(F_Lua&&) = default;
+    F_Lua& operator=(F_Lua&&) = default;
 
     /**
      * @brief 执行Lua脚本文件
      * @param filepath Lua脚本文件路径
      * @return true 执行成功，false 执行失败
-     * @note 错误信息会通过HandleError输出到stderr
+     * @note 自动处理错误并输出详细信息
      */
     bool ExecuteScript(const std::string& filepath);
 
@@ -1849,60 +1984,94 @@ public:
      * @brief 执行Lua代码字符串
      * @param code 要执行的Lua代码
      * @return true 执行成功，false 执行失败
-     * @note 支持多行代码和复杂逻辑
+     * @note 支持多行代码和复杂逻辑，提供详细错误信息
      */
     bool ExecuteString(const std::string& code);
 
     /**
+     * @brief 安全执行Lua代码字符串，返回执行结果
+     * @param code 要执行的Lua代码
+     * @return sol::protected_function_result 包含执行结果和错误信息
+     */
+    sol::protected_function_result ExecuteStringSafe(const std::string& code);
+
+    /**
      * @brief 注册C++函数到Lua全局命名空间
-     * @tparam Func 可调用对象类型（函数指针、lambda等）
+     * @tparam Func 可调用对象类型
      * @param name 在Lua中使用的函数名
      * @param func 要绑定的C++函数
-     * @code
-     * lua.RegisterFunction("Add", [](int a, int b){ return a + b; });
-     * @endcode
      */
     template <typename Func>
     void RegisterFunction(const std::string& name, Func func) {
-        luabridge::getGlobalNamespace(L)
-            .addFunction(name.c_str(), func);
+        lua_.set_function(name, func);
     }
 
     /**
-     * @brief 注册C++类到Lua环境，返回类注册器用于链式调用
+     * @brief 注册C++类到Lua环境
      * @tparam T 要注册的类类型
      * @param name 在Lua中使用的类名
+     * @param is_derived 是否为派生类
      * @return ClassRegistrar<T> 用于链式添加成员的对象
      */
     template <typename T>
-    ClassRegistrar<T> RegisterClass(const std::string& name,bool is_parent) {
-        return ClassRegistrar<T>(L, name,is_parent);
+    ClassRegistrar<T> RegisterClass(const std::string& name, bool is_derived = false) {
+        return ClassRegistrar<T>(lua_, name, is_derived);
     }
+
     /**
      * @brief 获取Lua全局变量
-     * @tparam T 变量类型（自动推导）
+     * @tparam T 变量类型
      * @param name 全局变量名
      * @return 变量的C++类型值
-     * @throws std::runtime_error 当变量不存在或类型不匹配时
+     * @throws sol::error 当变量不存在或类型不匹配时
      */
     template <typename T>
     T GetGlobal(const std::string& name) {
-        return luabridge::getGlobal(L, name.c_str());
+        return lua_[name];
     }
-    
+
+    /**
+     * @brief 设置Lua全局变量
+     * @tparam T 变量类型
+     * @param name 全局变量名
+     * @param value 要设置的值
+     */
+    template <typename T>
+    void SetGlobal(const std::string& name, T&& value) {
+        lua_[name] = std::forward<T>(value);
+    }
+
     /**
      * @brief 调用无返回值的Lua函数
      * @tparam Args 参数类型包
      * @param funcName Lua函数名
      * @param args 调用参数列表
-     * @note 静默忽略不存在的函数
+     * @return bool 是否成功调用
      */
     template <typename... Args>
-    void CallVoidFunction(const std::string& funcName, Args... args) {
-        auto func = luabridge::getGlobal(L, funcName.c_str());
-        if (func.isFunction()) {
-            func(args...);
+    bool CallVoidFunction(const std::string& funcName, Args&&... args) {
+        sol::protected_function func = lua_[funcName];
+        if (func.valid()) {
+            auto result = func(std::forward<Args>(args)...);
+            return result.valid();
         }
+        return false;
+    }
+
+    /**
+     * @brief 安全调用Lua函数，返回保护结果
+     * @tparam Args 参数类型包
+     * @param funcName Lua函数名
+     * @param args 调用参数列表
+     * @return sol::protected_function_result 调用结果
+     */
+    template <typename... Args>
+    sol::protected_function_result CallFunctionSafe(const std::string& funcName, Args&&... args) {
+        sol::protected_function func = lua_[funcName];
+        if (func.valid()) {
+            return func(std::forward<Args>(args)...);
+        }
+        return sol::protected_function_result();
     }
 
     /**
@@ -1911,33 +2080,160 @@ public:
      * @tparam Args 参数类型包
      * @param funcName Lua函数名
      * @param args 调用参数列表
-     * @return 函数返回值，如函数不存在返回默认构造的Ret类型值
+     * @return std::optional<Ret> 函数返回值，如调用失败返回std::nullopt
      */
     template <typename Ret, typename... Args>
-    Ret CallFunction(const std::string& funcName, Args... args) {
-        auto func = luabridge::getGlobal(L, funcName.c_str());
-        if (func.isFunction()) {
-            return func(args...);
+    std::optional<Ret> CallFunction(const std::string& funcName, Args&&... args) {
+        auto result = CallFunctionSafe(funcName, std::forward<Args>(args)...);
+        if (result.valid() && result.return_count() > 0) {
+            return result.template get<Ret>();
         }
-        return Ret();
+        return std::nullopt;
+    }
+
+    /**
+     * @brief 检查全局变量是否存在
+     * @param name 变量名
+     * @return bool 是否存在
+     */
+    bool HasGlobal(const std::string& name) {
+        sol::object obj = lua_[name];
+        return obj.valid() && obj.get_type() != sol::type::nil;
+    }
+
+    /**
+     * @brief 检查全局函数是否存在
+     * @param name 函数名
+     * @return bool 是否存在且为函数
+     */
+    bool HasFunction(const std::string& name) {
+        sol::object obj = lua_[name];
+        return obj.valid() && obj.is<sol::function>();
     }
 
     /**
      * @brief 获取底层Lua状态机
-     * @return 原始lua_State指针
-     * @warning 需谨慎操作底层API
+     * @return sol::state& Lua状态引用
      */
-    lua_State* GetState() const { return L; }
+    sol::state& GetState() { return lua_; }
+
+    /**
+     * @brief 获取底层Lua状态机（const版本）
+     * @return const sol::state& Lua状态引用
+     */
+    const sol::state& GetState() const { return lua_; }
+
+    /**
+     * @brief 获取原生lua_State指针
+     * @return lua_State* 原始Lua状态指针
+     */
+    lua_State* GetRawState() { return lua_; }
+
+    /**
+     * @brief 清空Lua环境
+     */
+    void ClearEnvironment() {
+        lua_.collect_garbage();
+    }
+
+    /**
+ * @brief 设置Lua内存管理参数
+ * @param limit_kb 内存限制提示（目前仅用于调整垃圾回收频率）
+ */
+    void SetMemoryLimit(size_t limit_kb) {
+        // 使用参数来调整垃圾回收策略
+        if (limit_kb > 0) {
+            // 小内存限制：更频繁的垃圾回收
+            int pause = std::max(10, 100 - static_cast<int>(limit_kb / 100));
+            lua_["collectgarbage"]("setpause", pause);
+            lua_["collectgarbage"]("setstepmul", 500);
+        }
+        else {
+            // 默认设置
+            lua_["collectgarbage"]("setpause", 100);
+            lua_["collectgarbage"]("setstepmul", 200);
+        }
+    }
+
+    /**
+     * @brief 加载但不执行Lua代码
+     * @param code Lua代码
+     * @return sol::load_result 加载结果
+     */
+    sol::load_result LoadString(const std::string& code) {
+        return lua_.load(code);
+    }
+
+    /**
+     * @brief 创建新的Lua环境表
+     * @return sol::table 新创建的表
+     */
+    sol::table CreateTable() {
+        return lua_.create_table();
+    }
+
+    /**
+     * @brief 创建带命名空间的全局表
+     * @param namespace_path 命名空间路径（如 "Game.Player"）
+     * @return sol::table 命名空间表
+     */
+    sol::table CreateNamespace(const std::string& namespace_path) {
+        sol::table current = lua_.globals();
+        std::string token;
+        std::istringstream token_stream(namespace_path);
+
+        while (std::getline(token_stream, token, '.')) {
+            if (!current[token].valid()) {
+                current[token] = lua_.create_table();
+            }
+            current = current[token];
+        }
+
+        return current;
+    }
+
+    /**
+     * @brief 注册C++枚举到Lua
+     * @tparam Enum 枚举类型
+     * @param name 枚举在Lua中的名称
+     * @param is_global 是否注册为全局变量
+     */
+    template <typename Enum>
+    void RegisterEnum(const std::string& name, bool is_global = true) {
+        sol::table enum_table = lua_.create_table();
+
+        // 这里需要用户手动添加枚举值
+        if (is_global) {
+            lua_[name] = enum_table;
+        }
+
+        enum_tables_[name] = enum_table;
+    }
+
+    /**
+     * @brief 为枚举添加值
+     * @tparam Enum 枚举类型
+     * @param enum_name 枚举名称
+     * @param value_name 值名称
+     * @param value 枚举值
+     */
+    template <typename Enum>
+    void AddEnumValue(const std::string& enum_name, const std::string& value_name, Enum value) {
+        auto it = enum_tables_.find(enum_name);
+        if (it != enum_tables_.end()) {
+            it->second[value_name] = value;
+        }
+    }
 
 private:
-    lua_State* L; ///< Lua虚拟机状态指针
+    sol::state lua_;
+    std::unordered_map<std::string, sol::table> enum_tables_;
 
     /**
      * @brief 统一错误处理
-     * @param status Lua API调用返回状态码
-     * @note 自动输出错误信息到stderr，并清理堆栈
+     * @param result 保护函数执行结果
      */
-    void HandleError(int status);
+    void HandleError(const sol::protected_function_result& result);
 };
 
 namespace F_Gui {
@@ -2117,3 +2413,9 @@ private:
     std::string lastConnectedIP;   // 最后一次连接使用的IP地址
 	NetError lastError;            // 最后一次错误信息
 };
+
+template<typename T>
+template<typename U>
+inline auto F_Lua::ClassRegistrar<T>::getBaseClass() -> void
+{
+}

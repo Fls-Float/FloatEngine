@@ -21,9 +21,6 @@
     <Filter Include="头文件\Control\Class">
       <UniqueIdentifier>{3130bd22-465b-4d40-b113-2c263a556ea9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Packages">
-      <UniqueIdentifier>{aaf3ac41-91fe-4d9d-83aa-94d4e68fd97c}</UniqueIdentifier>
-    </Filter>
     <Filter Include="头文件\Math">
       <UniqueIdentifier>{d0ecd445-8127-4267-b54f-49033d89fa4a}</UniqueIdentifier>
     </Filter>
@@ -71,11 +68,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config">
-      <Filter>Packages</Filter>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="Object.cpp">
       <Filter>源文件\Control</Filter>
     </ClCompile>
@@ -121,7 +113,7 @@
     <ClCompile Include="Sprite.cpp">
       <Filter>源文件\Control</Filter>
     </ClCompile>
-    <ClCompile Include="miniz.c">
+    <ClCompile Include="miniz.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

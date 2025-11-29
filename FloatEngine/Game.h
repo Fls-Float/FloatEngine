@@ -13,6 +13,12 @@
 #include "FloatApi.h"
 #include "F_Console.h"
 
+
+enum MOD_FLAG{
+	MOD_FFONT = 1,
+	MOD_FGUI = 2,
+	MOD_ALL = 4
+};
  /**
   * @class Game
   * @ingroup Game
@@ -41,6 +47,7 @@ class Game {
     Image _icons[100]; ///< 图标数组
     FilePathList _icon_path; ///< 图标路径列表
     Color background_col; ///< 背景颜色
+
 public:
     /**
      * @brief 构造函数
@@ -55,8 +62,12 @@ public:
      * @param debug 是否开启调试模式
      * @param flags 窗口标志
      */
-    void CreateWindow(int w, int h, const char* title, bool debug = true, int flags = 8608);
+    void CreateWindow(int w, int h, const char* title, bool debug = true, int flags = 8608,bool loadAllMod=false);
 
+    /**
+     * @brief 加载模块
+     */
+    void LoadMod(int modFlag);
     /**
      * @brief 判断游戏是否可以开始
      * @return 如果可以开始返回true，否则返回false

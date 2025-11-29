@@ -1,4 +1,6 @@
 #include "FloatApi.h"
+#include <thread>
+#include <mutex>
 int F_Debug::m_debug = 1;
 bool F_Debug::m_showConsole = true;
 std::vector<F_Debug::Log_Info> F_Debug::m_logs;
@@ -49,6 +51,9 @@ void F_Debug::Init(bool debug)
 	using namespace WinFuns;
 	m_debug = debug;
 	if(debug) ShowWindow(GetConsoleWindow(), 1);
+	else {
+		ShowWindow(GetConsoleWindow(), 0);
+	}
 }
 
 void F_Debug::Start()
@@ -1325,13 +1330,15 @@ void F_Render::Draw_Text_Ex(F_Font font, const char* text, float x, float y, flo
 {
 	Draw_Text_Ex(font.to_raylib_font(), text, x,y,o_x,o_y,rot,spacing,size,col, alpha);
 }
+
+extern Font f_default_font;
 void F_Render::Draw_Text(const char* text, float x, float y, float o_x, float o_y, float rot, float size, Color col, float alpha)
 {
-	extern F_Font f_default_font;
-	if (f_default_font.ContainsText(text)) {
-		f_default_font.CheckAndAddCodepoints(text);
-	}
-	Draw_Text_Ex(f_default_font.to_raylib_font(), text, x, y, o_x, o_y, rot, 0, size, col, alpha);
+	Draw_Text_Ex(f_default_font, text, x, y, o_x, o_y, rot, 0, size, col, alpha);
+}
+void F_Render::Set_Default_Font(Font font)
+{
+	 f_default_font = font;
 }
 void Load_FCamera( float w, float h, F_Camera* camera)
 {
@@ -1493,7 +1500,7 @@ extern "C" int GetOpenFileNameW(OPENFILENAMEW* ofn);
 extern "C" int GetSaveFileNameA(OPENFILENAME* ofn);
 extern "C" int GetSaveFileNameW(OPENFILENAMEW* ofn);
 #define TCHAR wchar_t
-std::string F_File::Get_Open_File_Name(std::string strFilter)
+std::string F_File::Get_Open_File_Name(const char*strFilter)
 {
 	using namespace WinFuns;
 	OPENFILENAME ofn;
@@ -1505,7 +1512,7 @@ std::string F_File::Get_Open_File_Name(std::string strFilter)
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter =strFilter.c_str();
+	ofn.lpstrFilter = strFilter;
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -1524,9 +1531,9 @@ std::string F_File::Get_Open_File_Name(std::string strFilter)
 bool F_File::loaded = false;
 FilePathList F_File::drop_list = FilePathList();
 #include <fstream>
-std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
+std::string F_File::Get_Open_File_Name(const char* strFilter,unsigned int flag)
 {
-	using namespace WinFuns;
+	// 初始化 OPENFILENAME 结构体
 	OPENFILENAMEA ofn;
 	char szFile[260] = ""; // 文件名缓冲区
 	memset(&ofn, 0, sizeof(ofn));
@@ -1535,8 +1542,9 @@ std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 	ofn.lpstrFile = szFile;  // 将文件名缓冲区绑定到结构体
 	ofn.nMaxFile = sizeof(szFile);
 	// 设置文件过滤器
-	ofn.lpstrFilter = strFilter.c_str();
-	ofn.Flags = flag;
+	ofn.lpstrFilter = strFilter;
+	ofn.nFilterIndex = 1;
+	ofn.Flags = 0x00000800 | 0x00001000;
 
 	// 打开“打开文件”对话框
 	if (GetOpenFileNameA(&ofn)) {
@@ -1555,7 +1563,7 @@ std::string F_File::Get_Open_File_Name(std::string strFilter,unsigned int flag)
 	return "";
 }
 
-std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter)
+std::wstring F_File::Get_Open_File_NameW(const wchar_t* strFilter)
 {
 	using namespace WinFuns;
 	OPENFILENAMEW ofn;
@@ -1567,7 +1575,7 @@ std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter)
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.lpstrFilter = strFilter;
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -1583,7 +1591,7 @@ std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter)
 	}
 }
 
-std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter, unsigned int flag)
+std::wstring F_File::Get_Open_File_NameW(const wchar_t* strFilter, unsigned int flag)
 {
 	using namespace WinFuns;
 	OPENFILENAMEW ofn;
@@ -1595,7 +1603,7 @@ std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter, unsigned int fl
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.lpstrFilter = (strFilter);
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -1611,7 +1619,7 @@ std::wstring F_File::Get_Open_File_NameW(std::wstring strFilter, unsigned int fl
 	}
 }
 
-std::string F_File::Get_Save_File_Name(std::string strFilter)
+std::string F_File::Get_Save_File_Name(const char* strFilter)
 {
 	using namespace WinFuns;
 	OPENFILENAME ofn;
@@ -1623,7 +1631,7 @@ std::string F_File::Get_Save_File_Name(std::string strFilter)
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = strFilter.c_str();
+	ofn.lpstrFilter = strFilter;
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -1640,7 +1648,7 @@ std::string F_File::Get_Save_File_Name(std::string strFilter)
 	}
 }
 
-std::string F_File::Get_Save_File_Name(std::string strFilter, unsigned int flag)
+std::string F_File::Get_Save_File_Name(const char* strFilter, unsigned int flag)
 {
 	using namespace WinFuns;
 	OPENFILENAME ofn;
@@ -1652,7 +1660,7 @@ std::string F_File::Get_Save_File_Name(std::string strFilter, unsigned int flag)
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.lpstrFilter = (strFilter);
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -1668,7 +1676,7 @@ std::string F_File::Get_Save_File_Name(std::string strFilter, unsigned int flag)
 	}
 }
 
-std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter)
+std::wstring F_File::Get_Save_File_NameW(const wchar_t* strFilter)
 {
 	using namespace WinFuns;
 	OPENFILENAMEW ofn;
@@ -1680,7 +1688,7 @@ std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter)
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.lpstrFilter = (strFilter);
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -1696,7 +1704,7 @@ std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter)
 	}
 }
 
-std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter, unsigned int flag)
+std::wstring F_File::Get_Save_File_NameW(const wchar_t* strFilter, unsigned int flag)
 {
 	using namespace WinFuns;
 	OPENFILENAMEW ofn;
@@ -1708,7 +1716,7 @@ std::wstring F_File::Get_Save_File_NameW(std::wstring strFilter, unsigned int fl
 	ofn.lpstrFile = szFile;
 	ofn.lpstrFile[0] = '\0';
 	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter.c_str());
+	ofn.lpstrFilter = (strFilter);
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
@@ -2322,46 +2330,75 @@ namespace F_Json {
 	}
 }
 
-
 F_Lua::F_Lua() {
-	L = luaL_newstate();
-	if (!L) {
-		throw std::runtime_error("Failed to create Lua state");
-	}
-	luaL_openlibs(L); // 加载标准库
+	// 初始化Lua状态，打开所有标准库
+	lua_.open_libraries(
+		sol::lib::base,
+		sol::lib::package,
+		sol::lib::coroutine,
+		sol::lib::string,
+		sol::lib::os,
+		sol::lib::math,
+		sol::lib::table,
+		sol::lib::debug,
+		sol::lib::bit32,
+		sol::lib::io,
+		sol::lib::utf8
+	);
+
+	// 设置错误处理
+	lua_.set_exception_handler([](lua_State* L, sol::optional<const std::exception&> maybe_exception, sol::string_view description) {
+		std::cerr << "Lua异常: ";
+		if (maybe_exception) {
+			std::cerr << maybe_exception->what() << " - ";
+		}
+		std::cerr << description << std::endl;
+		return sol::stack::push(L, description);
+		});
 }
 
 F_Lua::~F_Lua() {
-	if (L) {
-		lua_close(L);
-	}
+	// sol::state会自动清理资源
 }
 
 bool F_Lua::ExecuteScript(const std::string& filepath) {
-	int status = luaL_dofile(L, filepath.c_str());
-	if (status != LUA_OK) {
-		HandleError(status);
+	try {
+		auto result = lua_.script_file(filepath);
+		return result.valid();
+	}
+	catch (const sol::error& e) {
+		std::cerr << "执行脚本错误: " << e.what() << std::endl;
 		return false;
 	}
-	return true;
 }
 
 bool F_Lua::ExecuteString(const std::string& code) {
-	int status = luaL_dostring(L, code.c_str());
-	if (status != LUA_OK) {
-		HandleError(status);
+	try {
+		auto result = lua_.script(code, sol::script_pass_on_error);
+		if (!result.valid()) {
+			sol::error err = result;
+			std::cerr << "Lua代码执行错误: " << err.what() << std::endl;
+			return false;
+		}
+		return true;
+	}
+	catch (const sol::error& e) {
+		std::cerr << "执行字符串错误: " << e.what() << std::endl;
 		return false;
 	}
-	return true;
 }
 
-void F_Lua::HandleError(int status) {
-	if (status != LUA_OK) {
-		const char* errorMsg = lua_tostring(L, -1);
-		std::cerr << "[Lua Error] " << errorMsg << std::endl;
-		lua_pop(L, 1); // 清除错误信息
+sol::protected_function_result F_Lua::ExecuteStringSafe(const std::string& code) {
+	return lua_.script(code, sol::script_pass_on_error);
+}
+
+void F_Lua::HandleError(const sol::protected_function_result& result) {
+	if (!result.valid()) {
+		sol::error err = result;
+		std::cerr << "Lua错误: " << err.what() << std::endl;
 	}
 }
+
 
 
 
@@ -2629,7 +2666,7 @@ std::string F_NetWork::GetEnetErrorString(int errorCode) {
 // 辅助函数：设置错误信息
 void F_NetWork::SetError(NetErrorCode code, int enetError,
 	const std::string& message,
-	const std::string& details = "") {
+	const std::string& details) {
 	lastError.code = code;
 	lastError.enetError = enetError;
 	lastError.message = message;

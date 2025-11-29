@@ -8,14 +8,14 @@ public:
 		return context.c_str();
 	}
 };
-void EventInstance(Object* inst, const char* event) {
+
+void EventInstance(const std::shared_ptr<Object>& inst, const char* event) {
 	using namespace WinFuns;
 	void* hWnd = GetWindowHandle();
 	if (!inst) {
-		MessageBox(hWnd, TextFormat("Instance %d Is Error In %s", inst,event), "Error", 0);
+		MessageBox(hWnd, TextFormat("Instance error in event: %s", event), "Error", 0);
+		return;
 	}
-	if (inst == nullptr) return;
-	if (inst == (void*)(0)) return;
 	try {
 		if (inst->_ins_id==-1) {
 			throw InstanceException("instance id error");
@@ -41,15 +41,14 @@ void EventInstance(Object* inst, const char* event) {
 		else if (TextIsEqual(event, "onAlarmEvent")) {
 			inst->onAlarmEvent();
 		}
-		
 		else if (TextIsEqual(event, "onBeginCamera")) {
-			  inst->onBeginCamera(); 
+			inst->onBeginCamera(); 
 		}
 		else if (TextIsEqual(event, "onEndCamera")) {
-			 inst->onEndCamera(); 
+			inst->onEndCamera(); 
 		}
 		else {
-			MessageBox(hWnd, TextFormat("Event %s Is Error", event), "Error", 0);
+			MessageBox(hWnd, TextFormat("Event %s is error", event), "Error", 0);
 		}
 	}
 	catch (InstanceException& e) {
@@ -59,29 +58,24 @@ void EventInstance(Object* inst, const char* event) {
 			name = inst->getObjName();
 			pro = inst->getObjPro();
 		}
-		auto t = TextFormat("实例运行错误:%s  ,  object name = %s   , pro = %d", e.what(), name.c_str(), pro);
+		auto t = TextFormat("Instance runtime error: %s, object name = %s, pro = %d", e.what(), name.c_str(), pro);
 		DEBUG_LOG(LOG_FATAL, t);
 		MessageBox(hWnd, t, "Fatal Error!", 0);
 	}
 }
 
-Room::Room()
-{
-	_counts = 0;
-}
+Room::Room() : _counts(0) {}
 
 Room::~Room() {
-	for (auto obj : objects) {
-		delete obj;
-	}
 	objects.clear();
+	objects_persistent.clear();
 }
-
-
 
 void Room::RunInstance(const char* event)
 {
-	for (auto obj : objects) {
+	// Iterate over a copy to handle deletions during iteration
+	auto obj_copy = GetObjListRef();
+	for (auto& obj : obj_copy) {
 		if (obj && obj->_ins_id != -1) {
 			EventInstance(obj, event);
 		}
@@ -91,8 +85,8 @@ void Room::RunInstance(const char* event)
 int Room::FindOne(const char* name)
 {
 	int i = 0;
-	for (auto obj : objects) {
-		if (TextIsEqual(obj->getObjName(), name)) {
+	for (auto& obj : objects) {
+		if (obj && TextIsEqual(obj->getObjName(), name)) {
 			return i;
 		}
 		i++;
@@ -103,8 +97,8 @@ int Room::FindOne(const char* name)
 int Room::Find(int id)
 {
 	int i = 0;
-	for (auto obj : objects) {
-		if (obj->_ins_id == id) {
+	for (auto& obj : objects) {
+		if (obj && obj->_ins_id == id) {
 			return i;
 		}
 		i++;
@@ -115,8 +109,8 @@ int Room::Find(int id)
 int Room::GetCount(const char* name) const
 {
 	int n = 0;
-	for (auto obj : objects) {
-		if (TextIsEqual(obj->getObjName(), name)) {
+	for (auto& obj : objects) {
+		if (obj && TextIsEqual(obj->getObjName(), name)) {
 			n++;
 		}
 	}
@@ -126,144 +120,412 @@ int Room::GetCount(const char* name) const
 int Room::GetCount(int id) const
 {
 	int n = 0;
-	for (auto obj : objects) {
-		if (obj->_ins_id == id) {
+	for (auto& obj : objects) {
+		if (obj && obj->_ins_id == id) {
 			n++;
 		}
 	}
 	return n;
 }
 
-int Room::Delete(const char* name,int num)
+int Room::Delete(const char* name, int num)
 {
-	if (FindOne(name) != -1) {
+	int found = FindOne(name);
+	if (found != -1) {
 		if (num == 0) {
-			while (FindOne(name) != -1) {
-				objects[FindOne(name)]->onDestroy();
-				objects.erase(objects.begin() + FindOne(name));
+			while ((found = FindOne(name)) != -1) {
+				objects[found]->onDestroy();
+				objects.erase(objects.begin() + found);
 			}
 		}
 		else {
 			int n = num;
-			while (FindOne(name) != -1) {
+			while ((found = FindOne(name)) != -1) {
 				if (n == 0) break;
-				objects[FindOne(name)]->onDestroy();
-				objects.erase(objects.begin() + FindOne(name));
+				objects[found]->onDestroy();
+				objects.erase(objects.begin() + found);
 				n--;
 			}
 			if (n != 0) return 0;
 		}
 		return 1;
 	}
-	DEBUG_LOG(LOG_ERROR, "Room:在Delete(int index)函数中index不在合法范围内", 0);
+	DEBUG_LOG(LOG_ERROR, "Room::Delete - name not found or invalid index", 0);
 	return 0;
 }
+
 int Room::GetCount() const
 {
 	return (int)objects.size();
 }
+
+int Room::DeletePersistent(const char* name, int num)
+{
+	int index = -1;
+	int idx = 0;
+	for (auto weak_obj : objects_persistent) {
+		auto obj = weak_obj.lock();
+		if (obj && TextIsEqual(obj->getObjName(), name)) {
+			index = idx;
+			break;
+		}
+		idx++;
+	}
+	if (index != -1) {
+		objects_persistent.erase(objects_persistent.begin() + index);
+		return 1;
+	}
+	DEBUG_LOG(LOG_ERROR, "Room::DeletePersistent - name not found", 0);
+	return 0;
+}
+
+int Room::DeletePersistentID(int id)
+{
+	int index = -1;
+	int ti = 0;
+	for (auto weak_obj : objects_persistent) {
+		auto obj = weak_obj.lock();
+		if (obj && obj->_ins_id == id) {
+			index = ti;
+			break;
+		}
+		ti++;
+	}
+	if (index != -1) {
+		auto obj = objects_persistent[index].lock();
+		if (obj) {
+			obj->onDestroy();
+		}
+		objects_persistent.erase(objects_persistent.begin() + index);
+		return 1;
+	}
+	DEBUG_LOG(LOG_ERROR, "Room::DeletePersistentID - id not found", 0);
+	return 0;
+}
+
+void Room::AddRunningInstance(std::shared_ptr<Object> instance)
+{
+	if (!instance) {
+		DEBUG_LOG(LOG_ERROR, "Room::AddRunningInstance - instance is nullptr", 0);
+		return;
+	}
+	try {
+		instance->_ins_id = _counts;
+		objects.emplace_back(instance);
+		_counts++;
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_ERROR, TextFormat("Room::AddRunningInstance - Failed to add instance: %s", e.what()), 0);
+	}
+}
+
+void Room::TransferPersistentObjects(Room* newRoom)
+{
+	if (!newRoom) {
+		DEBUG_LOG(LOG_ERROR, "Room::TransferPersistentObjects - newRoom is nullptr", 0);
+		return;
+	}
+	// Create copies of persistent objects
+	std::vector<std::shared_ptr<Object>> persistent_copy;
+	for (auto weak_obj : objects_persistent) {
+		auto obj = weak_obj.lock();
+		if (obj) {
+			try {
+				auto new_obj = std::make_shared<Object>(*obj);
+				persistent_copy.push_back(new_obj);
+			}
+			catch (const std::exception& e) {
+				DEBUG_LOG(LOG_ERROR, TextFormat("Room::TransferPersistentObjects - Failed to copy object: %s", e.what()), 0);
+			}
+		}
+	}
+	// Add to new room
+	for (auto& obj : persistent_copy) {
+		newRoom->AddRunningInstance(obj);
+	}
+}
+
+std::vector<std::shared_ptr<Object>> Room::GetObjListPersistent()
+{
+	std::vector<std::shared_ptr<Object>> out;
+	for (auto weak_obj : objects_persistent) {
+		auto obj = weak_obj.lock();
+		if (obj) {
+			out.push_back(obj);
+		}
+	}
+	return out;
+}
+
 std::string Room::GetName(int id)
 {
-	for (auto obj : objects) {
-		if (obj->_ins_id == id) {
+	for (auto& obj : objects) {
+		if (obj && obj->_ins_id == id) {
 			return obj->getObjName();
 		}
 	}
 	return "NONE";
 }
-int Room::Delete(int index, bool delete_object) {
-	if (index >= 0 && index < objects.size()) {
+
+int Room::Delete(int index) {
+	if (index >= 0 && index < (int)objects.size()) {
 		objects[index]->onDestroy();
-		if(delete_object )delete objects[index]; // 增加对象释放
 		objects.erase(objects.begin() + index);
 		return 1;
 	}
-	DEBUG_LOG(LOG_ERROR, "Room:在Delete(int index)函数中index不在合法范围内", 0);
+	DEBUG_LOG(LOG_ERROR, "Room::Delete(index) - index out of range", 0);
 	return 0;
 }
-int Room::DeleteID(int id, bool delete_object ) {
+
+int Room::DeleteID(int id) {
 	int index = Find(id);
 	if (index != -1) {
 		objects[index]->onDestroy();
-		if (delete_object)delete objects[index];
 		objects.erase(objects.begin() + index);
 		return 1;
 	}
-	DEBUG_LOG(LOG_ERROR, "Room:在DeleteID(int id)函数中id不在合法范围内", 0);
+	DEBUG_LOG(LOG_ERROR, "Room::DeleteID - id not found", 0);
 	return 0;
 }
-Object* Room::Create(Object* instance) {
-	// 创建新实例并存储到对象列表中
-	Object* newInstance = new Object(std::move(*instance));  // 深拷贝对象
-	newInstance->_ins_id = _counts;
-	objects.push_back(newInstance);
-	_counts++;
-	return objects.back();  // 返回存储对象的指针
+
+std::shared_ptr<Object> Room::Create(Object* instance, bool persistent) {
+	if (!instance) {
+		DEBUG_LOG(LOG_ERROR, "Room::Create - instance is nullptr", 0);
+		return nullptr;
+	}
+	try {
+		// Create shared_ptr from raw object
+		auto newInstance = std::make_shared<Object>(std::move(*instance));
+		newInstance->_ins_id = _counts;
+		objects.emplace_back(newInstance);
+		if (persistent) {
+			objects_persistent.emplace_back(newInstance);
+		}
+		_counts++;
+		delete instance;  // Clean up the source object
+		return objects.back();
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_ERROR, TextFormat("Room::Create - Exception: %s", e.what()), 0);
+		delete instance;
+		return nullptr;
+	}
 }
 
-Object* Room::AddIns(Object* instance)
+std::shared_ptr<Object> Room::AddIns(std::shared_ptr<Object> instance, bool persistent)
 {
-	instance->_ins_id= _counts;
-	_counts++;
-	objects.push_back(instance);
-	return objects.back();
+	if (!instance) {
+		DEBUG_LOG(LOG_ERROR, "Room::AddIns - instance is nullptr", 0);
+		return nullptr;
+	}
+	try {
+		instance->_ins_id = _counts;
+		_counts++;
+		objects.emplace_back(instance);
+		if (persistent) {
+			// Avoid duplicate entries
+			bool already_persistent = false;
+			for (auto weak_obj : objects_persistent) {
+				auto obj = weak_obj.lock();
+				if (obj == instance) {
+					already_persistent = true;
+					break;
+				}
+			}
+			if (!already_persistent) {
+				objects_persistent.emplace_back(instance);
+			}
+		}
+		return objects.back();
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_ERROR, TextFormat("Room::AddIns - Exception: %s", e.what()), 0);
+		return nullptr;
+	}
+}
+
+std::vector<std::shared_ptr<Object>> Room::GetObjList() const {
+	std::vector<std::shared_ptr<Object>> out;
+	out.reserve(objects.size());
+	for (auto& obj : objects) {
+		out.push_back(obj);
+	}
+	return out;
 }
 
 static Room* _Game_Main_Room = nullptr;
 static bool _Game_Room_Is_Enter = false;
-static Room* _Game_Next_Room=nullptr;
-void Room_Goto(Room* room)
+static Room* _Game_Next_Room = nullptr;
+
+void Room_Goto(Room* room, bool keep_persistent)
 {
-	if (_Game_Main_Room != nullptr)
-		_Game_Main_Room->RunInstance("onDestroy");
-	_Game_Main_Room = new Room;
-	_Game_Main_Room = room;
-	_Game_Main_Room->RunInstance("onEnter");
-	_Game_Room_Is_Enter = true;
+	if (!room) {
+		DEBUG_LOG(LOG_ERROR, "Room_Goto - room is nullptr", 0);
+		return;
+	}
+
+	try {
+		if (_Game_Main_Room != nullptr) {
+			// Backup persistent objects
+			auto persistent_backup = _Game_Main_Room->GetObjListPersistent();
+
+			// Destroy old room's objects
+			_Game_Main_Room->RunInstance("onDestroy");
+
+			// Delete old room
+			Room* old_room = _Game_Main_Room;
+			_Game_Main_Room = nullptr;
+			delete old_room;
+
+			// Switch to new room
+			_Game_Main_Room = room;
+
+			// Initialize new room
+			try {
+				_Game_Main_Room->RunInstance("onEnter");
+			}
+			catch (const std::exception& e) {
+				DEBUG_LOG(LOG_ERROR, TextFormat("Room_Goto - Failed to initialize new room: %s", e.what()), 0);
+			}
+
+			// Transfer persistent objects
+			if (keep_persistent) {
+				for (size_t i = 0; i < persistent_backup.size(); ++i) {
+					auto obj = persistent_backup[i];
+					if (!obj) {
+						DEBUG_LOG(LOG_WARNING, TextFormat("Room_Goto - Persistent object at index %zu is nullptr", i), 0);
+						continue;
+					}
+					try {
+						_Game_Main_Room->AddRunningInstance(obj);
+					}
+					catch (const std::exception& e) {
+						DEBUG_LOG(LOG_ERROR, TextFormat("Room_Goto - Failed to add persistent object: %s", e.what()), 0);
+					}
+				}
+			}
+
+			_Game_Room_Is_Enter = true;
+		}
+		else {
+			_Game_Main_Room = room;
+			try {
+				_Game_Main_Room->RunInstance("onEnter");
+			}
+			catch (const std::exception& e) {
+				DEBUG_LOG(LOG_ERROR, TextFormat("Room_Goto - Failed to initialize first room: %s", e.what()), 0);
+				_Game_Main_Room = nullptr;
+				delete room;
+				return;
+			}
+			_Game_Room_Is_Enter = true;
+		}
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_FATAL, TextFormat("Room_Goto - Unexpected exception: %s", e.what()), 0);
+	}
 }
+
 void Room_Set_Next(Room* nextRoom) {
-	_Game_Next_Room = new Room;
-	_Game_Next_Room = nextRoom;
+	try {
+		if (!nextRoom) {
+			DEBUG_LOG(LOG_WARNING, "Room_Set_Next - nextRoom is nullptr", 0);
+			return;
+		}
+		if (_Game_Next_Room) {
+			delete _Game_Next_Room;
+		}
+		_Game_Next_Room = nextRoom;
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_ERROR, TextFormat("Room_Set_Next - Exception: %s", e.what()), 0);
+	}
 }
-void Room_Goto_Next(Room* nextRoom=nullptr) {
-	Room_Goto(_Game_Next_Room);
-	if (nextRoom != nullptr)
-		Room_Set_Next(nextRoom);
+
+void Room_Goto_Next(Room* nextRoom)
+{
+	try {
+		if (!_Game_Next_Room && !nextRoom) {
+			DEBUG_LOG(LOG_WARNING, "Room_Goto_Next - No next room set", 0);
+			return;
+		}
+		if (_Game_Next_Room) {
+			Room_Goto(_Game_Next_Room);
+		}
+		if (nextRoom != nullptr) {
+			Room_Set_Next(nextRoom);
+		}
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_ERROR, TextFormat("Room_Goto_Next - Exception: %s", e.what()), 0);
+	}
 }
+
 void Room_Reset()
 {
-	_Game_Main_Room = _Game_Main_Room->reset();
-	_Game_Room_Is_Enter = false;
+	if (!_Game_Main_Room) {
+		DEBUG_LOG(LOG_WARNING, "Room_Reset - No active room to reset", 0);
+		return;
+	}
+
+	try {
+		auto persistent_objs = _Game_Main_Room->GetObjListPersistent();
+
+		Room* newRoom = nullptr;
+		try {
+			newRoom = _Game_Main_Room->reset();
+		}
+		catch (const std::exception& e) {
+			DEBUG_LOG(LOG_ERROR, TextFormat("Room_Reset - Failed to create new room: %s", e.what()), 0);
+			return;
+		}
+
+		if (!newRoom) {
+			DEBUG_LOG(LOG_ERROR, "Room_Reset - reset() returned nullptr", 0);
+			return;
+		}
+
+		Room* old_room = _Game_Main_Room;
+		_Game_Main_Room = nullptr;
+		delete old_room;
+
+		_Game_Main_Room = newRoom;
+
+		for (auto& obj : persistent_objs) {
+			if (!obj) {
+				DEBUG_LOG(LOG_WARNING, "Room_Reset - Persistent object is nullptr", 0);
+				continue;
+			}
+			try {
+				_Game_Main_Room->AddRunningInstance(obj);
+			}
+			catch (const std::exception& e) {
+				DEBUG_LOG(LOG_ERROR, TextFormat("Room_Reset - Failed to add persistent object: %s", e.what()), 0);
+			}
+		}
+
+		_Game_Room_Is_Enter = false;
+	}
+	catch (const std::exception& e) {
+		DEBUG_LOG(LOG_FATAL, TextFormat("Room_Reset - Unexpected exception: %s", e.what()), 0);
+	}
 }
 
 Room* Room_Get_Now()
 {
-	if (!_Game_Main_Room)
-		return nullptr;
-	else
-		return _Game_Main_Room;
+	return _Game_Main_Room;
 }
 
 const Room* Room_Get_NowC()
 {
-	if (!_Game_Main_Room)
-		return nullptr;
-	else
-		return _Game_Main_Room;
+	return _Game_Main_Room;
 }
 
 bool Room_Is_Ready()
 {
-	if (!_Game_Main_Room) {
-		return false;
-	}
-	return true;
+	return _Game_Main_Room != nullptr;
 }
 
-/*
- * 运行房间
- * 返回值 -1未知 0未初始化 1成功 2已运行该事件
-*/
 int Room_Run_Now(const char* event)
 {
 	if (TextIsEqual(event, "onEnter")) {
@@ -284,62 +546,109 @@ int Room_Run_Now(const char* event)
 			return 0;
 		}
 	}
-	else {
-		return 0;
-	}
-	return -1;
+	return 0;
 }
 
-
-Object* Create_Instance(float x, float y, Object* instance, const char* name = "NONE")
+std::shared_ptr<Object> Create_Instance(float x, float y, Object* instance, const char* name, bool persistent)
 {
 	Room* room = Room_Get_Now();
+	if (!room) {
+		DEBUG_LOG(LOG_ERROR, "Create_Instance - no active room", 0);
+		delete instance;
+		return nullptr;
+	}
+	if (!instance) {
+		DEBUG_LOG(LOG_ERROR, "Create_Instance - instance is nullptr", 0);
+		return nullptr;
+	}
 	instance->setObjName(name);
 	instance->onEnter();
 	instance->x = x;
 	instance->y = y;
-	return room->Create(instance);
+	auto result = room->Create(instance, persistent);
+	if (!result) {
+		DEBUG_LOG(LOG_ERROR, "Create_Instance - room->Create failed", 0);
+	}
+	return result;
 }
 
-Object* Create_Instance(Object* instance, const char* name)
+std::shared_ptr<Object> Create_Instance(Object* instance, const char* name, bool persistent)
 {
 	Room* room = Room_Get_Now();
+	if (!room) {
+		DEBUG_LOG(LOG_ERROR, "Create_Instance - no active room", 0);
+		delete instance;
+		return nullptr;
+	}
+	if (!instance) {
+		DEBUG_LOG(LOG_ERROR, "Create_Instance - instance is nullptr", 0);
+		return nullptr;
+	}
 	instance->setObjName(name);
 	instance->onEnter();
-	return room->Create(instance);
+	auto result = room->Create(instance, persistent);
+	if (!result) {
+		DEBUG_LOG(LOG_ERROR, "Create_Instance - room->Create failed", 0);
+	}
+	return result;
 }
 
 int Destroy_Instance(const char* name, int num)
 {
 	Room* room = Room_Get_Now();
+	if (!room) return 0;
 	return room->Delete(name, num);
 }
 
-int Destroy_Instance(int id, bool delete_object )
+int Destroy_Persistent_Instance(const char* name, int num)
 {
-	return Room_Get_Now()->DeleteID(id,  delete_object );
+	Room* room = Room_Get_Now();
+	if (!room) return 0;
+	return room->DeletePersistent(name, num);
+}
+
+int Destroy_Instance(int id)
+{
+	Room* room = Room_Get_Now();
+	if (!room) return 0;
+	return room->DeleteID(id);
+}
+
+int Destroy_Persistent_Instance(int id)
+{
+	Room* room = Room_Get_Now();
+	if (!room) return 0;
+	return room->DeletePersistentID(id);
 }
 
 bool IsExist_Instance(const char* name)
 {
-	return Room_Get_Now()->FindOne(name) ;
+	Room* room = Room_Get_Now();
+	if (!room) return false;
+	return room->FindOne(name) != -1;
 }
 
 bool IsExist_Instance(int id)
 {
-	return Room_Get_Now()->Find(id)!=-1;
+	Room* room = Room_Get_Now();
+	if (!room) return false;
+	return room->Find(id) != -1;
 }
 
 int Count_Instance(const char* name)
 {
-	return Room_Get_Now()->GetCount(name);
+	Room* room = Room_Get_Now();
+	if (!room) return 0;
+	return room->GetCount(name);
 }
 
 int Count_Instance(int id)
 {
+	Room* room = Room_Get_Now();
+	if (!room) return 0;
 	int i = 0;
-	for (auto obj : Room_Get_Now()->GetObjList()) {
-		if (obj->_ins_id == id) {
+	for (auto obj : room->GetObjList()) {
+		if (obj && obj->_ins_id == id) {
 			i++;
 		}
 	}
@@ -348,23 +657,30 @@ int Count_Instance(int id)
 
 int Count_Instance()
 {
-	return Room_Get_Now()->GetCount(); 
+	Room* room = Room_Get_Now();
+	if (!room) return 0;
+	return room->GetCount(); 
 }
 
 std::string Get_Instance_Name(int id)
 {
-	return Room_Get_Now()->GetName(id);
+	Room* room = Room_Get_Now();
+	if (!room) return "NONE";
+	return room->GetName(id);
 }
 
 void Show_Instance_Info()
 {
 	Room* room = Room_Get_Now();
-	DEBUG_LOG(LOG_DEBUG, "所有实例信息，在当前房间中：",0);
+	if (!room) return;
+	DEBUG_LOG(LOG_DEBUG, "Showing instance info for current room", 0);
 	
-	std::vector<Object*> instance = room->GetObjList();
+	auto instance = room->GetObjList();
 	int index = 0;
 	for (auto ins : instance) {
-		std::cout << "实例编号:" << index << "\t实例名称:" << ins->getObjName() << "\t实例ID:" << ins->_ins_id << "\t实例状态：" << IsExist_Instance(ins->_ins_id)<<std::endl;
+		if (ins) {
+			std::cout << "Instance:" << index << "\tName:" << ins->getObjName() << "\tID:" << ins->_ins_id << "\tExists:" << IsExist_Instance(ins->_ins_id) << std::endl;
+		}
 		index++;
 	}
 }

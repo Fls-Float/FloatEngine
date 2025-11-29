@@ -11,8 +11,8 @@
 
 #pragma once
 #include <math.h>
-#include <raylib.hpp>
-#include <raymath.hpp>
+#include "raylib.h"
+#include "raymath.h"
 #include <iostream>
 #include <vector>
 #include <algorithm>

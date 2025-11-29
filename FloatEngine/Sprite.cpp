@@ -103,7 +103,7 @@ bool Sprite::LoadFrameFromResource(const F_Resource* resource, const char* name)
 {
     const F_Resource *res = resource;
     if (res->HasResource(name, ResTexture)) {
-        Texture t = res->GetTexture(name);
+        Texture t = const_cast<F_Resource*>(res)->GetTexture(name);
 		frames.push_back(t);
 		return true;
     }

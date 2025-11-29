@@ -1,2 +1,2 @@
-PlatformToolSet=v143:VCToolArchitecture=Native64Bit:VCToolsVersion=14.43.34808:TargetPlatformVersion=10.0.22621.0:VcpkgTriplet=x64-windows:
-Release|x64|F:\Visual Studio\C++\FloatStudio\FloatEngine\|
+PlatformToolSet=v143:VCToolArchitecture=Native64Bit:VCToolsVersion=14.44.35207:TargetPlatformVersion=10.0.26100.0:VcpkgTriplet=x64-windows-static:
+Release|x64|E:\FloatStudio\Engine Related\FloatEngine\|

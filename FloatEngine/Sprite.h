@@ -7,7 +7,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
-#include "raylib.hpp"
+#include "raylib.h"
 #include "F_Resource.h"
 class Sprite {
 private:

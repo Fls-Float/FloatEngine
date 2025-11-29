@@ -1,12 +1,13 @@
 /**
  * @file Object.h
- * @brief 游戏对象类
+ * @brief 游戏对象基类
  * @defgroup Object 对象模块
  *
  * 提供游戏对象的创建、管理和事件处理功能：
  * - 对象属性管理
  * - 事件处理（用户事件、进入事件、更新事件、渲染事件等）
  * - 计时器功能
+ * - 生命周期管理
  */
 
 #pragma once
@@ -18,19 +19,19 @@
 
 #define FOBJECT_BODY() float x, y; float image_index; Sprite sprite_index; int depth; Size m_block; float m_angle; Vector2 m_origin;float image_xscale;float image_yscale;float image_alpha;Color image_color;
 
- /**
-  * @class Object
-  * @ingroup Object
-  *
-  * @brief 提供游戏对象的创建、管理和事件处理功能
-  *
-  * @note 使用示例：
-  * @code
-  * Object obj("Player", 1);
-  * obj.onUpdate();
-  * obj.onRender();
-  * @endcode
-  */
+/**
+ * @class Object
+ * @ingroup Object
+ *
+ * @brief 提供游戏对象的创建、管理和事件处理功能
+ *
+ * @note 使用示例：
+ * @code
+ * Object obj("Player", 1);
+ * obj.onUpdate();
+ * obj.onRender();
+ * @endcode
+ */
 class Object {
     int _m_obj_pro; ///< 对象属性
     std::string _m_obj_name; ///< 对象名称
@@ -38,7 +39,6 @@ class Object {
 
 protected:
     bool object_mode_no_destroy_sprite;
-
 
     static const int ALARM_EVENT_COUNT = 11; ///< 计时器事件数量
 
@@ -134,7 +134,7 @@ public:
     /**
      * @brief 析构函数
      */
-    ~Object();
+    virtual ~Object();
 
     /**
      * @brief 设置对象名称
@@ -274,5 +274,309 @@ public:
      */
     virtual void onDestroy();
 };
+/**
+ * @brief 对象创建器接口
+ */
+class IObjectCreator {
+public:
+    virtual ~IObjectCreator() = default;
 
+    /**
+     * @brief 创建对象实例
+     * @param args 创建参数
+     */
+    virtual std::shared_ptr<Object> create(sol::variadic_args args) = 0;
 
+    /**
+     * @brief 获取对象类型信息
+     */
+    virtual const std::type_info& getTypeInfo() const = 0;
+
+    /**
+     * @brief 注册到 Lua
+     */
+    virtual void registerToLua(sol::state& lua, const std::string& name) = 0;
+};
+
+/**
+ * @brief 模板对象创建器
+ */
+template<typename T>
+class ObjectCreator : public IObjectCreator {
+    static_assert(std::is_base_of_v<Object, T>, "T must inherit from Object");
+
+public:
+    std::shared_ptr<Object> create(sol::variadic_args args) override {
+        return createImpl(args);
+    }
+
+    const std::type_info& getTypeInfo() const override {
+        return typeid(T);
+    }
+
+    void registerToLua(sol::state& lua, const std::string& name) override {
+        registerToLuaImpl(lua, name);
+    }
+
+private:
+    /**
+     * @brief 具体的创建实现，支持不同数量的参数
+     */
+    template<typename... Args>
+    std::shared_ptr<Object> createWithArgs(Args&&... args) {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
+
+    std::shared_ptr<Object> createImpl(sol::variadic_args args) {
+        const size_t argCount = args.size();
+
+        // 根据参数数量分派到不同的创建函数
+        switch (argCount) {
+        case 0:
+            return createWithArgs();
+        case 1:
+            if (args[0].is<const char*>()) {
+                return createWithArgs(args[0].as<const char*>());
+            }
+            else if (args[0].is<std::string>()) {
+                return createWithArgs(args[0].as<std::string>().c_str());
+            }
+            else if (args[0].is<int>()) {
+                return createWithArgs("", args[0].as<int>());
+            }
+            break;
+        case 2:
+            if (args[0].is<const char*>() && args[1].is<int>()) {
+                return createWithArgs(args[0].as<const char*>(), args[1].as<int>());
+            }
+            else if (args[0].is<std::string>() && args[1].is<int>()) {
+                return createWithArgs(args[0].as<std::string>().c_str(), args[1].as<int>());
+            }
+            break;
+        case 3:
+            if (args[0].is<const char*>() && args[1].is<int>() && args[2].is<int>()) {
+                return createWithArgs(args[0].as<const char*>(), args[1].as<int>(), args[2].as<int>());
+            }
+            else if (args[0].is<std::string>() && args[1].is<int>() && args[2].is<int>()) {
+                return createWithArgs(args[0].as<std::string>().c_str(), args[1].as<int>(), args[2].as<int>());
+            }
+            break;
+        default:
+            throw std::runtime_error("Too many arguments for object creation");
+        }
+
+        throw std::runtime_error("Invalid argument types for object creation");
+    }
+
+    void registerToLuaImpl(sol::state& lua, const std::string& name) {
+        // 注册 Object 类到 Lua，支持虚函数重载
+        lua.new_usertype<Object>(
+            name,
+            sol::base_classes, sol::bases<Object>(),
+            sol::call_constructor, sol::constructors<
+            Object(),
+            Object(const char*, int, int),
+            Object(Object&&),
+            Object(const Object&)
+            >(),
+
+            // 属性
+            "_ins_id", &Object::_ins_id,
+            "_m_obj_pro", &Object::_m_obj_pro,
+            "_m_obj_name", &Object::_m_obj_name,
+
+            // 公共方法
+            "setObjName", &Object::setObjName,
+            "setObjPro", &Object::setObjPro,
+            "getObjName", &Object::getObjName,
+            "getObjPro", &Object::getObjPro,
+            "getAlarmCount", &Object::getAlarmCount,
+
+            // 虚函数 - 使用 override 支持 Lua 重载
+            "onEvent_User", (&Object::onEvent_User),
+            "onEnter", (&Object::onEnter),
+            "onUpdate", (&Object::onUpdate),
+            "onRenderBefore", (&Object::onRenderBefore),
+            "onRender", (&Object::onRender),
+            "onRenderNext", (&Object::onRenderNext),
+            "onBeginCamera", (&Object::onBeginCamera),
+            "onEndCamera", (&Object::onEndCamera),
+            "onDestroy", (&Object::onDestroy),
+
+            // 计时器虚函数
+            "onAlarmEvent0", (&Object::onAlarmEvent0),
+            "onAlarmEvent1", (&Object::onAlarmEvent1),
+            "onAlarmEvent2", (&Object::onAlarmEvent2),
+            "onAlarmEvent3", (&Object::onAlarmEvent3),
+            "onAlarmEvent4", (&Object::onAlarmEvent4),
+            "onAlarmEvent5", (&Object::onAlarmEvent5),
+            "onAlarmEvent6", (&Object::onAlarmEvent6),
+            "onAlarmEvent7", (&Object::onAlarmEvent7),
+            "onAlarmEvent8", (&Object::onAlarmEvent8),
+            "onAlarmEvent9", (&Object::onAlarmEvent9),
+            "onAlarmEvent10", (&Object::onAlarmEvent10),
+
+            // 其他方法
+            "onAlarmEvent", &Object::onAlarmEvent,
+            "change_name", &Object::change_name,
+            "change_pro", &Object::change_pro
+        );
+
+        // 如果注册的是派生类，也需要注册其特定方法
+        if constexpr (!std::is_same_v<T, Object>) {
+            registerDerivedClassToLua(lua, name);
+        }
+    }
+
+    /**
+     * @brief 为派生类注册额外的方法
+     */
+    template<typename U = T>
+    typename std::enable_if<!std::is_same_v<U, Object>>::type
+        registerDerivedClassToLua(sol::state& lua, const std::string& name) {
+        // 为派生类创建新的 usertype，继承自 Object
+        auto derived_usertype = lua.new_usertype<U>(
+            name,
+            sol::base_classes, sol::bases<Object>(),
+            sol::call_constructor, sol::constructors<
+            U(),
+            U(const char*, int, int),
+            U(U&&),
+            U(const U&)
+            >()
+        );
+
+        // 自动检测并注册派生类的公共方法
+      //  registerDerivedMethods<U>(derived_usertype);
+
+        // 自动检测并注册派生类的额外虚函数重载
+      //  registerDerivedVirtualMethods<U>(derived_usertype);
+
+        std::cout << "Registered derived class: " << name << " with additional methods" << std::endl;
+    }
+};
+
+/**
+ * @brief Lua 对象创建器（用于在 Lua 中定义的对象类型）
+ */
+class LuaObjectCreator : public IObjectCreator {
+public:
+    LuaObjectCreator(sol::function lua_constructor)
+        : lua_constructor_(lua_constructor) {
+    }
+
+    std::shared_ptr<Object> create(sol::variadic_args args) override {
+        sol::object result = lua_constructor_(args);
+        if (result.is<std::shared_ptr<Object>>()) {
+            return result.as<std::shared_ptr<Object>>();
+        }
+        throw std::runtime_error("Lua constructor did not return an Object");
+    }
+
+    const std::type_info& getTypeInfo() const override {
+        return typeid(Object); // Lua 对象都视为 Object 类型
+    }
+
+    void registerToLua(sol::state& lua, const std::string& name) override {
+        // Lua 类型已经在 Lua 中定义，不需要额外注册
+    }
+
+private:
+    sol::function lua_constructor_;
+};
+
+/**
+ * @brief 对象管理器类
+ */
+class ObjectManager {
+private:
+    std::unordered_map<std::string, std::unique_ptr<IObjectCreator>> object_creators_;
+    std::unordered_map<std::string, std::string> type_to_name_;
+    sol::state* lua_state_ = nullptr;
+
+    ObjectManager() = default;
+
+public:
+    // 禁用拷贝和移动
+    ObjectManager(const ObjectManager&) = delete;
+    ObjectManager& operator=(const ObjectManager&) = delete;
+    ObjectManager(ObjectManager&&) = delete;
+    ObjectManager& operator=(ObjectManager&&) = delete;
+
+    /**
+     * @brief 获取单例实例
+     */
+    static ObjectManager& getInstance() {
+        static ObjectManager instance;
+        return instance;
+    }
+
+    /**
+     * @brief 设置 Lua 状态
+     */
+    void setLuaState(sol::state& lua) {
+        lua_state_ = &lua;
+    }
+
+    /**
+     * @brief 注册 C++ 对象类型
+     */
+    template<typename T>
+    void registerObjectType(const std::string& name) {
+        static_assert(std::is_base_of_v<Object, T>, "T must inherit from Object");
+
+        if (object_creators_.find(name) != object_creators_.end()) {
+            throw std::runtime_error("Object type '" + name + "' is already registered");
+        }
+
+        object_creators_[name] = std::make_unique<ObjectCreator<T>>();
+        type_to_name_[typeid(T).name()] = name;
+
+        // 如果 Lua 状态已设置，自动注册到 Lua
+        if (lua_state_) {
+            object_creators_[name]->registerToLua(*lua_state_, name);
+        }
+
+        std::cout << "Registered object type: " << name << " (" << typeid(T).name() << ")" << std::endl;
+    }
+
+    /**
+     * @brief 注册 Lua 对象类型
+     */
+    void registerLuaObjectType(const std::string& name, sol::function constructor);
+
+    /**
+     * @brief 创建对象实例
+     */
+    std::shared_ptr<Object> createInstance(const std::string& name, sol::variadic_args args);
+
+    /**
+     * @brief 检查对象类型是否已注册
+     */
+    bool isTypeRegistered(const std::string& name) const;
+
+    /**
+     * @brief 获取已注册的类型名称列表
+     */
+    std::vector<std::string> getRegisteredTypeNames() const;
+
+    /**
+     * @brief 根据类型信息获取类型名称
+     */
+    std::string getTypeName(const std::type_info& type) const;
+
+    /**
+     * @brief 获取对象创建器
+     */
+    IObjectCreator* getCreator(const std::string& name) const;
+
+    /**
+     * @brief 清空所有注册的类型
+     */
+    void clear();
+
+    /**
+     * @brief 注册全局函数到 Lua
+     */
+    void registerGlobalFunctions();
+};

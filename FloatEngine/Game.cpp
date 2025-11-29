@@ -2,7 +2,6 @@
 #include "Room.h"
 #include <string>
 #include "F_Console.h"
-
 Game::Game()
 {
 	_fps = _w = _h = 0;
@@ -90,20 +89,26 @@ void LoadGuiFont(float dpi_scale = 1.0f) {
 		io.Fonts->GetGlyphRangesChineseFull());
 	rlImGuiReloadFonts();
 }
-void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
+void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, bool loadAllMod)
 {
-	F_Debug::Init(debug);
 	using namespace WinFuns;
 	SetConfigFlags(flags);
-	Init_FConsole();
 	InitWindow(w, h, "Create With FloatEngine");
-	BeginDrawing(); EndDrawing();
-	F_Gui::Init();
-	F_Debug::InitCommand();
-	LoadGuiFont();
-	BeginDrawing(); EndDrawing();
 
-	ApplyGuiStyle();
+	F_Debug::Init(debug);
+	Init_FConsole();
+	F_Gui::Init();
+	BeginDrawing(); EndDrawing();
+	if (loadAllMod)
+	{
+		LoadGuiFont();
+		ApplyGuiStyle();
+		floatapi_font::InitDefaultFont();
+
+	}
+
+
+	BeginDrawing(); EndDrawing();
 	if (_load_icon) {
 		SetWindowIcons(_icons, _icon_number);
 	}
@@ -138,11 +143,47 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags)
 	}
 	//初始化
 	InitAudioDevice();
-	floatapi_font::InitDefaultFont();
+		
 	_w = w; _h = h;
 	TextCopy(_title, title);
+
 	BeginDrawing();EndDrawing();
+	if (debug)
+		F_Debug::InitCommand();
 	DEBUG_LOG(LOG_INFO, "Game_Create_Window:窗口创建成功，当前状态:未激活(使用ShowWindow来手动激活)",0);
+	DEBUG_LOG(LOG_INFO, TextFormat("FloatEngine初始化成功，版本号:%s", FLOAT_API_VERSION),0);
+}
+void LoadOneMod(int modFlag)
+{
+	switch (modFlag) {
+	
+	case MOD_FGUI: 
+		F_Gui::Init();
+		LoadGuiFont();
+		ApplyGuiStyle();
+		break;
+	case MOD_FFONT:
+		floatapi_font::InitDefaultFont();
+		break;
+	case MOD_ALL:
+		F_Debug::Init(true);
+		F_Gui::Init();
+		LoadGuiFont();
+		ApplyGuiStyle();
+		break;
+	}
+}
+void Game::LoadMod(int modFlag)
+{
+	if (modFlag & MOD_FGUI) {
+		LoadOneMod(MOD_FGUI);
+	}
+	if (modFlag & MOD_FFONT) {
+		LoadOneMod(MOD_FFONT);
+	}
+	if (modFlag & MOD_ALL) {
+		LoadOneMod(MOD_ALL);
+	}
 }
 bool Game::CanStart()
 {

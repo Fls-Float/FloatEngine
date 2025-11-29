@@ -1,839 +1,737 @@
 #include "F_Resource.h"
-#include "minizip/unzip.h"
-#include "minizip/zip.h"
-#include <zlib.h>
 #include <iostream>
 #include <fstream>
-#include <direct.h>
+#include <algorithm>
+#include <unordered_set>
 #include "FloatApi.h"
-#include <filesystem>
-extern void DEBUG_LOG(int lv, const char* text, bool english, bool auto_enter,bool );
 
+#include "minizip-ng/mz.h"
+#include "minizip-ng/mz_strm.h"
+#include "minizip-ng/mz_crypt.h"
+#include "minizip-ng/mz_strm_split.h"
+#include "minizip-ng/mz_strm_mem.h"
+#include "minizip-ng/mz_strm_os.h"
+#include "minizip-ng/mz_zip.h"
+#include "minizip-ng/mz_zip_rw.h"
+#include "minizip-ng/ioapi.h"
+#include "minizip-ng/mz_strm_bzip.h"
 
-zlib_filefunc64_def _mem_zip_io = { 0 }; // 内存 ZIP 的 IO 回调
+struct ZipReader {
+    std::string path;
+    std::vector<unsigned char> data;
+    bool is_open = false;
+};
 
-static unsigned long ZCALLBACK mem_read(void* opaque, void* buf, unsigned long size) {
-    MemoryBuffer* mem = (MemoryBuffer*)opaque;
-    size_t bytes_to_read = (mem->position + size <= mem->size) ? size : mem->size - mem->position;
-    if (bytes_to_read > 0) {
-        memcpy(buf, mem->buffer + mem->position, bytes_to_read);
-        mem->position += bytes_to_read;
-    }
-    return (unsigned long)bytes_to_read;
+// 哈希支持 pair<string, ResourceType> 用于 unordered_set/map
+namespace std {
+    template <>
+    struct hash<std::pair<std::string, ResourceType>> {
+        std::size_t operator()(const std::pair<std::string, ResourceType>& p) const {
+            return std::hash<std::string>()(p.first) ^ std::hash<int>()((int)p.second);
+        }
+    };
 }
 
-// 自定义定位函数
-static long ZCALLBACK mem_seek(void* opaque, unsigned long offset, int origin) {
-    MemoryBuffer* mem = (MemoryBuffer*)opaque;
-    switch (origin) {
-    case ZLIB_FILEFUNC_SEEK_SET:
-        mem->position = offset;
-        break;
-    case ZLIB_FILEFUNC_SEEK_CUR:
-        mem->position += offset;
-        break;
-    case ZLIB_FILEFUNC_SEEK_END:
-        mem->position = mem->size + offset;
-        break;
-    default:
-        return -1;
-    }
-    return 0;
-}
+F_Resource::F_Resource() : use_memory_zip(false) {}
+F_Resource::~F_Resource() { UnloadAllResources(); }
 
-// 构造函数
-F_Resource::F_Resource() : _password(nullptr) {
-    has_password = 0;
-}
+void F_Resource::SetResourcePath(const std::string& path) { resource_path = path; use_memory_zip = false; }
+void F_Resource::SetResourceData(const std::vector<unsigned char>& data) { resource_data = data; use_memory_zip = true; }
 
-// 析构函数
-F_Resource::~F_Resource() {
-    UnloadAllResources();
-}
+int F_Resource::GetFileCount() { return 0; } // 简化
 
-// 设置zip路径
-void F_Resource::SetZipPath(const std::string& path) {
-    _use_memory_zip = false;  // 切换到文件模式
-    _zip_path = path;
-    // 检查文件是否存在
-    std::ifstream file(_zip_path);
-    if (file.good()) {
-        DEBUG_LOG(LOG_INFO,
-            TextFormat("F_Resource.SetZipPath:压缩文件%s成功打开", path.c_str()), 0);
+bool F_Resource::LoadResource(const std::string& internalPath, const std::string& id, ResourceType type, bool lazyLoad) {
+    if (lazyLoad) {
+        lazyLoadedResources.insert({ id, type });
+        paths[id] = internalPath;
+        return true;
     }
     else {
-        DEBUG_LOG(LOG_ERROR, "F_Resource.SetZipPath:文件不存在", 0);
+        return LoadResourceInternal(internalPath, id, type);
     }
 }
 
-void F_Resource::SetZipData(std::vector<unsigned char> data) {
-    if (data.empty()) {
-        DEBUG_LOG(LOG_WARNING, "传入的 ZIP 数据为空", 0);
+bool F_Resource::LoadFontResource(const std::string& internalPath, const std::string& id, int font_size, int* codepoints, int codepoints_size, bool lazyLoad) {
+    if (lazyLoad) {
+        lazyLoadedResources.insert({ id, ResFont });
+        paths.insert({ internalPath,id });
+    }
+    else {
+        return LoadResourceInternal(internalPath, id, ResFont, font_size, codepoints, codepoints_size);
+    }
+}
+
+// ----------- 批量加载 ----------------
+bool F_Resource::CreateLoadBatch(const std::string& batchId, const std::vector<std::pair<std::string, ResourceType>>& resources) {
+    resourceBatches[batchId] = std::set<std::pair<std::string, ResourceType>>(resources.begin(), resources.end());
+    return true;
+}
+
+bool F_Resource::LoadFontResourceToBatch(const std::string& internalPath, const std::string& id, int font_size, const std::string& batchId, int* codepoints, int codepoints_size) {
+    paths[id] = internalPath;
+    // 检查批次是否存在
+    auto batchIt = resourceBatches.find(batchId);
+    if (batchIt == resourceBatches.end()) {
+        FLOG_ERRORF("Batch '%s' not found!", batchId.c_str());
+        return false;
+    }
+
+    // 尝试添加资源到批次中
+    auto resourcePair = std::make_pair(id, ResFont);
+    if (batchIt->second.count(resourcePair)) {
+        FLOG_ERRORF("Font resource '%s' already exists in batch '%s'", id.c_str(), batchId.c_str());
+        return false;
+    }
+
+    batchIt->second.insert(resourcePair);
+    FLOG_INFOF("Successfully loaded font resource '%s' into batch '%s'", id.c_str(), batchId.c_str());
+    return true;
+
+}
+
+bool F_Resource::LoadResourceToBatch(const std::string& internalPath, const std::string& id, ResourceType type, const std::string& batchId) {
+    paths[id] = internalPath;
+    // 检查批次是否存在
+    auto batchIt = resourceBatches.find(batchId);
+    if (batchIt == resourceBatches.end()) {
+        FLOG_ERRORF("Batch '%s' not found!", batchId.c_str());
+        return false;
+    }
+
+    // 尝试添加资源到批次中
+    auto resourcePair = std::make_pair(id, type);
+    if (batchIt->second.count(resourcePair)) {
+        FLOG_ERRORF("Resource '%s' (Type: %d) already exists in batch '%s'", id.c_str(), type, batchId.c_str());
+        return false;
+    }
+
+    batchIt->second.insert(resourcePair);
+    FLOG_INFOF("Successfully loaded resource '%s' (Type: %d) into batch '%s'", id.c_str(), type, batchId.c_str());
+    return true;
+
+}
+
+void F_Resource::LoadBatchResources(const std::string& batchId) {
+    auto batchIt = resourceBatches.find(batchId);
+    if (batchIt == resourceBatches.end()) {
+        FLOG_ERRORF("Batch '%s' not found!", batchId.c_str());
         return;
     }
-    _zip_data = std::move(data);
-    _use_memory_zip = true;  // 标记使用内存 ZIP
 
-    // 初始化内存 ZIP 的 IO 回调
-    _mem_zip_io.zopen64_file = nullptr;
-    _mem_zip_io.zread_file = (read_file_func)mem_read;
-    _mem_zip_io.zwrite_file = nullptr;
-    _mem_zip_io.ztell64_file = nullptr;
-    _mem_zip_io.zseek64_file = (seek64_file_func)mem_seek;
-    _mem_zip_io.zclose_file = nullptr;
-    _mem_zip_io.zerror_file = nullptr;
-    _mem_zip_io.opaque = &_zip_data;  // 传递 ZIP 数据指针
-}
+    // 遍历批次中的所有资源并加载
+    for (const auto& resourcePair : batchIt->second) {
+        const std::string& resourceId = resourcePair.first;
+        ResourceType resourceType = resourcePair.second;
 
-// 设置压缩包密码
-void F_Resource::SetPassword(const char* password) {
-    _password = password;
-    has_password = true;
-}
-
-void F_Resource::NoPassword()
-{
-    has_password = false;
-}
-
-namespace fs = std::filesystem;
-
-bool F_Resource::LoadResources(const std::string& path)
-{
-    if (!FileExists(path.c_str())) {
-        DEBUG_LOG(LOG_ERROR, "错误一: 在 F_Resource::LoadResources 中，path 无效");
-        return false;
-    }
-
-    // 读取并解析 JSON
-    std::string data = LoadFileText(path.c_str());
-    F_Json::Json json;
-    try {
-        json = F_Json::Json::parse(data);
-    }
-    catch (const std::exception& e) {
-        DEBUG_LOG(LOG_ERROR, "错误二：在 F_Resource::LoadResources 中JSON 解析失败: %s", e.what());
-        return false;
-    }
-
-    // 获取基础路径信息
-    fs::path original_path(path);
-    fs::path base_dir = original_path.parent_path();  // 获取 JSON 文件所在目录
-
-    // 验证 info 字段存在性
-    if (!json.has("info") || json["info"].isNull()) {
-        DEBUG_LOG(LOG_ERROR, "错误三：在 F_Resource::LoadResources 中JSON 缺少 info ");
-        return false;
-    }
-    auto info = json["info"];
-
-    // 获取资源路径并转换为绝对路径
-    if (!info.has("res_path")) {
-        DEBUG_LOG(LOG_ERROR, "错误四:在 F_Resource::LoadResources 中info 缺少 res_path 字符串字段");
-        return false;
-    }
-
-    fs::path res_relative(info["res_path"].asString());
-    fs::path res_absolute = base_dir / res_relative;  // 路径拼接关键操作
-    std::string res_path = res_absolute.make_preferred().string();  // 统一路径格式
-
-    // 验证资源路径有效性
-    if (!fs::exists(res_absolute)) {
-        DEBUG_LOG(LOG_ERROR, "错误五: 在 F_Resource::LoadResources 中资源路径无效 - %s", res_path.c_str());
-        return false;
-    }
-    SetZipPath(res_path);
-    auto resources = json["resources"];
-    for (int i = 0; i < resources.size(); i++) {
-        auto res = resources[i];
-        if (!res.has("name") || !res.has("type") || !res.has("path")){
-            DEBUG_LOG(LOG_ERROR, "错误六: 在 F_Resource::LoadResources 中单个资源实例缺少参数 ");
-            return false;
-        }
-        auto id = res["name"].asString();
-        auto type = res["type"].asString();
-        auto path = res["path"].asString();
-        ResourceType type_value = ResText;
-        if (type == "ResText")type_value = ResText;
-        else if (type == "ResSound")type_value = ResSound;
-        else if (type == "ResTexture")type_value = ResTexture;
-        else if (type == "ResMusic")type = ResMusic;
-        else if (type == "ResFont")type = ResFont;
-        else if (type == "ResData")type = ResData;
-        if (type_value == ResFont) {
-            if (!res.has("font_config_path")) {
-                DEBUG_LOG(LOG_ERROR, "错误七: 缺少字体配置路径");
-                return false;
-            }
-            LoadFontResourceFromConfigFile(res["font_config_path"].asString());
-        }
-        else {
-            LoadResource(path, id, type_value);
-        }
-    }
-    return true;
-}
-
-bool F_Resource::LoadFontResourceFromConfigFile(const std::string& path) {
-    // 1. 读取JSON文件内容
-    std::string jsonContent = LoadFileText(path.c_str());
-
-    // 2. 解析JSON内容
-    F_Json::Json config;
-    try {
-        config = F_Json::Json::parse(jsonContent);
-    } catch (...) {
-        return false;
-    }
-
-    // 3. 验证基本结构
-    if (!config.has("font_path") || 
-        !config.has("font_size") ||
-        !config.has("charset_ranges")||
-        !!config.has("res_id")) {
-        return false;
-    }
-
-    // 4. 提取基础参数
-    std::string fontPath = config["font_path"].asString();
-    std::string id = config["res_id"].asString();
-    int fontSize = static_cast<int>(config["font_size"].asNumber());
-
-    // 5. 生成字符码点列表
-    std::vector<int> codepoints;
-    auto ranges = config["charset_ranges"];
-    
-    if (ranges.type() != F_Json::JsonType::Array) {
-        return false;
-    }
-
-    for (size_t i = 0; i < ranges.size(); ++i) {
-        F_Json::Json range = ranges[i];
-        if (!range.has("start") || !range.has("end")) {
+        // 检查资源是否已加载
+        if (HasResource(resourceId, resourceType)) {
+            FLOG_INFOF("Resource '%s' already loaded, skipping...", resourceId.c_str());
             continue;
         }
 
-        int start = static_cast<int>(range["start"].asNumber());
-        int end = static_cast<int>(range["end"].asNumber());
-
-        // 添加范围到码点列表
-        for (int code = start; code <= end; ++code) {
-            codepoints.push_back(code);
-        }
-    }
-
-    // 6. 加载字体
-    if (codepoints.empty()) {
-        return false; // 没有有效字符范围
-    }
-    LoadFontResource(fontPath, id, fontSize, codepoints.data(), codepoints.size());
-
-    return true;
-}
-
-// 加载资源
-bool F_Resource::LoadResource(const std::string& path, const std::string& id, ResourceType type) {
-    switch (type) {
-    case ResTexture:
-        return LoadTextureFromZlib(path, id);
-    case ResSound:
-        return LoadSoundFromZlib(path, id);
-    case ResMusic:
-        return LoadMusicFromZlib(path, id);
-    case ResText:
-        return LoadTextFromZlib(path, id);
-    case ResData:
-        return LoadDataFromZlib(path, id);
-    default:
-        return false;
-    }
-}
-
-bool F_Resource::LoadAllResource(int mode) {
-    unzFile zipfile = nullptr;
-
-    // 打开 ZIP 文件
-    try {
-        if (_use_memory_zip) {
-            zipfile = unzOpen2_64("in_memory.zip", &_mem_zip_io);
-        }
-        else {
-            zipfile = unzOpen(_zip_path.c_str());
-
-        }
-    }
-    catch (...) {
-		DEBUG_LOG(LOG_ERROR, "F_Resource::LoadAllResource:(unzOpen)无法打开 ZIP 文件", 0);
-		return false;
-    }
-    if (!zipfile) {
-        DEBUG_LOG(LOG_ERROR, "F_Resource::LoadAllResource: 无法打开 ZIP 文件", 0);
-        return false;
-    }
-    // 遍历 ZIP 文件中的所有条目
-    if (unzGoToFirstFile(zipfile) != UNZ_OK) {
-        DEBUG_LOG(LOG_ERROR, "F_Resource::LoadAllResource: 无法定位到 ZIP 文件的第一个条目", 0);
-        unzClose(zipfile);
-        return false;
-    }
-
-    do {
-        char filename[256];
-        unz_file_info file_info;
-
-        // 获取当前文件的信息
-        if (0!=unzGetCurrentFileInfo(zipfile, &file_info, filename, sizeof(filename), nullptr, 0, nullptr, 0) != UNZ_OK) {
-            DEBUG_LOG(LOG_WARNING, "F_Resource::LoadAllResource: 无法获取 ZIP 文件中的文件信息", 0);
+        // 根据资源类型加载（从对应的路径）
+        std::string resourcePath = GetResourcePath(resourceId);
+        if (resourcePath.length() <= 1) {
+            FLOG_WARNF("Warning: Resource path not found for '%s'  paths[%s]=%s", resourceId.c_str(), resourceId.c_str(), paths[resourceId].c_str());
             continue;
         }
-        // 根据文件扩展名判断资源类型
-        std::string file_ext;
-        if (GetFileExtension(filename) != nullptr)
-            file_ext = GetFileExtension(filename);
-        else file_ext = "";
-        std::string file_id = GetFileName(filename); // 使用文件名作为资源 ID
-        if (file_id == "" && file_ext == "") {
-            continue;
-        }
-        DEBUG_LOG(LOG_DEBUG, TextFormat("ext=%s",file_ext.c_str()));
-        if (file_ext == ".png" || file_ext == ".jpg" || file_ext == ".bmp" || file_ext=="fimg") {
-            // 加载纹理资源
-            DEBUG_LOG(LOG_DEBUG, file_ext.c_str());
-            if (!LoadTextureFromZlib(filename, file_id)) {
-                DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载纹理资源 %s", filename), 0);
-            }
-        }
-        else if (file_ext == ".wav" || file_ext == ".mp3" || file_ext == ".flac" || file_ext == ".ogg") {
-            DEBUG_LOG(LOG_DEBUG, file_ext.c_str());
-            if (mode == 0 || mode == 2) {
-                if (!LoadSoundFromZlib(filename, file_id)) {
-                    DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载声音资源 %s", filename), 0);
-                }
-            }
-            if (mode == 1 || mode == 2) {
-                if (!LoadMusicFromZlib(filename, file_id)) {
-                    DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载音乐资源 %s", filename), 0);
-                }
-            }
-        }
-        else if (file_ext == ".fsnd") {
-            // 加载声音资源
-            DEBUG_LOG(LOG_DEBUG, file_ext.c_str());
-            if (!LoadSoundFromZlib(filename, file_id)) {
-                DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载声音资源 %s", filename), 0);
-            }
-        }
-        else if (file_ext == ".fmus") {
-            // 加载音乐资源
-            DEBUG_LOG(LOG_DEBUG, file_ext.c_str());
-            if (!LoadMusicFromZlib(filename, file_id)) {
-                DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载音乐资源 %s", filename), 0);
-            }
-        }
-        else if (file_ext == ".ttf" || file_ext == ".otf"||file_ext==".ffnt") {
-            // 加载字体资源
-            DEBUG_LOG(LOG_DEBUG, file_ext.c_str());
-            if (!LoadFontFromZlib(filename, file_id, 24, nullptr, 0)) {
-                DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载字体资源 %s", filename), 0);
-            }
+
+        bool success = false;
+        success = LoadResourceInternal(resourcePath, resourceId, resourceType);
+
+        if (success) {
+            FLOG_INFOF("Loaded resource: %s (Type: %d)", resourceId.c_str(), resourceType);
         }
         else {
-            // 加载文本资源
-            if (!LoadTextFromZlib(filename, file_id)) {
-                DEBUG_LOG(LOG_WARNING, TextFormat("F_Resource::LoadAllResource: 无法加载文本资源 %s", filename), 0);
-            }
+            FLOG_ERRORF("Failed to load resource: %s,  ResType=%d", resourceId.c_str(), resourceType);
         }
-    } while (unzGoToNextFile(zipfile) == UNZ_OK);
-
-    // 关闭 ZIP 文件
-    unzClose(zipfile);
-    return true;
+    }
 }
 
-std::string F_Resource::GetResPath(const std::string& id)
-{
-    return paths[id];
+void F_Resource::UnloadBatchResources(const std::string& batchId) {
+    auto batchIt = resourceBatches.find(batchId);
+    if (batchIt == resourceBatches.end()) {
+        FLOG_ERRORF("Batch '%s' not found!", batchId.c_str());
+        return;
+    }
+
+    // 遍历批次中的所有资源并卸载
+    for (const auto& resourcePair : batchIt->second) {
+        const std::string& resourceId = resourcePair.first;
+        ResourceType resourceType = resourcePair.second;
+
+        // 检查资源是否存在
+        if (!HasResource(resourceId, resourceType)) {
+            FLOG_INFOF("Resource '%s' not loaded, skipping...", resourceId.c_str());
+            continue;
+        }
+
+        // 卸载资源
+        UnloadResource(resourceId, resourceType);
+        FLOG_INFOF("Unloaded resource: %s (Type: %d)", resourceId.c_str(), resourceType);
+    }
 }
 
+// ----------- 资源获取 ----------------
+Texture2D F_Resource::GetTexture(const std::string& id) { return textures.count(id) ? textures[id] : Texture2D{}; }
+Sound F_Resource::GetSound(const std::string& id) { return sounds.count(id) ? sounds[id] : Sound{}; }
+Music F_Resource::GetMusic(const std::string& id) { return musics.count(id) ? musics[id] : Music{}; }
+Font F_Resource::GetFont(const std::string& id) { return fonts.count(id) ? fonts[id] : Font{}; }
+std::string F_Resource::GetText(const std::string& id) { return texts.count(id) ? texts[id] : ""; }
+std::vector<unsigned char> F_Resource::GetData(const std::string& id) { return datas.count(id) ? datas[id] : std::vector<unsigned char>(); }
 
-// 加载字体资源
-bool F_Resource::LoadFontResource(const std::string& path, const std::string& id, int font_size, int* codepoints, int codepoints_size) {
-    return LoadFontFromZlib(path, id, font_size, codepoints, codepoints_size);
-}
-
-
-// 加入资源
-void F_Resource::AddResource(const std::string& id, ResourceType type, void* resource) {
+bool F_Resource::HasResource(const std::string& id, ResourceType type) const {
     switch (type) {
-    case ResTexture:
-        textures[id] = *static_cast<Texture2D*>(resource);
-        break;
-    case ResSound:
-        sounds[id] = *static_cast<Sound*>(resource);
-        break;
-    case ResMusic:
-        musics[id] = *static_cast<Music*>(resource);
-        break;
-    case ResFont:
-        fonts[id] = *static_cast<Font*>(resource);
-        break;
-    case ResText:
-        texts[id] = *static_cast<std::string*>(resource);
-        break;
-    case ResData:
-		datas[id] = *static_cast<std::vector<unsigned char>*>(resource);
-		break;
-    default:
-        break;
+    case ResTexture: return textures.count(id);
+    case ResSound: return sounds.count(id);
+    case ResMusic: return musics.count(id);
+    case ResFont: return fonts.count(id);
+    case ResText: return texts.count(id);
+    case ResData: return datas.count(id);
+    default: return false;
     }
 }
 
-// 获取资源
-Texture2D F_Resource::GetTexture(const std::string& id) {
-    return textures[id];
-}
-Texture2D F_Resource::GetTexture(const std::string& id) const {
-    return textures.at(id);
-}
-
-Sound F_Resource::GetSound(const std::string& id) {
-    return sounds[id];
-}
-
-Music F_Resource::GetMusic(const std::string& id) {
-    return musics[id];
-}
-
-Font F_Resource::GetFont(const std::string& id) {
-    return fonts[id];
-}
-
-std::string F_Resource::GetText(const std::string& id) {
-    return texts[id];
-}
-
-std::vector<unsigned char> F_Resource::GetData(const std::string& id)
-{
-    return datas[id];
-}
-
-bool F_Resource::HasResource(const std::string& id)
-{
-    if (textures.count(id)!=0) {
-        return 1;
-    }
-    else if (sounds.count(id) != 0) {
-        return 1;
-    }
-    else if (fonts.count(id) != 0) {
-        return 1;
-    }
-    else if (texts.count(id) != 0) {
-        return 1;
-    }
-    else if (musics.count(id) != 0) {
-        return 1;
-    }
-    else if (datas.count(id) != 0) {
-        return 1;
-    }
-    return 0;
-
-}
-
-bool F_Resource::HasResource(const std::string& id, ResourceType type)
-{
-    switch (type) {
-    case ResTexture:
-        return textures.count(id) != 0;
-    case ResSound:
-        return sounds.count(id) != 0;
-    case ResMusic:
-        return musics.count(id) != 0;
-    case ResFont:
-        return fonts.count(id) != 0;
-    case ResText:
-        return texts.count(id) != 0;
-    case ResData:
-        return datas.count(id) != 0;
-    default:
-        return 0;
-    }
-}
-
-bool F_Resource::HasResource(const std::string& id, ResourceType type) const
-{
-    switch (type) {
-    case ResTexture:
-        return textures.count(id) != 0;
-    case ResSound:
-        return sounds.count(id) != 0;
-    case ResMusic:
-        return musics.count(id) != 0;
-    case ResFont:
-        return fonts.count(id) != 0;
-    case ResText:
-        return texts.count(id) != 0;
-    case ResData:
-        return datas.count(id) != 0;
-    default:
-        return 0;
-    }
-}
-
-// 获取资源指针
-Texture2D* F_Resource::GetTextureP(const std::string& id) {
-    return &textures[id];
-}
-
-Sound* F_Resource::GetSoundP(const std::string& id) {
-    return &sounds[id];
-}
-
-Music* F_Resource::GetMusicP(const std::string& id) {
-    return &musics[id];
-}
-
-Font* F_Resource::GetFontP(const std::string& id) {
-    return &fonts[id];
-}
-
-std::string* F_Resource::GetTextP(const std::string& id) {
-    return &texts[id];
-}
-
-// 卸载单个资源
 void F_Resource::UnloadResource(const std::string& id, ResourceType type) {
+    if (lazyLoadedResources.count({ id, type })) {
+        lazyLoadedResources.erase({ id, type });
+        return;
+    }
+
     switch (type) {
-    case ResTexture:
-        UnloadTextureById(id);
-        break;
-    case ResSound:
-        UnloadSoundById(id);
-        break;
-    case ResMusic:
-        UnloadMusicById(id);
-        break;
-    case ResFont:
-        UnloadFontById(id);
-        break;
-    case ResText:
-        UnloadTextById(id);
-        break;
-    default:
-        break;
+    case ResTexture: UnloadTextureById(id); break;
+    case ResSound: UnloadSoundById(id); break;
+    case ResMusic: UnloadMusicById(id); break;
+    case ResFont: UnloadFontById(id); break;
+    case ResText: UnloadTextById(id); break;
+    case ResData: UnloadDataById(id); break;
     }
 }
 
-// 卸载所有资源
+// ----------- 卸载全部 ----------------
 void F_Resource::UnloadAllResources() {
-    for (auto& texture : textures) {
-        UnloadTexture(texture.second);
-    }
-    textures.clear();
-
-    for (auto& sound : sounds) {
-        UnloadSound(sound.second);
-    }
-    sounds.clear();
-
-    for (auto& music : musics) {
-        UnloadMusicStream(music.second);
-    }
-    musics.clear();
-
-    for (auto& font : fonts) {
-        UnloadFont(font.second);
-    }
-    fonts.clear();
-
-    texts.clear();
-    for (auto& data : datas) {
-		data.second.clear();
-    }
-	datas.clear();
+    for (auto& pair : textures) UnloadTexture(pair.second); textures.clear();
+    for (auto& pair : sounds) UnloadSound(pair.second); sounds.clear();
+    for (auto& pair : musics) UnloadMusicStream(pair.second); musics.clear();
+    for (auto& pair : fonts) UnloadFont(pair.second); fonts.clear();
+    texts.clear(); datas.clear(); paths.clear();
 }
 
-// 资源加载辅助函数
-bool F_Resource::LoadTextureFromZlib(const std::string& path, const std::string& id) {
-    std::vector<unsigned char> data;
-    if (DecompressZlib(path, data)) {
-        paths[id] = path;
-        Image image = LoadImageFromMemory(GetFileExtension(path.c_str()), data.data(), data.size());
-        if (image.data != nullptr) {
-            Texture2D texture = LoadTextureFromImage(image);
-            UnloadImage(image);
-            paths[id] = path;
-            AddResource(id, ResTexture, &texture);
+// ----------- 内部加载 ----------------
+bool F_Resource::LoadResourceInternal(const std::string& internalPath, const std::string& id,
+    ResourceType type, int font_size, int* codepoints, int codepoints_size)
+{
+    auto fileData = ExtractFileFromZip(internalPath);
+    if (fileData.empty()) return false;
+
+    switch (type) {
+    case ResTexture: {
+        Image img = LoadImageFromMemory(DetectFileFormat(fileData).c_str(), fileData.data(), fileData.size());
+        if (img.data != nullptr) {
+            Texture2D tex = LoadTextureFromImage(img);
+            UnloadImage(img);
+            textures[id] = tex;
+            paths[id] = internalPath;
             return true;
         }
+        break;
     }
-    return false;
-}
-
-bool F_Resource::LoadSoundFromZlib(const std::string& path, const std::string& id) {
-    std::vector<unsigned char> data;
-    if (DecompressZlib(path, data)) {
-        paths[id] = path;
-        Wave wave = LoadWaveFromMemory(GetFileExtension(path.c_str()), data.data(), data.size());
+    case ResSound: {
+        Wave wave = LoadWaveFromMemory(DetectFileFormat(fileData).c_str(), fileData.data(), fileData.size());
         Sound sound = LoadSoundFromWave(wave);
-        paths[id] = path;
-        AddResource(id, ResSound, &sound);
+        UnloadWave(wave);
+        if (sound.stream.buffer != nullptr) { sounds[id] = sound; paths[id] = internalPath; return true; }
+        break;
+    }
+    case ResMusic: {
+        Music music = LoadMusicStreamFromMemory(DetectFileFormat(fileData).c_str(), fileData.data(), fileData.size());
+        musics[id] = music; paths[id] = internalPath; break;
+    }
+    case ResFont: {
+        Font font = LoadFontFromMemory(DetectFileFormat(fileData).c_str(), fileData.data(), fileData.size(), font_size, codepoints, codepoints_size);
+        if (font.texture.id != 0) { fonts[id] = font; paths[id] = internalPath; return true; }
+        break;
+    }
+    case ResText: {
+        texts[id] = std::string(fileData.begin(), fileData.end());
+        paths[id] = internalPath;
         return true;
+    }
+    case ResData: {
+        datas[id] = fileData;
+        paths[id] = internalPath;
+        return true;
+    }
     }
     return false;
 }
+// 内存读取回调结构
+struct MemoryStream {
+    const unsigned char* data;
+    int64_t size;
+    int64_t offset;
+};
+// 内存流回调函数实现
+static int32_t memory_stream_open(void* stream, const char* path, int32_t mode) {
+    // 对于内存流，open 操作已经在初始化时完成
+    return MZ_OK;
+}
 
-bool F_Resource::LoadMusicFromZlib(const std::string& path, const std::string& id) {
+static int32_t memory_stream_is_open(void* stream) {
+    MemoryStream* mem_stream = (MemoryStream*)stream;
+    return (mem_stream != nullptr && mem_stream->data != nullptr) ? 1 : 0;
+}
+
+static int32_t memory_stream_read(void* stream, void* buf, int32_t size) {
+    MemoryStream* mem_stream = (MemoryStream*)stream;
+    if (!mem_stream || !mem_stream->data) return 0;
+
+    int64_t max_available = mem_stream->size - mem_stream->offset;
+    if (max_available <= 0) return 0;
+
+    int32_t bytes_to_read = (int32_t)((size < max_available) ? size : max_available);
+
+    if (bytes_to_read > 0) {
+        memcpy(buf, mem_stream->data + mem_stream->offset, bytes_to_read);
+        mem_stream->offset += bytes_to_read;
+        return bytes_to_read;
+    }
+    return 0;
+}
+
+static int32_t memory_stream_write(void* stream, const void* buf, int32_t size) {
+    // 只读操作，不需要实现
+    return 0;
+}
+
+static int64_t memory_stream_tell(void* stream) {
+    MemoryStream* mem_stream = (MemoryStream*)stream;
+    return mem_stream ? mem_stream->offset : 0;
+}
+
+static int32_t memory_stream_seek(void* stream, int64_t offset, int32_t origin) {
+    MemoryStream* mem_stream = (MemoryStream*)stream;
+    if (!mem_stream) return MZ_SEEK_ERROR;
+
+    int64_t new_offset = mem_stream->offset;
+    switch (origin) {
+    case MZ_SEEK_SET:
+        new_offset = offset;
+        break;
+    case MZ_SEEK_CUR:
+        new_offset = mem_stream->offset + offset;
+        break;
+    case MZ_SEEK_END:
+        new_offset = mem_stream->size + offset;
+        break;
+    default:
+        return MZ_SEEK_ERROR;
+    }
+
+    if (new_offset < 0 || new_offset > mem_stream->size) {
+        return MZ_SEEK_ERROR;
+    }
+
+    mem_stream->offset = new_offset;
+    return MZ_OK;
+}
+
+static int32_t memory_stream_close(void* stream) {
+    // 不需要特殊清理
+    return MZ_OK;
+}
+
+static int32_t memory_stream_error(void* stream) {
+    return MZ_OK;
+}
+
+static void* memory_stream_create(void) {
+    MemoryStream* mem_stream = new MemoryStream();
+    mem_stream->data = nullptr;
+    mem_stream->size = 0;
+    mem_stream->offset = 0;
+    return mem_stream;
+}
+
+static void memory_stream_destroy(void** stream) {
+    if (stream && *stream) {
+        MemoryStream* mem_stream = (MemoryStream*)*stream;
+        delete mem_stream;
+        *stream = nullptr;
+    }
+}
+
+// 使用正确的回调类型定义，添加强制转换
+static mz_stream_vtbl memory_stream_vtbl = {
+    (mz_stream_open_cb)memory_stream_open,
+    (mz_stream_is_open_cb)memory_stream_is_open,
+    (mz_stream_read_cb)memory_stream_read,
+    (mz_stream_write_cb)memory_stream_write,
+    (mz_stream_tell_cb)memory_stream_tell,
+    (mz_stream_seek_cb)memory_stream_seek,
+    (mz_stream_close_cb)memory_stream_close,
+    (mz_stream_error_cb)memory_stream_error,
+    (mz_stream_create_cb)memory_stream_create,
+    (mz_stream_destroy_cb)memory_stream_destroy
+};
+std::vector<unsigned char> F_Resource::ExtractFileFromZip(const std::string& internalPath) {
     std::vector<unsigned char> data;
-    if (DecompressZlib(path, data)) {
-        paths[id] = path;
-        Music music = LoadMusicStreamFromMemory(GetFileExtension(path.c_str()), data.data(), data.size());
-       
-        AddResource(id, ResMusic, &music);
-        return true;
+
+    FLOG_DEBUGF("Extracting file from ZIP using proper memory stream: %s", internalPath.c_str());
+
+    // 创建ZIP阅读器
+    void* zip_reader = mz_zip_reader_create();
+    if (!zip_reader) {
+        FLOG_ERRORF("Failed to create ZIP reader");
+        return data;
     }
-    return false;
+
+    int32_t err = MZ_OK;
+
+    if (use_memory_zip) {
+        // 使用minizip-ng提供的内存流 - 这是正确的方法
+        void* mem_stream = mz_stream_mem_create();
+        if (!mem_stream) {
+            FLOG_ERRORF("Failed to create memory stream");
+            mz_zip_reader_delete(&zip_reader);
+            return data;
+        }
+
+        // 设置内存缓冲区
+        mz_stream_mem_set_buffer(mem_stream, (void*)resource_data.data(), resource_data.size());
+        if (resource_data.empty()) {
+            FLOG_ERRORF("Failed to set memory stream buffer: %d", err);
+            mz_stream_mem_delete(&mem_stream);
+            mz_zip_reader_delete(&zip_reader);
+            return data;
+        }
+
+        // 打开内存流进行读取
+        err = mz_stream_mem_open(mem_stream, NULL, MZ_OPEN_MODE_READ);
+        if (err != MZ_OK) {
+            FLOG_ERRORF("Failed to open memory stream: %d", err);
+            mz_stream_mem_delete(&mem_stream);
+            mz_zip_reader_delete(&zip_reader);
+            return data;
+        }
+
+        // 使用内存流打开ZIP阅读器
+        err = mz_zip_reader_open(zip_reader, mem_stream);
+        if (err != MZ_OK) {
+            FLOG_ERRORF("Failed to open ZIP reader with memory stream: %d", err);
+            mz_stream_mem_close(mem_stream);
+            mz_stream_mem_delete(&mem_stream);
+            mz_zip_reader_delete(&zip_reader);
+            return data;
+        }
+
+    }
+    else {
+        // 文件ZIP的打开方式保持不变
+        err = mz_zip_reader_open_file(zip_reader, resource_path.c_str());
+        if (err != MZ_OK) {
+            FLOG_ERRORF("Failed to open ZIP file: %s, error: %d", resource_path.c_str(), err);
+            mz_zip_reader_delete(&zip_reader);
+            return data;
+        }
+    }
+
+    // 获取文件数量用于调试
+    uint64_t file_count = 0;
+    err = mz_zip_get_number_entry(zip_reader, &file_count);
+    if (err == MZ_OK) {
+        FLOG_DEBUGF("ZIP contains %llu entries", file_count);
+    }
+
+    // 定位文件
+    err = mz_zip_reader_locate_entry(zip_reader, internalPath.c_str(), 0); // 0 = case insensitive
+    if (err != MZ_OK) {
+        FLOG_ERRORF("Failed to locate file in ZIP: %s, error: %d", internalPath.c_str(), err);
+        mz_zip_reader_close(zip_reader);
+        mz_zip_reader_delete(&zip_reader);
+        return data;
+    }
+
+    FLOG_DEBUGF("File located successfully: %s", internalPath.c_str());
+
+    // 获取文件信息
+    mz_zip_file* file_info = nullptr;
+    mz_zip_reader_entry_get_info(zip_reader, &file_info);
+    if (file_info) {
+        FLOG_DEBUGF("File info - Compression: %d, Flags: %d, Size: %lld",
+            file_info->compression_method, file_info->flag, file_info->uncompressed_size);
+
+        // 检查是否加密
+        if (file_info->flag & MZ_ZIP_FLAG_ENCRYPTED) {
+            FLOG_ERRORF("File is encrypted, cannot extract");
+            mz_zip_reader_close(zip_reader);
+            mz_zip_reader_delete(&zip_reader);
+            return data;
+        }
+    }
+
+    // 打开文件条目
+    err = mz_zip_reader_entry_open(zip_reader);
+    if (err != MZ_OK) {
+        FLOG_ERRORF("Failed to open ZIP entry: %s, error: %d", internalPath.c_str(), err);
+
+        // 检查是否是压缩方法不支持
+        if (err == MZ_SUPPORT_ERROR) {
+            FLOG_ERRORF("Unsupported compression method: %d", file_info ? file_info->compression_method : -1);
+        }
+
+        mz_zip_reader_close(zip_reader);
+        mz_zip_reader_delete(&zip_reader);
+        return data;
+    }
+
+    FLOG_DEBUGF("ZIP entry opened successfully");
+
+    // 读取文件数据
+    if (file_info && file_info->uncompressed_size > 0) {
+        int64_t file_size = file_info->uncompressed_size;
+        data.resize(file_size);
+
+        int32_t bytes_read = mz_zip_reader_entry_read(zip_reader, data.data(), (int32_t)file_size);
+
+        if (bytes_read == file_size) {
+            FLOG_INFOF("Successfully extracted: %s (%lld bytes)", internalPath.c_str(), file_size);
+        }
+        else {
+            FLOG_ERRORF("Failed to read file: %s, expected %lld, got %d",
+                internalPath.c_str(), file_size, bytes_read);
+            data.clear();
+        }
+    }
+    else {
+        FLOG_ERRORF("Invalid file size for: %s", internalPath.c_str());
+    }
+
+    // 关闭条目和阅读器
+    mz_zip_reader_entry_close(zip_reader);
+    mz_zip_reader_close(zip_reader);
+    mz_zip_reader_delete(&zip_reader);
+
+    return data;
+}
+bool F_Resource::IsValidZipFile() const {
+    if (use_memory_zip) {
+        if (resource_data.empty()) {
+            FLOG_ERRORF("Memory ZIP data is empty");
+            return false;
+        }
+
+        // 更严格的ZIP文件检查
+        if (resource_data.size() < 4) {
+            FLOG_ERRORF("Memory ZIP data too small: %zu bytes", resource_data.size());
+            return false;
+        }
+
+        // 检查ZIP文件签名
+        bool has_valid_signature = (resource_data[0] == 0x50 && resource_data[1] == 0x4B &&
+            resource_data[2] == 0x03 && resource_data[3] == 0x04);
+
+        if (!has_valid_signature) {
+            FLOG_ERRORF("Invalid ZIP signature in memory data");
+            // 输出前几个字节用于调试
+            FLOG_DEBUGF("First 4 bytes: %02X %02X %02X %02X",
+                resource_data[0], resource_data[1], resource_data[2], resource_data[3]);
+        }
+
+        return has_valid_signature;
+    }
+    else {
+        // 检查文件是否存在且可读
+        std::ifstream file(resource_path, std::ios::binary);
+        if (!file.is_open()) {
+            FLOG_ERRORF("Cannot open ZIP file: %s", resource_path.c_str());
+            return false;
+        }
+
+        // 检查文件大小
+        file.seekg(0, std::ios::end);
+        size_t file_size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        if (file_size < 4) {
+            FLOG_ERRORF("ZIP file too small: %zu bytes", file_size);
+            file.close();
+            return false;
+        }
+
+        // 读取并检查文件头
+        unsigned char header[4];
+        file.read(reinterpret_cast<char*>(header), 4);
+        file.close();
+
+        bool isValid = (header[0] == 0x50 && header[1] == 0x4B &&
+            header[2] == 0x03 && header[3] == 0x04);
+
+        if (!isValid) {
+            FLOG_ERRORF("Invalid ZIP file signature in: %s", resource_path.c_str());
+            FLOG_DEBUGF("First 4 bytes: %02X %02X %02X %02X", header[0], header[1], header[2], header[3]);
+        }
+
+        return isValid;
+    }
+}
+std::string F_Resource::DetectFileFormat(const std::vector<unsigned char>& data) {
+    if (data.size() < 8) {
+        FLOG_WARNF("File data too small to detect format, size: %zu", data.size());
+        return "";
+    }
+
+    // 检查常见文件格式的魔数
+    const unsigned char* bytes = data.data();
+
+    // PNG
+    if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) {
+        FLOG_DEBUGF("Detected PNG format");
+        return ".png";
+    }
+
+    // JPEG
+    if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) {
+        FLOG_DEBUGF("Detected JPEG format");
+        return ".jpg";
+    }
+
+    // GIF
+    if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) {
+        FLOG_DEBUGF("Detected GIF format");
+        return ".gif";
+    }
+
+    // BMP
+    if (bytes[0] == 0x42 && bytes[1] == 0x4D) {
+        FLOG_DEBUGF("Detected BMP format");
+        return ".bmp";
+    }
+
+    // WAV
+    if (bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
+        bytes[8] == 0x57 && bytes[9] == 0x41 && bytes[10] == 0x56 && bytes[11] == 0x45) {
+        FLOG_DEBUGF("Detected WAV format");
+        return ".wav";
+    }
+
+    // OGG
+    if (bytes[0] == 0x4F && bytes[1] == 0x67 && bytes[2] == 0x67 && bytes[3] == 0x53) {
+        FLOG_DEBUGF("Detected OGG format");
+        return ".ogg";
+    }
+
+    // MP3 (ID3v2 header)
+    if (bytes[0] == 0x49 && bytes[1] == 0x44 && bytes[2] == 0x33) {
+        FLOG_DEBUGF("Detected MP3 format");
+        return ".mp3";
+    }
+
+    // MP3 (frame sync)
+    if ((bytes[0] == 0xFF) && ((bytes[1] & 0xE0) == 0xE0)) {
+        FLOG_DEBUGF("Detected MP3 format (frame sync)");
+        return ".mp3";
+    }
+
+    // TTF/OTF
+    if (bytes[0] == 0x00 && bytes[1] == 0x01 && bytes[2] == 0x00 && bytes[3] == 0x00) {
+        FLOG_DEBUGF("Detected TTF/OTF font format");
+        return ".ttf";
+    }
+
+    // WOFF
+    if (bytes[0] == 0x77 && bytes[1] == 0x4F && bytes[2] == 0x46 && bytes[3] == 0x46) {
+        FLOG_DEBUGF("Detected WOFF font format");
+        return ".woff";
+    }
+
+    FLOG_WARNF("Unknown file format, using default extension");
+    return ".dat"; // 默认扩展名
 }
 
-bool F_Resource::LoadFontFromZlib(const std::string& path, const std::string& id, int font_size, int* codepoints, int codepoints_size) {
-    std::vector<unsigned char> data;
-    if (DecompressZlib(path, data)) {
-        paths[id] = path;
-        Font font = LoadFontFromMemory(GetFileExtension(path.c_str()), data.data(), data.size(), font_size, codepoints, codepoints_size);
-        AddResource(id, ResFont, &font);
-        return true;
-    }
-    return false;
-}
-
-bool F_Resource::LoadTextFromZlib(const std::string& path, const std::string& id) {
-    std::vector<unsigned char> data;
-    if (DecompressZlib(path, data)) {
-        std::string text(reinterpret_cast<const char*>(data.data()), data.size());
-        paths[id] = path;
-        AddResource(id, ResText, &text);
-        return true;
-    }
-    return false;
-}
-
-bool F_Resource::LoadDataFromZlib(const std::string& path, const std::string& id)
-{
-    std::vector<unsigned char> data;
-    if (DecompressZlib(path, data)) {
-        paths[id] = path;
-        AddResource(id, ResData, &data);
-        return true;
-    }
-    return false;
-}
-
-// 卸载资源辅助函数
 void F_Resource::UnloadTextureById(const std::string& id) {
-    if (textures.find(id) != textures.end()) {
-        paths[id] = "";
-        UnloadTexture(textures[id]);
-        textures.erase(id);
+    auto it = textures.find(id);
+    if (it != textures.end()) {
+        if (it->second.id != 0) {
+            UnloadTexture(it->second);
+            FLOG_DEBUGF("Unloaded texture: %s", id.c_str());
+        }
+        textures.erase(it);
+    }
+    else {
+        FLOG_WARNF("Texture not found for unloading: %s", id.c_str());
     }
 }
 
 void F_Resource::UnloadSoundById(const std::string& id) {
-    if (sounds.find(id) != sounds.end()) {
-        paths[id] = "";
-        UnloadSound(sounds[id]);
-        sounds.erase(id);
+    auto it = sounds.find(id);
+    if (it != sounds.end()) {
+        if (it->second.stream.buffer != nullptr) {
+            UnloadSound(it->second);
+            FLOG_DEBUGF("Unloaded sound: %s", id.c_str());
+        }
+        sounds.erase(it);
+    }
+    else {
+        FLOG_WARNF("Sound not found for unloading: %s", id.c_str());
     }
 }
 
 void F_Resource::UnloadMusicById(const std::string& id) {
-    if (musics.find(id) != musics.end()) {
-        paths[id] = "";
-        UnloadMusicStream(musics[id]);
-        musics.erase(id);
+    auto it = musics.find(id);
+    if (it != musics.end()) {
+        if (it->second.stream.buffer != nullptr) {
+            UnloadMusicStream(it->second);
+            FLOG_DEBUGF("Unloaded music: %s", id.c_str());
+        }
+        musics.erase(it);
+    }
+    else {
+        FLOG_WARNF("Music not found for unloading: %s", id.c_str());
     }
 }
 
 void F_Resource::UnloadFontById(const std::string& id) {
-    if (fonts.find(id) != fonts.end()) {
-        paths[id] = "";
-        UnloadFont(fonts[id]);
-        fonts.erase(id);
+    auto it = fonts.find(id);
+    if (it != fonts.end()) {
+        if (it->second.texture.id != 0) {
+            UnloadFont(it->second);
+            FLOG_DEBUGF("Unloaded font: %s", id.c_str());
+        }
+        fonts.erase(it);
+    }
+    else {
+        FLOG_WARNF("Font not found for unloading: %s", id.c_str());
     }
 }
 
 void F_Resource::UnloadTextById(const std::string& id) {
-    paths[id] = "";
-    texts.erase(id);
-}
-
-void F_Resource::UnloadDataById(const std::string& id)
-{
-    paths[id] = "";
-	datas.erase(id);
-}
-
-// 解压缩辅助函数
-bool F_Resource::DecompressZlib(const std::string& path, std::vector<unsigned char>& out_data) {
-    return DecompressZlibWithPassword(path, out_data, _password);
-}
-
-bool F_Resource::DecompressZlibWithPassword(const std::string& path, std::vector<unsigned char>& out_data, const char* password) {
-    unzFile zipfile = nullptr;
-    if (_use_memory_zip) {
-        // 从内存打开 ZIP
-        zipfile = unzOpen2_64("in_memory.zip", &_mem_zip_io);
+    auto it = texts.find(id);
+    if (it != texts.end()) {
+        texts.erase(it);
+        FLOG_DEBUGF("Unloaded text: %s", id.c_str());
     }
     else {
-        // 从文件路径打开 ZIP
-        zipfile = unzOpen(_zip_path.c_str());
+        FLOG_WARNF("Text not found for unloading: %s", id.c_str());
     }
-    if (!zipfile) {
-        DEBUG_LOG(LOG_ERROR,
-            "F_Resource:打开压缩文件失败", 0);
-        return false;
-    }
-    if (unzLocateFile(zipfile, path.c_str(), 0) != UNZ_OK) {
-        DEBUG_LOG(LOG_ERROR,
-           TextFormat( "F_Resource:在压缩文件中定位文件失败:%s",path.c_str()), 0);
-        unzClose(zipfile);
-        return false;
-    }
-    if (has_password) {
-        if (unzOpenCurrentFilePassword(zipfile, password) != UNZ_OK) {
-            DEBUG_LOG(LOG_ERROR,
-             TextFormat(  "F_Resource:使用密码在压缩文件中打开文件失败:%s", path.c_str()), 0);
-            unzClose(zipfile);
-            return false;
-        }
-    }
-    else if (unzOpenCurrentFile(zipfile) != UNZ_OK) {
-        DEBUG_LOG(LOG_ERROR,
-           TextFormat( "F_Resource:不使用密码在压缩文件中打开文件失败:%s",path.c_str()), 0);
-        unzClose(zipfile);
-        return false;
-    }
-    DEBUG_LOG(LOG_INFO,
-    TextFormat("F_Resource:成功打开文件在压缩文件中:%s", path.c_str()), 0);
-
-    unz_file_info file_info;
-    if (unzGetCurrentFileInfo(zipfile, &file_info, nullptr, 0, nullptr, 0, nullptr, 0) != UNZ_OK) {
-
-        DEBUG_LOG(LOG_WARNING,
-           TextFormat("F_Resource:无法获取压缩文件信息:%s", path.c_str()), 0); unzCloseCurrentFile(zipfile);
-        unzClose(zipfile);
-        return false;
-    }
-
-    
-
-    out_data.resize(file_info.uncompressed_size);
-    int result = unzReadCurrentFile(zipfile, out_data.data(), file_info.uncompressed_size);
-  
-    if (result != file_info.uncompressed_size) {
-        DEBUG_LOG(LOG_WARNING,
-           TextFormat("F_Resource:文件解压缩数据不完整或失败:%s", path.c_str()), 0);
-        unzCloseCurrentFile(zipfile);
-        unzClose(zipfile);
-        return false;
-    }
-    else if (result < 0) {
-        DEBUG_LOG(LOG_WARNING,
-            "F_Resource:unzReadCurrentFile没有数据", 0);
-    }
-
-    unzCloseCurrentFile(zipfile);
-    unzClose(zipfile);
-
-    return result == file_info.uncompressed_size;
-}
-#include "miniz.h"
-
-bool SaveFileTextToZip(const char* zipfile, const char* filename, const char* text) {
-    return SaveFileDataToZip(zipfile, filename,
-        reinterpret_cast<const unsigned char*>(text),
-        strlen(text) + 1); // +1 包含 null 终止符
 }
 
-bool SaveFileDataToZip(const char* zipfile, const char* filename,
-    const unsigned char* data, int data_size) {
-    // 1. 尝试读取现有ZIP文件
-    unsigned char* pExisting_zip_data = nullptr;
-    size_t existing_zip_size = 0;
-    mz_zip_archive source_archive;
-    memset(&source_archive, 0, sizeof(source_archive));
-
-    bool has_existing_zip = FileExists(zipfile);
-    if (has_existing_zip) {
-        // 加载现有ZIP文件
-        int fsize = 0;
-        pExisting_zip_data = LoadFileData(zipfile, &fsize);
-        existing_zip_size = static_cast<size_t>(fsize);
-
-        // 初始化ZIP阅读器
-        if (!mz_zip_reader_init_mem(&source_archive, pExisting_zip_data, existing_zip_size, 0)) {
-            if (pExisting_zip_data) UnloadFileData(pExisting_zip_data);
-            has_existing_zip = false; // 标记为无效ZIP文件
-        }
+void F_Resource::UnloadDataById(const std::string& id) {
+    auto it = datas.find(id);
+    if (it != datas.end()) {
+        datas.erase(it);
+        FLOG_DEBUGF("Unloaded data: %s", id.c_str());
     }
-
-    // 2. 初始化miniz写入器
-    mz_zip_archive zip_archive;
-    memset(&zip_archive, 0, sizeof(zip_archive));
-
-    if (!mz_zip_writer_init_heap(&zip_archive, 0, has_existing_zip ? 128 * 1024 : 0)) {
-        if (has_existing_zip) {
-            mz_zip_reader_end(&source_archive);
-            UnloadFileData(pExisting_zip_data);
-        }
-        return false;
+    else {
+        FLOG_WARNF("Data not found for unloading: %s", id.c_str());
     }
+}
+// ----------- minizip-ng 简化 ----------------
+void* F_Resource::CreateZipReader() { return new ZipReader(); }
+void F_Resource::DeleteZipReader(void* reader) { delete static_cast<ZipReader*>(reader); }
+bool F_Resource::OpenZipReader(void* reader) { auto r = static_cast<ZipReader*>(reader); r->is_open = true; return true; }
+void F_Resource::CloseZipReader(void* reader) { auto r = static_cast<ZipReader*>(reader); r->is_open = false; }
 
-    // 3. 添加现有文件（如果存在且有效）
-    if (has_existing_zip) {
-        mz_uint num_files = mz_zip_reader_get_num_files(&source_archive);
-        for (mz_uint i = 0; i < num_files; i++) {
-            // 检查文件名是否匹配要添加的文件
-            char existing_filename[256];
-            mz_zip_reader_get_filename(&source_archive, i, existing_filename, sizeof(existing_filename));
-
-            // 跳过同名文件（将被新文件替换）
-            if (strcmp(existing_filename, filename) == 0) continue;
-
-            // 添加现有文件到新ZIP
-            if (!mz_zip_writer_add_from_zip_reader(&zip_archive, &source_archive, i)) {
-                // 添加失败，跳过此文件
-                continue;
-            }
-        }
-
-        // 清理ZIP阅读器
-        mz_zip_reader_end(&source_archive);
-        UnloadFileData(pExisting_zip_data);
-    }
-
-    // 4. 添加新文件
-    if (!mz_zip_writer_add_mem(&zip_archive, filename, data, data_size, MZ_BEST_COMPRESSION)) {
-        mz_zip_writer_end(&zip_archive);
-        return false;
-    }
-
-    // 5. 完成写入并获取ZIP数据
-    void* pZip_data = nullptr;
-    size_t zip_size = 0;
-    if (!mz_zip_writer_finalize_heap_archive(&zip_archive, &pZip_data, &zip_size)) {
-        mz_zip_writer_end(&zip_archive);
-        return false;
-    }
-
-    // 6. 保存到文件系统
-    bool success = SaveFileData(zipfile,
-       (pZip_data),
-        static_cast<int>(zip_size));
-
-    // 7. 清理资源
-    mz_free(pZip_data);
-    mz_zip_writer_end(&zip_archive);
-
-    return success;
+std::string F_Resource::GetResourcePath(const std::string& id) {
+    return paths[id].length() > 1 ? paths[id] : "";
 }

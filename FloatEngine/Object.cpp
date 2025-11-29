@@ -152,7 +152,6 @@ Object& Object::operator=(const Object& other) {
 
 
 Object::~Object() {
-	if(!object_mode_no_destroy_sprite)sprite_index.~Sprite(); // 释放纹理数组
 }
 
 void Object::reset_alarm_clock()
@@ -235,3 +234,120 @@ void Object::onAlarmEvent8() {}
 void Object::onAlarmEvent9() {}
 void Object::onAlarmEvent10() {}
 void Object::onDestroy(){}
+
+
+// Lua 创建实例的包装函数
+sol::object luaCreateInstance(const std::string& name, sol::variadic_args args, sol::this_state L) {
+	try {
+		auto& manager = ObjectManager::getInstance();
+		auto instance = manager.createInstance(name, args);
+
+		if (instance) {
+			// 调用初始化方法
+			instance->onEnter();
+
+			// 返回给 Lua
+			sol::state_view lua(L);
+			return sol::make_object(lua, instance);
+		}
+	}
+	catch (const std::exception& e) {
+		luaL_error(L, "Failed to create instance of '%s': %s", name.c_str(), e.what());
+	}
+
+	return sol::lua_nil;
+}
+
+// Lua 检查类型是否注册的包装函数
+bool luaIsTypeRegistered(const std::string& name) {
+	return ObjectManager::getInstance().isTypeRegistered(name);
+}
+
+// Lua 获取已注册类型名称列表的包装函数
+sol::table luaGetRegisteredTypeNames(sol::this_state L) {
+	auto& manager = ObjectManager::getInstance();
+	auto names = manager.getRegisteredTypeNames();
+
+	sol::state_view lua(L);
+	sol::table result = lua.create_table();
+
+	for (size_t i = 0; i < names.size(); ++i) {
+		result[i + 1] = names[i];
+	}
+
+	return result;
+}
+
+void ObjectManager::registerLuaObjectType(const std::string& name, sol::function constructor) {
+	if (object_creators_.find(name) != object_creators_.end()) {
+		throw std::runtime_error("Object type '" + name + "' is already registered");
+	}
+
+	object_creators_[name] = std::make_unique<LuaObjectCreator>(constructor);
+	std::cout << "Registered Lua object type: " << name << std::endl;
+}
+
+std::shared_ptr<Object> ObjectManager::createInstance(const std::string& name, sol::variadic_args args) {
+	auto it = object_creators_.find(name);
+	if (it == object_creators_.end()) {
+		throw std::runtime_error("Object type '" + name + "' is not registered");
+	}
+
+	return it->second->create(args);
+}
+
+bool ObjectManager::isTypeRegistered(const std::string& name) const {
+	return object_creators_.find(name) != object_creators_.end();
+}
+
+std::vector<std::string> ObjectManager::getRegisteredTypeNames() const {
+	std::vector<std::string> names;
+	names.reserve(object_creators_.size());
+
+	for (const auto& [name, _] : object_creators_) {
+		names.push_back(name);
+	}
+
+	std::sort(names.begin(), names.end());
+	return names;
+}
+
+std::string ObjectManager::getTypeName(const std::type_info& type) const {
+	auto it = type_to_name_.find(type.name());
+	return it != type_to_name_.end() ? it->second : "Unknown";
+}
+
+IObjectCreator* ObjectManager::getCreator(const std::string& name) const {
+	auto it = object_creators_.find(name);
+	return it != object_creators_.end() ? it->second.get() : nullptr;
+}
+
+void ObjectManager::clear() {
+	object_creators_.clear();
+	type_to_name_.clear();
+	std::cout << "ObjectManager cleared all registered types" << std::endl;
+}
+
+void ObjectManager::registerGlobalFunctions() {
+	if (!lua_state_) {
+		throw std::runtime_error("Lua state not set");
+	}
+
+	// 注册全局函数到 Lua
+	(*lua_state_)["Create_Instance"] = luaCreateInstance;
+	(*lua_state_)["Is_ObjectType_Registered"] = luaIsTypeRegistered;
+	(*lua_state_)["Get_Registered_ObjectTypes"] = luaGetRegisteredTypeNames;
+
+	// 注册 ObjectManager 单例访问
+	(*lua_state_)["ObjectManager"] = (*lua_state_).create_table_with(
+		"getInstance", []() -> ObjectManager& { return ObjectManager::getInstance(); },
+		"isTypeRegistered", [](const std::string& name) { return ObjectManager::getInstance().isTypeRegistered(name); },
+		"getRegisteredTypeNames", []() { return ObjectManager::getInstance().getRegisteredTypeNames(); },
+		"clear", []() { ObjectManager::getInstance().clear(); },
+		"registerLuaObjectType", [](const std::string& name, sol::function constructor) {
+			ObjectManager::getInstance().registerLuaObjectType(name, constructor);
+		}
+	);
+
+	std::cout << "ObjectManager global functions registered to Lua" << std::endl;
+}
