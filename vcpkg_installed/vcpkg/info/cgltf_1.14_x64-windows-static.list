@@ -1,0 +1,9 @@
+x64-windows-static/
+x64-windows-static/include/
+x64-windows-static/include/cgltf.h
+x64-windows-static/include/cgltf_write.h
+x64-windows-static/share/
+x64-windows-static/share/cgltf/
+x64-windows-static/share/cgltf/copyright
+x64-windows-static/share/cgltf/vcpkg.spdx.json
+x64-windows-static/share/cgltf/vcpkg_abi_info.txt

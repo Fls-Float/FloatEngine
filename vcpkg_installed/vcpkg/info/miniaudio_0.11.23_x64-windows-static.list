@@ -1,0 +1,8 @@
+x64-windows-static/
+x64-windows-static/include/
+x64-windows-static/include/miniaudio.h
+x64-windows-static/share/
+x64-windows-static/share/miniaudio/
+x64-windows-static/share/miniaudio/copyright
+x64-windows-static/share/miniaudio/vcpkg.spdx.json
+x64-windows-static/share/miniaudio/vcpkg_abi_info.txt

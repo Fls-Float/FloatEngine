@@ -1,0 +1,238 @@
+Package: vcpkg-cmake-config
+Version: 2024-05-23
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 4d75d6b1fef2392fe0bef85796c295bda5363876e4162546e1b7974d55dfc74c
+Status: install ok installed
+
+Package: vcpkg-cmake
+Version: 2024-04-23
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 8e45932476daabca1d6c88bb801b55a4ddf25cc684561de43dbf5a96997068fe
+Status: install ok installed
+
+Package: zstd
+Version: 1.5.7
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 3949a0ecf4bab362afa0f6223bd6d0c9c6ba9e6b8388928b36ca3d672d2646b6
+Description: Zstandard - Fast real-time compression algorithm
+Status: purge ok not-installed
+
+Package: zlib
+Version: 1.3.1
+Depends: vcpkg-cmake
+Architecture: x64-windows
+Multi-Arch: same
+Abi: 6f6fcd7f6f0be3cb2bc778be556066d859c38849c808e29d4a4eed0ffaead793
+Description: A compression library
+Status: purge ok not-installed
+
+Package: liblzma
+Version: 5.8.1
+Depends: vcpkg-cmake, vcpkg-cmake-config
+Architecture: x64-windows
+Multi-Arch: same
+Abi: f43023c9828c8e470ebaf2a151a4caed034629ab7840639ef14fb7d830eed714
+Description: Compression library with an API similar to that of zlib.
+Status: purge ok not-installed
+
+Package: zstd
+Version: 1.5.7
+Depends: vcpkg-cmake:x64-windows, vcpkg-cmake-config:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: 36db92acda4ecd591c5a8967680f36bb84f7e9298e784414b19c7d3695c6373f
+Description: Zstandard - Fast real-time compression algorithm
+Status: install ok installed
+
+Package: zlib
+Version: 1.3.1
+Depends: vcpkg-cmake:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: a71131fa3127c39f1bfef0e755dbb1d757c04e44d9848c9b1436c8eb79ddc7e9
+Description: A compression library
+Status: install ok installed
+
+Package: liblzma
+Version: 5.8.1
+Depends: vcpkg-cmake:x64-windows, vcpkg-cmake-config:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: c35a0981a1c3c92d7334619d3f9295c5ec19d6c78a79aa2a69bf659806ded689
+Description: Compression library with an API similar to that of zlib.
+Status: install ok installed
+
+Package: bzip2
+Version: 1.0.8
+Port-Version: 6
+Depends: vcpkg-cmake:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: b72414c2497de9164c8ee8418445a626666e091d4e5be24447a694ed366fcde4
+Description: bzip2 is a freely available, patent free, high-quality data compressor. It typically compresses files to within 10% to 15% of the best available techniques (the PPM family of statistical compressors), whilst being around twice as fast at compression and six times faster at decompression.
+Default-Features: tool
+Status: install ok installed
+
+Package: bzip2
+Feature: tool
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Builds bzip2 executable
+Status: install ok installed
+
+Package: minizip-ng
+Version: 4.0.10
+Port-Version: 1
+Depends: vcpkg-cmake:x64-windows, vcpkg-cmake-config:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: c6866f5461b0f73429aa2fcdfa0224415a648aa5ddfcb3b9ea69630656305390
+Description: minizip-ng is a zip manipulation library written in C that is supported on Windows, macOS, and Linux.
+Default-Features: bzip2, lzma, pkcrypt, wzaes, zlib, zstd
+Status: install ok installed
+
+Package: minizip-ng
+Feature: bzip2
+Depends: bzip2
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Enables BZIP2 compression
+Status: install ok installed
+
+Package: minizip-ng
+Feature: lzma
+Depends: liblzma
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Enables LZMA compression
+Status: install ok installed
+
+Package: minizip-ng
+Feature: pkcrypt
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Enables PKWARE traditional encryption
+Status: install ok installed
+
+Package: minizip-ng
+Feature: wzaes
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Enables WinZIP AES encryption
+Status: install ok installed
+
+Package: minizip-ng
+Feature: zlib
+Depends: zlib
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Enables ZLIB compression
+Status: install ok installed
+
+Package: minizip-ng
+Feature: zstd
+Depends: zstd
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Enables ZSTD compression
+Status: install ok installed
+
+Package: stb
+Version: 2024-07-29
+Port-Version: 1
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: 89dc19ef71a8edac06c6afcf358aaac16cb9abf900b4fedcf571697989d9f614
+Description: public domain header-only libraries
+Status: install ok installed
+
+Package: qoi
+Version: 2023-08-10
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: f33d4cca6d606b3c8577585de7ff91506383698f772b20e7fa2ac5f6f99adfae
+Description: The Quite OK Image Format for fast, lossless image compression
+Status: install ok installed
+
+Package: nanosvg
+Version: 2023-12-29
+Depends: vcpkg-cmake:x64-windows, vcpkg-cmake-config:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: 591848b34e73fefbaca28b5e08bc92a6dc961ff8f57ea07a8fcac052e1e5c27d
+Description: NanoSVG is a simple stupid single-header-file SVG parser. It is accompanied by a simple SVG rasterizer.
+Status: install ok installed
+
+Package: mmx
+Version: 2025-03-19
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: 51da49240f4a56fd618edd5d3cd15bf2f96c51d08fe04363a8f981920e8aed5f
+Description: Single header libraries for C/C++
+Status: install ok installed
+
+Package: glfw3
+Version: 3.4
+Port-Version: 1
+Depends: vcpkg-cmake:x64-windows, vcpkg-cmake-config:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: b62fa30545f210f2c14f664f71bf4bb3e7099b8cc68787cc24cd6e19820035fc
+Description: GLFW is a free, Open Source, multi-platform library for OpenGL, OpenGL ES and Vulkan application development. It provides a simple, platform-independent API for creating windows, contexts and surfaces, reading input, handling events, etc.
+Status: install ok installed
+
+Package: dirent
+Version: 1.26
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: cecdf534c84ae717d3a95000d1f1ec5781cb17d3149498f46ee4724a17114960
+Description: Dirent is a C/C++ programming interface that allows programmers to retrieve information about files and directories under Linux/UNIX. This project provides Linux compatible Dirent interface for Microsoft Windows.
+Status: install ok installed
+
+Package: cgltf
+Version: 1.14
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: e221fa3a988d55f61b0e2fae4fdf324572414a2745698268bb559676289faa5a
+Description: Single-file glTF 2.0 loader and writer written in C99
+Status: install ok installed
+
+Package: miniaudio
+Version: 0.11.23
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: d95c249056a45e3599ed4e820a428b9b2a4dccedbab2d94a021c6bd5a44d6630
+Description: Audio playback and capture library written in C, in a single source file
+Status: install ok installed
+
+Package: drlibs
+Version: 2025-09-10
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: fde664e1bc8a37bbe7f4b55d16a4ef5f2b032fdf533da470a64ac59419e17a02
+Description: Single-file audio decoding libraries for C/C++
+Status: install ok installed
+
+Package: raylib
+Version: 5.5
+Port-Version: 1
+Depends: cgltf, dirent, glfw3, mmx, nanosvg, qoi, stb, vcpkg-cmake:x64-windows, vcpkg-cmake-config:x64-windows
+Architecture: x64-windows-static
+Multi-Arch: same
+Abi: f5924001c3635922936ca4ec531ad9e75e5335bf75ca3caa2573944f42eba80a
+Description: A simple and easy-to-use library to enjoy videogames programming
+Default-Features: audio
+Status: install ok installed
+
+Package: raylib
+Feature: audio
+Depends: drlibs, miniaudio
+Architecture: x64-windows-static
+Multi-Arch: same
+Description: Build audio module
+Status: install ok installed
+
