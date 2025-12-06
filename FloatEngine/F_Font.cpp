@@ -1,12 +1,13 @@
 ﻿#include "F_Font.h"
 #include <set>
 #include "FloatApi.h"
-
+#include <algorithm>
 
 
 F_Font::F_Font() 
     : _rayfnt()
     , _temp_data()
+
     , _temp_path()
     , _codepoints()
     , _font_size(0)
@@ -121,7 +122,7 @@ bool F_Font::Load(const char* filename, const char* type, int font_size, int* co
         // 如果没有提供码点，则加载常用码点
         int count = 0;
         auto cps_chinese = floatapi_font::LoadCommonCodepoints(count);
-        _codepoints.assign(cps_chinese.get(), cps_chinese.get() + count);
+        _codepoints.assign(cps_chinese.data(), cps_chinese.data() + count);
     }
     
     // 加载字体
@@ -159,48 +160,75 @@ bool F_Font::ReloadWithNewCodepoints(const std::vector<int>& new_codepoints) {
         DEBUG_LOG(LOG_WARNING, "F_Font::ReloadWithNewCodepoints: new_codepoints is empty", false);
         return false;
     }
-    
-    // 添加新码点
+
+    // 1. 添加新码点 (保留原有逻辑)
     for (int codepoint : new_codepoints) {
+        // 使用 std::find 检查是否已存在
         if (std::find(_codepoints.begin(), _codepoints.end(), codepoint) == _codepoints.end()) {
             _codepoints.push_back(codepoint);
         }
     }
-    
-    // 排序和去重
+
+    // 2. 排序 (std::sort 是安全的)
     std::sort(_codepoints.begin(), _codepoints.end());
-    _codepoints.erase(std::unique(_codepoints.begin(), _codepoints.end()), _codepoints.end());
-    
-    // 重新加载字体
+
+    // 3. 【核心修正】手动去重 (替代 std::unique)
+    if (_codepoints.empty()) return ReloadFont();
+
+    // 因为已经排序，只需要检查相邻元素是否重复
+    auto new_end = _codepoints.begin();
+    for (auto it = _codepoints.begin(); it != _codepoints.end(); ++it) {
+        if (it == _codepoints.begin() || *it != *std::prev(it)) {
+            // 如果是第一个元素，或者当前元素与前一个元素不同，则保留
+            *new_end = *it;
+            ++new_end;
+        }
+    }
+    // 擦除重复的元素 ( new_end 之后的都是重复的)
+    _codepoints.erase(new_end, _codepoints.end());
+
+    // 4. 重新加载字体
     return ReloadFont();
 }
-
 bool F_Font::CheckAndAddCodepoints(const std::string& text) {
     if (text.empty()) {
         return false;
     }
-    
+
     std::vector<int> text_codepoints = floatapi_font::ExtractCodepointsFromText(text);
     bool has_new_codepoints = false;
-    
+
+    // 1. 添加新码点
     for (int codepoint : text_codepoints) {
         if (floatapi_font::IsValidUnicodeCodepoint(codepoint)) {
+            // 使用 std::find 检查是否已存在
             if (std::find(_codepoints.begin(), _codepoints.end(), codepoint) == _codepoints.end()) {
                 _codepoints.push_back(codepoint);
                 has_new_codepoints = true;
             }
         }
     }
-    
+
     if (has_new_codepoints) {
-        // 排序和去重
+        // 2. 排序 (std::sort 是安全的)
         std::sort(_codepoints.begin(), _codepoints.end());
-        _codepoints.erase(std::unique(_codepoints.begin(), _codepoints.end()), _codepoints.end());
-        
-        // 重新加载字体
+
+        // 3. 【核心修正】手动去重 (替代 std::unique)
+        if (_codepoints.empty()) return ReloadFont();
+
+        auto new_end = _codepoints.begin();
+        for (auto it = _codepoints.begin(); it != _codepoints.end(); ++it) {
+            if (it == _codepoints.begin() || *it != *std::prev(it)) {
+                *new_end = *it;
+                ++new_end;
+            }
+        }
+        _codepoints.erase(new_end, _codepoints.end());
+
+        // 4. 重新加载字体
         return ReloadFont();
     }
-    
+
     return false;
 }
 
@@ -263,7 +291,7 @@ void F_Font::ExtractCodepointsFromFont(const Font& font) {
         // 如果没有glyphs，则加载常用码点
         int count = 0;
         auto cps_chinese = floatapi_font::LoadCommonCodepoints(count);
-        _codepoints.assign(cps_chinese.get(), cps_chinese.get() + count);
+        _codepoints.assign(cps_chinese.data(), cps_chinese.data() + count);
     }
 }
 
@@ -294,10 +322,10 @@ namespace floatapi_font {
     Font LoadChineseFontDefault() {
         int count = 0;
         auto cps_chinese = LoadCommonCodepoints(count);
-        return LoadFontRaylib("C:\\windows\\fonts\\simhei.ttf", ".ttf", 30, cps_chinese.get(), count);
+        return LoadFontRaylib("C:\\windows\\fonts\\simhei.ttf", ".ttf", 30, (int*)cps_chinese.data(), count);
     }
     
-    std::unique_ptr<int[]> LoadCommonCodepoints(int& count, const std::string& other) {
+    std::vector<int> LoadCommonCodepoints(int& count, const std::string& other) {
         std::vector<int> codepoints;
         
         // 定义要加载的Unicode范围
@@ -332,21 +360,17 @@ namespace floatapi_font {
                 UnloadCodepoints(cp_other);
                 
                 // 更新codepoints
-                codepoints.assign(new_cp.get(), new_cp.get() + total_count);
+                codepoints.assign(new_cp.data(), new_cp.data() + total_count);
                 count = total_count;
             }
         } else {
             count = static_cast<int>(codepoints.size());
         }
         
-        // 使用unique_ptr管理内存
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadCodepointsFromRange(int start, int end, int& count) {
+    std::vector<int> LoadCodepointsFromRange(int start, int end, int& count) {
         std::vector<int> codepoints;
         for (int codepoint = start; codepoint <= end; codepoint++) {
             if (IsValidUnicodeCodepoint(codepoint)) {
@@ -354,13 +378,11 @@ namespace floatapi_font {
             }
         }
         count = static_cast<int>(codepoints.size());
-        
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+       
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadChineseCodepoints(int& count) {
+    std::vector<int> LoadChineseCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // 基本拉丁字母和数字
@@ -377,13 +399,10 @@ namespace floatapi_font {
             }
         }
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadJapaneseCodepoints(int& count) {
+    std::vector<int> LoadJapaneseCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // 平假名：U+3040 到 U+309F
@@ -392,17 +411,12 @@ namespace floatapi_font {
         }
         
         // 片假名：U+30A0 到 U+30FF
-        for (int codepoint = 0x30A0; codepoint <= 0x30FF; codepoint++) {
-            codepoints.push_back(codepoint);
-        }
+        for (int codepoint = 0x30A0; codepoint <= 0x30FF; codepoints.push_back(codepoint), codepoint++);
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadFrenchCodepoints(int& count) {
+    std::vector<int> LoadFrenchCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // 法语的字符集范围：拉丁字母扩展区（U+00C0 - U+024F）
@@ -410,13 +424,10 @@ namespace floatapi_font {
             codepoints.push_back(codepoint);
         }
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadGermanCodepoints(int& count) {
+    std::vector<int> LoadGermanCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // 德语的字符集范围：拉丁字母扩展区（U+00C0 - U+024F）
@@ -427,13 +438,10 @@ namespace floatapi_font {
         // 包括德语特有字符：例如 U+00DF（ß）
         codepoints.push_back(0x00DF);  // ß
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadSpanishCodepoints(int& count) {
+    std::vector<int> LoadSpanishCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // 西班牙语的字符集范围：拉丁字母扩展区（U+00C0 - U+024F）
@@ -445,13 +453,10 @@ namespace floatapi_font {
         codepoints.push_back(0x00E9);  // é
         codepoints.push_back(0x00F1);  // ñ
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadAsciiCodepoints(int& count) {
+    std::vector<int> LoadAsciiCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // ASCII 字符集范围：U+0000 到 U+007F
@@ -459,13 +464,10 @@ namespace floatapi_font {
             codepoints.push_back(codepoint);
         }
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> LoadEmojiCodepoints(int& count) {
+    std::vector<int> LoadEmojiCodepoints(int& count) {
         std::vector<int> codepoints;
         
         // Emoji 表情符号的 Unicode 范围（U+1F600 - U+1F64F）
@@ -478,10 +480,7 @@ namespace floatapi_font {
             codepoints.push_back(codepoint);
         }
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
     bool IsValidUnicodeCodepoint(int codepoint) {
@@ -491,7 +490,7 @@ namespace floatapi_font {
                 (codepoint >= 0xFFFE && codepoint <= 0xFFFF));  // 非字符
     }
     
-    std::unique_ptr<int[]> LoadUnicodeCodepoints(int& count, bool filter) {
+    std::vector<int> LoadUnicodeCodepoints(int& count, bool filter) {
         std::vector<int> codepoints;
         
         // 遍历 Unicode 范围：U+0000 到 U+FFFF
@@ -502,26 +501,26 @@ namespace floatapi_font {
             }
         }
         
-        count = static_cast<int>(codepoints.size());
-        auto result = std::make_unique<int[]>(count);
-        std::copy(codepoints.begin(), codepoints.end(), result.get());
-        return result;
+        return codepoints;
     }
     
-    std::unique_ptr<int[]> ConcatenateCodepoints(int* codepoints1, int count1, int* codepoints2, int count2, int& count) {
-        count = count1 + count2;
-        auto result = std::make_unique<int[]>(count);
-        
-        // 复制第一个数组
-        if (codepoints1 && count1 > 0) {
-            std::copy(codepoints1, codepoints1 + count1, result.get());
+    std::vector<int> ConcatenateCodepoints(int* codepoints1, int count1, int* codepoints2, int count2, int& count) {
+        // Prepare result vector with reserved size
+        std::vector<int> result;
+        result.reserve((count1 > 0 ? count1 : 0) + (count2 > 0 ? count2 : 0));
+
+        // Copy first array if valid
+        if (codepoints1 != nullptr && count1 > 0) {
+            result.insert(result.end(), codepoints1, codepoints1 + count1);
         }
-        
-        // 复制第二个数组
-        if (codepoints2 && count2 > 0) {
-            std::copy(codepoints2, codepoints2 + count2, result.get() + count1);
+
+        // Copy second array if valid
+        if (codepoints2 != nullptr && count2 > 0) {
+            result.insert(result.end(), codepoints2, codepoints2 + count2);
         }
-        
+
+        // Set output count and return the concatenated vector
+        count = static_cast<int>(result.size());
         return result;
     }
     

@@ -10,12 +10,13 @@
  * - 音频模式枚举
  */
 #pragma once
- /**
-  * @enum Collision
-  * @ingroup Enum
-  *
-  * @brief 碰撞状态枚举
-  */
+
+/**
+    * @enum Collision
+    * @ingroup Enum
+    *
+    * @brief 碰撞状态枚举
+    */
 enum Collision {
     Collision_None = 0, ///< 无碰撞
     Collision_With = 1, ///< 碰撞
@@ -24,38 +25,15 @@ enum Collision {
 };
 
 /**
- * @struct DIR
- * @ingroup Enum
- *
- * @brief 方向常量
- */
-struct {
-    static constexpr float LEFT = 270.0f; ///< 左
-    static constexpr float RIGHT = 90.0f; ///< 右
-    static constexpr float UP = 0.0f; ///< 上
-    static constexpr float DOWN = 180.0f; ///< 下
-} DIR;
-
-/**
- * @struct OBJPRO
- * @ingroup Enum
- *
- * @brief 对象属性常量
- */
-struct {
-    static constexpr int Normal = 0; ///< 普通对象
-    static constexpr int Actor = 1; ///< 角色对象
-    static constexpr int Block = 2; ///< 方块对象
-} OBJPRO;
-
-/**
- * @enum AudioMode
- * @ingroup Enum
- *
- * @brief 音频模式枚举
- */
-enum AudioMode {
-    Audio_Unknown = 0, ///< 未知音频模式
-    Audio_Sound = 1, ///< 声音模式
-    Audio_Music = 2, ///< 音乐模式
+    * @struct DIR
+    * @ingroup Enum
+    *
+    * @brief 方向常量
+    */
+enum F_DIR {
+    LEFT = 270, ///< 左
+    RIGHT = 90, ///< 右
+    UP = 0, ///< 上
+    DOWN = 180, ///< 下
 };
+

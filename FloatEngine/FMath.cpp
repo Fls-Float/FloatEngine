@@ -246,7 +246,7 @@ F_Rectangle::F_Rectangle(float _x, float _y, float _width, float _height)
     height = _height;
 }
 
-F_Rectangle::F_Rectangle(const Rectangle& rect)
+F_Rectangle::F_Rectangle(const rlRectangle& rect)
 {
     x = rect.x;
     y = rect.y;
@@ -268,7 +268,7 @@ void F_Rectangle::Shape_Set()
 
 }
 
-void F_Rectangle::Set_Rectangle(const Rectangle& _rect)
+void F_Rectangle::Set_Rectangle(const rlRectangle& _rect)
 {
     x = _rect.x;
     y = _rect.y;
@@ -306,7 +306,7 @@ void F_Rectangle::Set_Size(const Size& size)
 }
 
 
-Rectangle F_Rectangle::To_RlRect(int no_origin) const
+rlRectangle F_Rectangle::To_RlRect(int no_origin) const
 {
     if (!no_origin)
         return { x + rot_origin.x * width,y + rot_origin.y * height,width,height };
@@ -564,8 +564,8 @@ namespace floatapi_math {
 
     bool Rectangle_Collision_AABB(const F_Rectangle& a, const F_Rectangle& b)
     {
-        Rectangle a1 = a.To_RlRect(1);
-        Rectangle a2 = b.To_RlRect(1);
+        rlRectangle a1 = a.To_RlRect(1);
+        rlRectangle a2 = b.To_RlRect(1);
         if (CheckCollisionRecs(a1, a2)) {
             return true;
         }
@@ -574,8 +574,8 @@ namespace floatapi_math {
 
     F_Rectangle Get_Rectangle_AABB(const F_Rectangle& a, const F_Rectangle& b)
     {
-        Rectangle a1 = a.To_RlRect(1);
-        Rectangle a2 = b.To_RlRect(1);
+        rlRectangle a1 = a.To_RlRect(1);
+        rlRectangle a2 = b.To_RlRect(1);
         if (CheckCollisionRecs(a1, a2)) {
             return GetCollisionRec(a1, a2);
         }
@@ -601,7 +601,7 @@ namespace floatapi_math {
         float circleX = circle.x;
         float circleY = circle.y;
         float circleRadius = circle.radius;
-        // Rectangle parameters
+        // rlRectangle parameters
         float rectX = rect.x;
         float rectY = rect.y;
         float rectWidth = rect.width;

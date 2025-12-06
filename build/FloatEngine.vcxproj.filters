@@ -1,0 +1,174 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Actor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Block.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FMath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Anim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Font.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Resource.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Shader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FloatAPI.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Game.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Room.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Sprite.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Actor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Block.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Enum.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FMath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Anim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Easings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Font.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Text.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FloatApi.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FloatEngine.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Room.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Sprite.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\extras\FA6FreeSolidFontData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\extras\IconsFontAwesome6.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imconfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imgui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imgui_impl_raylib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imgui_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imstb_rectpack.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imstb_textedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imstb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\rlImGui.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\rlImGuiColors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\miniz.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\raylib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\raymath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\rcamera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\rlgl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\winfuns.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\FloatStudio\Engine Related\FloatEngine\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{73ACD705-2296-31CF-A280-6C2FEE76A074}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{5E9696B9-939C-3410-8DB9-B6CB33798290}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

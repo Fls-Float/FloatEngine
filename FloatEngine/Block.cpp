@@ -1,10 +1,11 @@
 #include "Block.h"
 #include "Enum.h"
+
 Block::Block()
 {
 	m_block = { 0,0 };
 	m_angle = 0;
-	setObjPro(OBJPRO.Block);
+	setObjPro(F_ObjPro::OBJPRO::Block);
 	setObjName("NONE_BLOCK");
 }
 Block::~Block() {

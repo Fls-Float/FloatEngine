@@ -1,4 +1,6 @@
 #include "Object.h"
+
+
 Object::Object()
 {
 	object_mode_no_destroy_sprite = 0;
@@ -10,7 +12,7 @@ Object::Object()
 	image_xscale = image_yscale = 1.0f;
 	x = y = 0;
 	_m_obj_name = "NONE";
-	_m_obj_pro = OBJPRO.Normal;
+	_m_obj_pro = F_ObjPro::OBJPRO::Normal;
 	depth = 0;
 	image_index = 0;
 	sprite_index = Sprite();

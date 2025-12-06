@@ -1,0 +1,1 @@
+vcpkg export --triplet=x64-windows-static --output-dir=output --raw

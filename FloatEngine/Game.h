@@ -19,6 +19,15 @@ enum MOD_FLAG{
 	MOD_FGUI = 2,
 	MOD_ALL = 4
 };
+
+//尝试关闭窗口回调类
+class IAttemptToCloseWindowCallback {
+public:
+    virtual void OnAttemptToCloseWindow(bool& gameExit, bool& isAttempt) { gameExit = true; isAttempt = false; }
+    virtual void OnAttemptToCloseWindowRender() {};
+    virtual ~IAttemptToCloseWindowCallback() {}
+};
+
  /**
   * @class Game
   * @ingroup Game
@@ -47,7 +56,10 @@ class Game {
     Image _icons[100]; ///< 图标数组
     FilePathList _icon_path; ///< 图标路径列表
     Color background_col; ///< 背景颜色
-
+	bool m_isAttemptingToClose; ///< 是否正在尝试关闭窗口
+	IAttemptToCloseWindowCallback* m_attemptToCloseCallback; ///< 尝试关闭窗口回调接口
+	bool m_gameExit; ///< 游戏是否退出
+    bool m_AttemptCallbackHasRender;
 public:
     /**
      * @brief 构造函数

@@ -348,10 +348,10 @@ public:
     F_Rectangle(float _x, float _y, float _width, float _height);
 
     /**
-     * @brief 从Rectangle构造
-     * @param rect Rectangle对象
+     * @brief 从rlRectangle构造
+     * @param rect rlRectangle对象
      */
-    F_Rectangle(const Rectangle& rect);
+    F_Rectangle(const rlRectangle& rect);
 
     /**
      * @brief 利用矩形的参数设置图形信息
@@ -360,9 +360,9 @@ public:
 
     /**
      * @brief 设置矩形参数
-     * @param _rect Rectangle对象
+     * @param _rect rlRectangle对象
      */
-    void Set_Rectangle(const Rectangle& _rect);
+    void Set_Rectangle(const rlRectangle& _rect);
 
     /**
      * @brief 设置矩形参数
@@ -400,11 +400,11 @@ public:
     void Set_Size(const Size& size);
 
     /**
-     * @brief 转换为Rectangle(angle将无效)
+     * @brief 转换为rlRectangle(angle将无效)
      * @param no_origin 是否忽略原点
-     * @return Rectangle对象
+     * @return rlRectangle对象
      */
-    Rectangle To_RlRect(int no_origin = false) const;
+    rlRectangle To_RlRect(int no_origin = false) const;
 };
 
 /**

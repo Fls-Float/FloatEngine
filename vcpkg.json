@@ -1,0 +1,20 @@
+{
+  "dependencies": [
+    "enet",
+    "lua",
+    {
+      "name": "minizip-ng",
+      "features": [
+        "bzip2",
+        "lzma",
+        "openssl",
+        "pkcrypt",
+        "wzaes",
+        "zlib",
+        "zstd"
+      ]
+    },
+    "sol2",
+    "slikenet"
+  ]
+}

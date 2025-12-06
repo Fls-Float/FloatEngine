@@ -5,7 +5,7 @@
 
 Actor::Actor()
 {
-	change_pro(OBJPRO.Actor);
+	change_pro(F_ObjPro::OBJPRO::Actor);
 	moveable = true;
 	jumpable = false;
 	active = true;

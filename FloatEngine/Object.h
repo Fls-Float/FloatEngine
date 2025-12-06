@@ -13,12 +13,23 @@
 #pragma once
 #include "FloatApi.h"
 #include <string>
-#include "Enum.h"
 #include <array>
 #include <functional>
 
 #define FOBJECT_BODY() float x, y; float image_index; Sprite sprite_index; int depth; Size m_block; float m_angle; Vector2 m_origin;float image_xscale;float image_yscale;float image_alpha;Color image_color;
-
+namespace F_ObjPro {
+    /**
+   * @struct OBJPRO
+   * @ingroup Enum
+   *
+   * @brief 对象属性常量
+   */
+    enum OBJPRO {
+        Normal=0, ///< 普通对象
+        Actor=1, ///< 角色对象
+        Block=2  ///< 方块对象
+    } ;
+}
 /**
  * @class Object
  * @ingroup Object
@@ -110,7 +121,7 @@ public:
      * @param ins_id 实例ID
      * @param pro 对象属性
      */
-    Object(const char* name, int ins_id, int pro = OBJPRO.Normal);
+    Object(const char* name, int ins_id, int pro = 0);
   
     /**
       * @brief 移动构造函数

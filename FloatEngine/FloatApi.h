@@ -13,13 +13,13 @@
  * - 文件处理
  * - INI/JSON文件处理(1.4.2)
  * - Lua支持(1.4.3)
+ * - F_Resource 支持加密算法,项目使用vcpkg进行包管理(1.5.0)
  */
 
 #pragma once
-#define FLOAT_API_VERSION "1.4.6"
+#define FLOAT_API_VERSION "1.5.0"
 #define _CRT_SECURE_NO_WARNINGS
-#define LINK_WINFUNS
-
+#define LINK_WINFUNS  
 
 #include <iostream>
 #include <vector>
@@ -34,7 +34,7 @@
 #include <unordered_map>
 #include <type_traits>
 #include <any>
-
+#include <queue>
 #ifdef _MSC_VER
 #define _SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING
 #define _SILENCE_ALL_CXX17_DEPRECATION_WARNINGS
@@ -42,10 +42,9 @@
 #define SOL_ALL_SAFETIES_ON 1
 #define SOL_STRINGS_ARE_NUMBERS 1
 #define SOL_PRINT_ERRORS 1
-#include "lua/sol.hpp"
+#include "sol/sol.hpp"
 #include "raylib.h"
-#include "gui/include/imgui.h"
-#include "gui/include/rlImGui.h"
+
 
 #include "F_Resource.h"
 #include "FMath.h"
@@ -56,6 +55,8 @@
 #include "F_Anim.h"
 #include "Enum.h"
 #include "Sprite.h"
+#include "F_Network.h"
+struct ImGuiInputTextCallbackData;
  /**
   * @class F_Debug
   * @ingroup FloatApi
@@ -71,7 +72,7 @@
 class F_Debug {
     static int m_debug;
     static bool m_showConsole;
-
+    
     struct Log_Info{
         std::string log;
         int lv;
@@ -2278,144 +2279,20 @@ namespace F_Gui {
 
     // 自定义绘制
     void DrawLine(const Vector2& start, const Vector2& end, Color color, float thickness = 1.0f);
-    void DrawRect(const Rectangle& rect, Color color, float rounding = 0.0f);
+    void DrawRect(const rlRectangle& rect, Color color, float rounding = 0.0f);
 
     // 扩展系统
     using CustomWidgetFunc = std::function<void()>;
     void RegisterWidget(const char* name, CustomWidgetFunc func);
     void ShowWidget(const char* name);
 };
-/**
- * @class F_NetWork
- * @brief 网络通信相关功能的封装类
- *
- * 该类提供网络连接、数据发送接收等功能的接口，支持UDP协议。
- * 具体实现细节和网络协议处理由子类或具体实现负责。
- */
-#include <functional>
-#include "enet/enet.h"
- // 网络事件类型枚举
-enum class NetEventType {
-    NONE,
-    CONNECT,    // 连接建立
-    DISCONNECT, // 连接断开
-    RECEIVE     // 数据接收
-};
 
-
-
-// 网络模式枚举
-enum class NetMode {
-    NONE,
-    SERVER,     // 服务器模式
-    CLIENT      // 客户端模式
-};
-// DNS解析结果结构体
-struct DNSResult {
-    std::string hostname;          // 原始域名
-    std::vector<std::string> ip_addresses; // 解析出的IP地址列表
-    std::error_code error;         // 错误代码
-};
-enum class NetErrorCode {
-    NONE = 0,
-    INIT_FAILED,
-    SERVER_CREATE_FAILED,
-    CLIENT_CREATE_FAILED,
-    CONNECTION_FAILED,
-    RESOLUTION_FAILED,
-    SEND_FAILED,
-    RECEIVE_FAILED,
-    DISCONNECTED
-};
-
-struct NetError {
-    NetErrorCode code = NetErrorCode::NONE;
-    int enetError = 0;          // ENet 原始错误码
-    std::string message;        // 错误描述
-    std::string details;        // 额外细节
-};
-// 网络事件结构体
-struct NetEvent {
-    NetEventType type = NetEventType::NONE;
-    ENetPeer* peer = nullptr;
-    ENetPacket* packet = nullptr;
-    uint32_t data = 0;         // 断开连接的错误码
-    NetError error;            // 自定义错误信息
-};
-class F_NetWork {
-public:
-    // 构造函数/析构函数
-    F_NetWork();
-    ~F_NetWork();
-
-    // 禁用拷贝
-    F_NetWork(const F_NetWork&) = delete;
-    F_NetWork& operator=(const F_NetWork&) = delete;
-
-    // 初始化网络系统
-    bool Initialize();
-
-    // 创建服务器
-    bool CreateServer(int port, int maxClients = 32);
-
-    // 创建客户端并连接到服务器
-    bool ConnectToServer(const char* host, int port, int timeout = 5000);
-    // 连接到服务器（使用域名解析）
-    bool ConnectToServerDomain(const std::string& domain, int port, int timeout = 5000);
-
-    // DNS域名解析（静态方法）
-    static DNSResult ResolveDomain(const std::string& domain, int timeout_ms = 3000);
-
-    // 关闭网络连接
-    void Shutdown();
-
-    // 发送数据
-    void SendPacket(ENetPeer* peer, const void* data, size_t dataLength,
-        bool reliable = true, uint8_t channel = 0);
-
-    // 广播数据（服务器专用）
-    void BroadcastPacket(const void* data, size_t dataLength,
-        bool reliable = true, uint8_t channel = 0);
-
-    // 处理网络事件（应在游戏循环中调用）
-    NetEvent Service(int timeout = 0);
-
-    // 获取当前网络模式
-    NetMode GetMode() const { return mode; }
-
-    // 获取主机对象
-    ENetHost* GetHost() { return host; }
-
-    // 设置自定义事件处理器
-    void SetEventCallback(std::function<void(const NetEvent&)> callback) {
-        eventCallback = callback;
-    }
-
-    // 获取最后一次连接使用的IP地址
-    std::string GetLastConnectedIP() const { return lastConnectedIP; }
-
-    // 获取最后一次错误
-    const NetError& GetLastError() const { return lastError; }
-
-    // 清除错误状态
-    void ClearError() { lastError = NetError(); }
-
-    // 获取 ENet 错误字符串
-    static std::string GetEnetErrorString(int errorCode);
-    void SetError(NetErrorCode code, int enetError,
-        const std::string& message,
-        const std::string& details = "");
-
-private:
-    ENetHost* host = nullptr;      // ENet主机对象
-    NetMode mode = NetMode::NONE;  // 当前网络模式
-    std::function<void(const NetEvent&)> eventCallback; // 自定义事件回调
-    std::string lastConnectedIP;   // 最后一次连接使用的IP地址
-	NetError lastError;            // 最后一次错误信息
-};
 
 template<typename T>
 template<typename U>
 inline auto F_Lua::ClassRegistrar<T>::getBaseClass() -> void
 {
 }
+
+
+

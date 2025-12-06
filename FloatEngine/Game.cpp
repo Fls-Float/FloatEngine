@@ -2,6 +2,9 @@
 #include "Room.h"
 #include <string>
 #include "F_Console.h"
+
+#include "gui/include/imgui.h"
+#include "gui/include/rlImGui.h"
 Game::Game()
 {
 	_fps = _w = _h = 0;
@@ -13,6 +16,9 @@ Game::Game()
 	_icon_path = FilePathList();
 	_load_icon_pre = 0;
 	_icon_path.capacity = 20;
+	m_isAttemptingToClose = false;
+	m_gameExit = false;
+	m_AttemptCallbackHasRender = false;
 }
 
 void ApplyGuiStyle() {
@@ -87,7 +93,6 @@ void LoadGuiFont(float dpi_scale = 1.0f) {
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("C://windows//fonts//msyh.ttc",
 		base_font_size, &font_cfg,
 		io.Fonts->GetGlyphRangesChineseFull());
-	rlImGuiReloadFonts();
 }
 void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, bool loadAllMod)
 {
@@ -119,7 +124,7 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, 
 		else if (_icon_path.count > 1) {
 			Image* icons = new Image[_icon_path.count + 1];
 			for (int i = 0; i < _icon_path.count; i++) {
-				icons[i] = ::LoadImage(_icon_path.paths[i]);
+				icons[i] = ::rlLoadImage(_icon_path.paths[i]);
 			}
 			::SetWindowIcons(icons, _icon_path.count); 
 			for (int i = 0; i < _icon_path.count; i++) {
@@ -128,7 +133,7 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, 
 			delete[]icons;
 		}
 		else if (_icon_path.count == 1 ) {
-			Image icon = ::LoadImage(_icon_path.paths[0]);
+			Image icon = ::rlLoadImage(_icon_path.paths[0]);
 			::SetWindowIcon(icon);
 			::UnloadImage(icon);
 		}
@@ -198,7 +203,27 @@ void Game::Play(int fps)
 	}
 	start_time = std::chrono::high_resolution_clock::now();
 	double last_time = 0;
-	while (!WindowShouldClose()) {
+	while (!m_gameExit) {
+		if (WindowShouldClose() || IsKeyPressed(KEY_ESCAPE)) {
+			if (!m_isAttemptingToClose) {
+				m_isAttemptingToClose = true;
+			}
+		}
+		while(m_isAttemptingToClose) {
+			m_attemptToCloseCallback->OnAttemptToCloseWindow(m_gameExit,m_isAttemptingToClose);
+			if (m_AttemptCallbackHasRender) {
+				BeginDrawing(); {
+					m_attemptToCloseCallback->OnAttemptToCloseWindowRender();
+				}EndDrawing();
+			}
+			if (m_gameExit) {
+				WinFuns::ShowWindow(GetWindowHandle(), 0);
+			}
+		}
+		if (m_gameExit) {
+			Room_Run_Now("onDestroy");
+			break;
+		}
 		auto end_time = std::chrono::high_resolution_clock::now();
 		now_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
 		frame_time = now_time - last_time;
@@ -206,6 +231,7 @@ void Game::Play(int fps)
 		GetRealFPS();
 		GetFrameTime();
 		GetTime();
+		
 		//enter
 		Room_Run_Now("onEnter");
 		//step
@@ -233,7 +259,7 @@ void Game::Destroy()
 	delete _title;
 	F_Gui::Shutdown();
 	CloseAudioDevice();
-	CloseWindow();
+	rlCloseWindow();
 }
 
 

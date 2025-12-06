@@ -1,0 +1,1 @@
+cmake -B build -S .   -DCMAKE_TOOLCHAIN_FILE="E:/Github Projects/vcpkg-master/scripts/buildsystems/vcpkg.cmake"  -DVCPKG_TARGET_TRIPLET=x64-windows-static

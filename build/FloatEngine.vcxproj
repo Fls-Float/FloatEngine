@@ -1,0 +1,381 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="18.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|x64">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|x64">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A49F109C-2CD9-3272-A3A3-766FF66CBB5A}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <VcpkgEnabled>false</VcpkgEnabled>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>x64</Platform>
+    <ProjectName>FloatEngine</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v145</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="do_not_import_user.props" Condition="exists('do_not_import_user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">FloatEngine.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">FloatEngine</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">FloatEngine.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">FloatEngine</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">FloatEngine.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">FloatEngine</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">FloatEngine.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">FloatEngine</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include" /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include/minizip-ng" /execution-charset:utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4005</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;_DEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include" /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include/minizip-ng" /execution-charset:utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4005</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include" /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include/minizip-ng" /execution-charset:utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DisableSpecificWarnings>4005</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include" /external:I "E:/FloatStudio/Engine Related/FloatEngine/build/vcpkg_installed/x64-windows-static/include/minizip-ng" /execution-charset:utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck></BufferSecurityCheck>
+      <CallingConvention></CallingConvention>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4005</DisableSpecificWarnings>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <FloatingPointModel></FloatingPointModel>
+      <ForceConformanceInForLoopScope></ForceConformanceInForLoopScope>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RemoveUnreferencedCodeData></RemoveUnreferencedCodeData>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <SupportJustMyCode></SupportJustMyCode>
+      <TreatWChar_tAsBuiltInType></TreatWChar_tAsBuiltInType>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;ASIO_STANDALONE;_CONSOLE;WIN32_LEAN_AND_MEAN;NOMINMAX;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Midl>
+      <AdditionalIncludeDirectories>E:\FloatStudio\Engine Related\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine;E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\include\minizip-ng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:x64</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\FloatStudio\Engine Related\FloatEngine\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule E:/FloatStudio/Engine Related/FloatEngine/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" "-SE:/FloatStudio/Engine Related/FloatEngine" "-BE:/FloatStudio/Engine Related/FloatEngine/build" --check-stamp-file "E:/FloatStudio/Engine Related/FloatEngine/build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeDependentOption.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeFindDependencyMacro.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakePushCheckState.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckCSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckIncludeFile.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckLibraryExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckSymbolExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindLibLZMA.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindOpenSSL.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindThreads.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CheckSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\SelectLibraryConfigurations.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCXXCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeRCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeSystem.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\liblzma\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\lua\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config-version.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\openssl\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenet-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zlib\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfig.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfigVersion.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\vcpkg-configuration.json;E:\FloatStudio\Engine Related\FloatEngine\vcpkg.json;E:\Github Projects\vcpkg-master\scripts\buildsystems\vcpkg.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule E:/FloatStudio/Engine Related/FloatEngine/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" "-SE:/FloatStudio/Engine Related/FloatEngine" "-BE:/FloatStudio/Engine Related/FloatEngine/build" --check-stamp-file "E:/FloatStudio/Engine Related/FloatEngine/build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeDependentOption.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeFindDependencyMacro.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakePushCheckState.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckCSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckIncludeFile.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckLibraryExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckSymbolExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindLibLZMA.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindOpenSSL.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindThreads.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CheckSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\SelectLibraryConfigurations.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCXXCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeRCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeSystem.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\liblzma\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\lua\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config-version.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\openssl\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenet-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zlib\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfig.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfigVersion.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\vcpkg-configuration.json;E:\FloatStudio\Engine Related\FloatEngine\vcpkg.json;E:\Github Projects\vcpkg-master\scripts\buildsystems\vcpkg.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule E:/FloatStudio/Engine Related/FloatEngine/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" "-SE:/FloatStudio/Engine Related/FloatEngine" "-BE:/FloatStudio/Engine Related/FloatEngine/build" --check-stamp-file "E:/FloatStudio/Engine Related/FloatEngine/build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeDependentOption.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeFindDependencyMacro.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakePushCheckState.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckCSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckIncludeFile.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckLibraryExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckSymbolExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindLibLZMA.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindOpenSSL.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindThreads.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CheckSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\SelectLibraryConfigurations.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCXXCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeRCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeSystem.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\liblzma\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\lua\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config-version.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\openssl\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenet-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zlib\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfig.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfigVersion.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\vcpkg-configuration.json;E:\FloatStudio\Engine Related\FloatEngine\vcpkg.json;E:\Github Projects\vcpkg-master\scripts\buildsystems\vcpkg.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule E:/FloatStudio/Engine Related/FloatEngine/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
+"D:\Program Files\CMake\bin\cmake.exe" "-SE:/FloatStudio/Engine Related/FloatEngine" "-BE:/FloatStudio/Engine Related/FloatEngine/build" --check-stamp-file "E:/FloatStudio/Engine Related/FloatEngine/build/CMakeFiles/generate.stamp"
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCXXInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeCommonLanguageInclude.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeDependentOption.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeFindDependencyMacro.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeGenericSystem.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeInitializeConfigs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeLanguageInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakePushCheckState.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeRCInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CMakeSystemSpecificInitialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckCSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckIncludeFile.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckLibraryExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\CheckSymbolExists.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\CMakeCommonCompilerMacros.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Compiler\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindBZip2.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindLibLZMA.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindOpenSSL.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageHandleStandardArgs.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindPackageMessage.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindThreads.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\FindZLIB.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCXXLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CMakeCommonLinkerInformation.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Internal\CheckSourceCompiles.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Linker\MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Linker\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-Initialize.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-C.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC-CXX.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows-MSVC.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\Windows.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\Platform\WindowsPaths.cmake;D:\Program Files\CMake\share\cmake-4.2\Modules\SelectLibraryConfigurations.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeCXXCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeRCCompiler.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\4.2.0\CMakeSystem.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\liblzma\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\lua\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config-version.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\minizip-ng\minizip-ng.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\openssl\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenet-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\slikenetTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\slikenet\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\unofficial-lua\unofficial-lua-config.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zlib\vcpkg-cmake-wrapper.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfig.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdConfigVersion.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-debug.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets-release.cmake;E:\FloatStudio\Engine Related\FloatEngine\build\vcpkg_installed\x64-windows-static\share\zstd\zstdTargets.cmake;E:\FloatStudio\Engine Related\FloatEngine\vcpkg-configuration.json;E:\FloatStudio\Engine Related\FloatEngine\vcpkg.json;E:\Github Projects\vcpkg-master\scripts\buildsystems\vcpkg.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">E:\FloatStudio\Engine Related\FloatEngine\build\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Actor.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Block.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FMath.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Anim.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Audio.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Console.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Font.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Network.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Resource.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Shader.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Text.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FloatAPI.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Game.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Object.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Room.cpp" />
+    <ClCompile Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Sprite.cpp" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Actor.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Block.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Enum.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FMath.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Anim.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Audio.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Console.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Easings.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Font.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Network.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Resource.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Shader.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\F_Text.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FloatApi.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\FloatEngine.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Game.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Object.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Room.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\Sprite.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\extras\FA6FreeSolidFontData.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\extras\IconsFontAwesome6.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imconfig.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imgui.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imgui_impl_raylib.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imgui_internal.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imstb_rectpack.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imstb_textedit.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\imstb_truetype.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\rlImGui.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\gui\include\rlImGuiColors.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\miniz.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\raylib.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\raymath.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\rcamera.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\raylib\rlgl.h" />
+    <ClInclude Include="E:\FloatStudio\Engine Related\FloatEngine\FloatEngine\winfuns.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="E:\FloatStudio\Engine Related\FloatEngine\build\ZERO_CHECK.vcxproj">
+      <Project>{B56B076B-4B01-3939-98BA-50FA4F1C93A6}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

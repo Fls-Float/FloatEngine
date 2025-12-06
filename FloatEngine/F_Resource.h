@@ -25,7 +25,7 @@ public:
 
     void SetResourcePath(const std::string& path);
     void SetResourceData(const std::vector<unsigned char>& data);
-
+    void SetPassword(const std::string& password);
     int GetFileCount();
 
     // 单资源加载
@@ -60,7 +60,7 @@ private:
     std::string resource_path;
     std::vector<unsigned char> resource_data;
     bool use_memory_zip;
-
+    std::string zip_password;
     // 资源缓存
     std::map<std::string, Texture2D> textures;
     std::map<std::string, Sound> sounds;
@@ -86,10 +86,6 @@ private:
     void UnloadTextById(const std::string& id);
     void UnloadDataById(const std::string& id);
     
-    void* CreateZipReader();
-    void DeleteZipReader(void* reader);
-    bool OpenZipReader(void* reader);
-    void CloseZipReader(void* reader);
 };
 
 #endif // F_RESOURCE_H

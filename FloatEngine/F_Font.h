@@ -225,7 +225,7 @@ namespace floatapi_font {
      * @param other 其他字符
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadCommonCodepoints(int& count, const std::string& other = "");
+    std::vector<int> LoadCommonCodepoints(int& count, const std::string& other = "");
 
     /**
      * @brief 根据范围加载码点
@@ -234,56 +234,56 @@ namespace floatapi_font {
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadCodepointsFromRange(int start, int end, int& count);
+    std::vector<int> LoadCodepointsFromRange(int start, int end, int& count);
 
     /**
      * @brief 加载中文字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadChineseCodepoints(int& count);
+    std::vector<int> LoadChineseCodepoints(int& count);
 
     /**
      * @brief 加载日文字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadJapaneseCodepoints(int& count);
+    std::vector<int> LoadJapaneseCodepoints(int& count);
 
     /**
      * @brief 加载法语字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadFrenchCodepoints(int& count);
+    std::vector<int> LoadFrenchCodepoints(int& count);
 
     /**
      * @brief 加载德语字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadGermanCodepoints(int& count);
+    std::vector<int> LoadGermanCodepoints(int& count);
 
     /**
      * @brief 加载西班牙语字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadSpanishCodepoints(int& count);
+    std::vector<int> LoadSpanishCodepoints(int& count);
 
     /**
      * @brief 加载ASCII字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadAsciiCodepoints(int& count);
+    std::vector<int> LoadAsciiCodepoints(int& count);
 
     /**
      * @brief 加载Emoji字符集的所有Unicode码点
      * @param count 码点数量
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadEmojiCodepoints(int& count);
+    std::vector<int> LoadEmojiCodepoints(int& count);
 
     /**
      * @brief 判断是否是有效的Unicode字符
@@ -298,7 +298,7 @@ namespace floatapi_font {
      * @param filter 是否过滤无效码点
      * @return 码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> LoadUnicodeCodepoints(int& count, bool filter = true);
+    std::vector<int> LoadUnicodeCodepoints(int& count, bool filter = true);
 
     /**
      * @brief 拼接多个codepoints数组
@@ -309,7 +309,7 @@ namespace floatapi_font {
      * @param count 拼接后的码点数量
      * @return 拼接后的码点数组（需要调用者释放）
      */
-    std::unique_ptr<int[]> ConcatenateCodepoints(int* codepoints1, int count1, int* codepoints2, int count2, int& count);
+    std::vector<int> ConcatenateCodepoints(int* codepoints1, int count1, int* codepoints2, int count2, int& count);
 
     /**
      * @brief 从字符串提取Unicode码点

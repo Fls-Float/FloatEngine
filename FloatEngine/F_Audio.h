@@ -1,6 +1,16 @@
 #pragma once
 #include <raylib.h>
-#include "Enum.h"
+/**
+* @enum AudioMode
+* @ingroup Enum
+*
+* @brief 音频模式枚举
+*/
+enum AudioMode {
+    Audio_Unknown = 0, ///< 未知音频模式
+    Audio_Sound = 1, ///< 声音模式
+    Audio_Music = 2, ///< 音乐模式
+};
 /**
  * @file F_Audio.h
  * @brief 音频类
@@ -26,6 +36,7 @@
   * audio.Play();
   * @endcode
   */
+
 class F_Audio {
     AudioMode m_Audio_Mode; // 1 -- sound,2 -- music...
     Sound m_sound;
