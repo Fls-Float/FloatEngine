@@ -77,6 +77,9 @@ void Room::RunInstance(const char* event)
 	auto obj_copy = GetObjListRef();
 	for (auto& obj : obj_copy) {
 		if (obj && obj->_ins_id != -1) {
+			if (TextIsEqual(event, "onDestroy")) {
+				if (object_is_persistent[obj->_ins_id])continue;
+			}
 			EventInstance(obj, event);
 		}
 	}	
@@ -300,9 +303,9 @@ std::shared_ptr<Object> Room::Create(Object* instance, bool persistent) {
 		objects.emplace_back(newInstance);
 		if (persistent) {
 			objects_persistent.emplace_back(newInstance);
+			object_is_persistent[newInstance->_ins_id] = true;
 		}
 		_counts++;
-		delete instance;  // Clean up the source object
 		return objects.back();
 	}
 	catch (const std::exception& e) {
@@ -335,6 +338,7 @@ std::shared_ptr<Object> Room::AddIns(std::shared_ptr<Object> instance, bool pers
 			if (!already_persistent) {
 				objects_persistent.emplace_back(instance);
 			}
+			object_is_persistent[instance->_ins_id] = true;
 		}
 		return objects.back();
 	}

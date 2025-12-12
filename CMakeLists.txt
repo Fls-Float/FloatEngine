@@ -28,6 +28,7 @@ endif()
 # ==============================================================================
 find_package(minizip-ng CONFIG REQUIRED)
 find_package(Lua REQUIRED)
+find_package(curl REQUIRED)
 find_package(SLikeNet CONFIG REQUIRED)
 set(CUSTOM_RAYLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/FloatEngine/raylib")
 
@@ -83,6 +84,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
 target_link_libraries(${PROJECT_NAME} PRIVATE
     MINIZIP::minizip-ng
     slikenet
+    CURL::libcurl
     ${LUA_LIBRARIES}
     "${CUSTOM_RAYLIB_ROOT}/lib/raylib.lib"
 )

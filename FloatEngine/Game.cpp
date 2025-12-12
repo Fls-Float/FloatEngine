@@ -19,6 +19,7 @@ Game::Game()
 	m_isAttemptingToClose = false;
 	m_gameExit = false;
 	m_AttemptCallbackHasRender = false;
+	m_attemptToCloseCallback = new IAttemptToCloseWindowCallback();
 }
 
 void ApplyGuiStyle() {
@@ -216,6 +217,7 @@ void Game::Play(int fps)
 					m_attemptToCloseCallback->OnAttemptToCloseWindowRender();
 				}EndDrawing();
 			}
+			else PollInputEvents();
 			if (m_gameExit) {
 				WinFuns::ShowWindow(GetWindowHandle(), 0);
 			}
@@ -253,7 +255,7 @@ void Game::Play(int fps)
 
 void Game::Destroy()
 {
-	_fps = _w = _h = 0;
+	if (m_attemptToCloseCallback)delete m_attemptToCloseCallback;
 	Room* t = Room_Get_Now();
 	delete t;
 	delete _title;

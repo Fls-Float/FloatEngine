@@ -1,151 +1,123 @@
 #pragma once
+
 #include <raylib.h>
+#include <raymath.h> // 引入 Raylib 的数学库 Vector2Distance, Vector2Normalize, etc.
+#include <string>
+
+// ----------------------------------------------------------------------------
+// 1. 结构体和枚举
+// ----------------------------------------------------------------------------
+
 /**
-* @enum AudioMode
-* @ingroup Enum
-*
-* @brief 音频模式枚举
-*/
-enum AudioMode {
-    Audio_Unknown = 0, ///< 未知音频模式
-    Audio_Sound = 1, ///< 声音模式
-    Audio_Music = 2, ///< 音乐模式
-};
-/**
- * @file F_Audio.h
- * @brief 音频类
- * @defgroup Audio 音频模块
- *
- * 提供音频的加载、播放和管理功能：
- * - 支持声音和音乐模式
- * - 支持音频位置和方向设置
+ * @enum AudioMode
+ * @brief 音频模式枚举，明确区分 Sound (非流式) 和 Music (流式)
  */
+enum class AudioMode {
+    NONE = 0,
+    SOUND,  ///< 声音模式 (非流式，整个加载到内存)
+    MUSIC   ///< 音乐模式 (流式，适用于长文件)
+};
 
- /**
-  * @class F_Audio
-  * @ingroup Audio
-  *
-  * @brief 提供音频的加载、播放和管理功能
-  *
-  * @note 使用示例：
-  * @code
-  * F_Audio audio;
-  * audio.LoadFromFile("sound.wav", AudioMode::Audio_Sound);
-  * audio.SetPos(320,240);
-  * audio.SetTarget(0,0);
-  * audio.Play();
-  * @endcode
-  */
-
+/**
+ * @class F_Audio
+ * @brief 提供 2D 空间音频定位 (Spatial Audio) 和管理功能
+ *
+ * 在 Raylib 基础上，通过手动计算音量(Volume)和声相(Pan)来实现 2D 空间效果。
+ */
 class F_Audio {
-    AudioMode m_Audio_Mode; // 1 -- sound,2 -- music...
-    Sound m_sound;
-    Music m_music;
-    float x; // 声源x
-    float y; // 声源y
-    float target_direction;
-    Vector2 target;
-    bool start_direction_mode;
 public:
     /**
-     * @brief 默认构造函数
+     * @brief 空间音频配置结构体
      */
+    struct SpatialConfig {
+        Vector2  SourcePos = { 0.0f, 0.0f };    ///< 声源的绝对坐标
+        Vector2  ListenerPos = { 0.0f, 0.0f };  ///< 听者的绝对坐标 (通常是玩家)
+        float    MaxDistance = 500.0f;          ///< 声音能被听到的最大距离
+        float    BaseVolume = 1.0f;             ///< 声音的基础音量 (0.0f ~ 1.0f)
+    };
+
     F_Audio();
+    ~F_Audio();
+
+    // 禁用拷贝/移动，防止 Raylib 的内部 Sound/Music 资源被意外拷贝
+    F_Audio(const F_Audio&) = delete;
+    F_Audio& operator=(const F_Audio&) = delete;
+    F_Audio(F_Audio&&) = default;
+    F_Audio& operator=(F_Audio&&) = default;
+
+    // ------------------------------------------------------------------------
+    // 加载/卸载
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief 构造函数
-     * @param audio_mode 音频模式
+     * @brief 从文件加载音频资源
+     * @param filename 文件路径
+     * @param mode 音频模式 (SOUND 或 MUSIC)
      */
-    F_Audio(AudioMode audio_mode);
+    void Load(const char* filename, AudioMode mode);
 
     /**
-     * @brief 从文件加载音频
-     * @param filename 文件名
-     * @param am 音频模式
+     * @brief 卸载音频资源
      */
-    void LoadFromFile(const char* filename, AudioMode am);
+    void Unload();
+
+    // ------------------------------------------------------------------------
+    // 播放/控制
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief 从Sound对象加载音频
-     * @param snd Sound对象
+     * @brief 播放音频
+     * @param loop 是否循环播放 (仅对 Music 有效)
      */
-    void LoadFromSound(Sound snd);
+    void Play(bool loop = false);
 
     /**
-     * @brief 从Music对象加载音频
-     * @param mus Music对象
+     * @brief 停止播放
      */
-    void LoadFromMusic(Music mus);
+    void Stop();
 
     /**
-     * @brief 获取Sound对象
-     * @return Sound对象
+     * @brief 刷新空间音频定位 (必须每帧调用)
+     * @param listenerPos 听者的当前位置
      */
-    Sound GetSound();
+    void UpdateSpatialPosition(Vector2 listenerPos);
+
+    // ------------------------------------------------------------------------
+    // Setters/Getters
+    // ------------------------------------------------------------------------
 
     /**
-     * @brief 获取Music对象
-     * @return Music对象
+     * @brief 设置声源的绝对坐标
      */
-    Music GetMusic();
+    void SetSourcePosition(Vector2 pos);
 
     /**
-     * @brief 获取音频模式
-     * @return 音频模式
+     * @brief 设置声音能被听到的最大距离 (用于计算衰减)
      */
-    AudioMode GetAudioMode();
+    void SetMaxDistance(float distance);
 
     /**
-     * @brief 判断音频模式是否匹配
-     * @param am 音频模式
-     * @return 如果匹配返回true，否则返回false
+     * @brief 获取当前音频模式
      */
-    bool IsTheAudioMode(AudioMode am);
+    AudioMode GetMode() const { return m_mode; }
 
     /**
-     * @brief 设置声源x坐标
-     * @param _x x坐标
+     * @brief 获取声源位置
      */
-    void SetX(float _x);
+    Vector2 GetSourcePosition() const { return m_config.SourcePos; }
+
+private:
+    AudioMode m_mode = AudioMode::NONE;
+    SpatialConfig m_config;
+
+    // Raylib 资源
+    Sound m_sound = { 0 };
+    Music m_music = { 0 };
 
     /**
-     * @brief 设置声源y坐标
-     * @param _y y坐标
+     * @brief 计算并应用音量和声相 (Pan)
+     * @param distance 声源与听者的距离
+     * @param directionVector 声源相对于听者的方向向量
      */
-    void SetY(float _y);
-
-    /**
-     * @brief 设置声源坐标
-     * @param pos 坐标
-     */
-    void SetPos(Vector2 pos);
-
-    /**
-     * @brief 设置目标坐标
-     * @param _x_target 目标x坐标
-     * @param _y_target 目标y坐标
-     */
-    void SetTarget(float _x_target, float _y_target);
-
-    /**
-     * @brief 设置目标坐标
-     * @param _target 目标坐标
-     */
-    void SetTarget(Vector2 _target);
-
-    /**
-     * @brief 设置声源方向
-     * @param dir 方向（0°~360°）
-     */
-    void SetTargetDirection(float dir);
-
-    /**
-     * @brief 重置音频模式
-     */
-    void ResetAudioMode();
-
-    /**
-     * @brief 刷新音频
-     */
-    void FlushAll();
+    void ApplySpatialEffect(float distance, Vector2 directionVector);
 };

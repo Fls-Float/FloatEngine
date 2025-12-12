@@ -10,7 +10,8 @@ static void EventInstance(const std::shared_ptr<Object>& inst, const char* event
 class Room
 {
 	std::vector<std::shared_ptr<Object>> objects;
-	std::vector<std::weak_ptr<Object>> objects_persistent;  // weak_ptr to prevent circular refs
+	std::vector<std::weak_ptr<Object>> objects_persistent;  
+	std::unordered_map<int, bool> object_is_persistent;
 	int _counts;
 public:
 	Room();
@@ -24,6 +25,7 @@ public:
 		objects.emplace_back(inst);
 		if(persistent) {
 			objects_persistent.emplace_back(std::weak_ptr<Object>(inst));
+			object_is_persistent[inst->_ins_id] = true;
 		}
 		_counts++;
 		return std::static_pointer_cast<T>(objects.back());

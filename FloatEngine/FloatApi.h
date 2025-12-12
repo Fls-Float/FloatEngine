@@ -55,7 +55,8 @@
 #include "F_Anim.h"
 #include "Enum.h"
 #include "Sprite.h"
-#include "F_Network.h"
+#include "F_Html.h"
+#include "F_WindowController.h"
 struct ImGuiInputTextCallbackData;
  /**
   * @class F_Debug

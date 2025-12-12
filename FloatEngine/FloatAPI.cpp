@@ -862,46 +862,30 @@ void F_Render::Draw_Sprite(Sprite spr, float x, float y, float x_scale, float y_
 	DrawTexturePro(img, { 0,0,(img).width * 1.0f,(img).height * 1.0f }, { x,y,(img).width * x_scale,(img).height * y_scale }, { x_origin * (img).width * x_scale,y_origin * (img).height * y_scale }, angle, ColorAlpha(col, alpha));
 }
 
-void Audio_Play(F_Audio audio) {
-	AudioMode am = audio.GetAudioMode();
-	switch (am) {
-	case AudioMode::Audio_Unknown:
-		DEBUG_LOG(LOG_WARNING, TextFormat("Audio_Play:未初始化的audio!"), false);
-		break;
-	case AudioMode::Audio_Sound:
-		rlPlaySound(audio.GetSound());
-		break;
-	case AudioMode::Audio_Music:
-		PlayMusicStream(audio.GetMusic());
-		break;
-	default:
-		DEBUG_LOG(LOG_ERROR, "F_Audio:错误的audio_mode,请明确");
-		break;
+void Audio_Play(F_Audio& audio, bool loop = false) {
+	if (audio.GetMode() == AudioMode::NONE) {
+		DEBUG_LOG(LOG_WARNING, "Audio_Play: 未初始化的audio!", false);
+		return;
 	}
+	audio.Play(loop);
 }
-void Audio_Stop(F_Audio audio) {
-	AudioMode am = audio.GetAudioMode();
-	switch (am) {
-	case AudioMode::Audio_Unknown:
-		DEBUG_LOG(LOG_WARNING, TextFormat("Audio_Play:未初始化的audio!"), false);
-		break;
-	case AudioMode::Audio_Sound:
-		rlStopSound(audio.GetSound());
-		break;
-	case AudioMode::Audio_Music:
-		StopMusicStream(audio.GetMusic());
-		break;
-	default:
-		DEBUG_LOG(LOG_ERROR, "F_Audio:错误的audio_mode,请明确");
-		break;
+
+void Audio_Stop(F_Audio& audio) {
+	if (audio.GetMode() == AudioMode::NONE) {
+		DEBUG_LOG(LOG_WARNING, "Audio_Stop: 未初始化的audio!", false);
+		return;
 	}
+
+	audio.Stop();
 }
-void Audio_Music_Update(F_Audio audio) {
-	if (audio.IsTheAudioMode(AudioMode::Audio_Music))
-		UpdateMusicStream(audio.GetMusic());
-	else {
-		DEBUG_LOG(LOG_ERROR, "Audio_Music_Update:只能对music进行update!", false);
+
+void Audio_Music_Update(F_Audio& audio, Vector2 listenerPos = { 0.0f, 0.0f }) {
+	if (audio.GetMode() != AudioMode::MUSIC) {
+		DEBUG_LOG(LOG_ERROR, "Audio_Music_Update: 只能对 Music 进行更新!", false);
+		return;
 	}
+
+	audio.UpdateSpatialPosition(listenerPos);
 }
 
 Font Load_Font(const char* filePath, int size,const char*m_CodePoint)
