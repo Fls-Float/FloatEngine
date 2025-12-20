@@ -68,3 +68,13 @@ xmake build
 较为复杂，需要下载github的发布版再使用IDE分别配置include和lib并手动链接
 
 
+### 贡献与感谢 (Contribution)
+FloatEngine 是一个开源项目，欢迎所有形式的贡献。
+报告 Bug：请在 Issues 页面 提交。
+提交代码：请提交 Pull Request 到 master 分支。
+特别感谢 raysan5/raylib 团队提供了优秀的基础图形库。
+
+
+<p align="center">
+<i>由一名2011年出生的C++ 游戏创作者 (fls-float) 维护</i>
+</p>
