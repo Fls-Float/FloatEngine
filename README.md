@@ -4,7 +4,7 @@
 
 <p align="center">
     <img src="https://img.shields.io/badge/Language-C++17-blue.svg?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/Platform-Win%20|%20Linux%20|%20macOS-green.svg?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Platform-Win%20.svg?style=for-the-badge" />
     <img src="https://img.shields.io/badge/Build%20System-CMake%20|%20XMake-orange.svg?style=for-the-badge" />
     <img src="https://img.shields.io/badge/Package%20Manager-Vcpkg%20|%20NuGet-red.svg?style=for-the-badge" />
 </p>
