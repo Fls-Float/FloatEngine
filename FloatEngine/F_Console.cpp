@@ -1,10 +1,10 @@
 #include "F_Console.h"
 void Init_FConsole() {
     using namespace WinFuns;
-    // ¿ØÖÆÌ¨ÏÔÊ¾ÂÒÂë¾ÀÕı
+    // æ§åˆ¶å°æ˜¾ç¤ºä¹±ç çº æ­£
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
-    CONSOLE_FONT_INFOEX info = { 0 }; // ÒÔÏÂÉèÖÃ×ÖÌå
+    CONSOLE_FONT_INFOEX info = { 0 }; // ä»¥ä¸‹è®¾ç½®å­—ä½“
     info.cbSize = sizeof(info);
     info.dwFontSize.Y = 16; // leave X as zero
     info.FontWeight = 500;

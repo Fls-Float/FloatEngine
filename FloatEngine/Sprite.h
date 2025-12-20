@@ -1,7 +1,7 @@
 /**
  * @file Sprite.h
- * @brief ÓÎÏ·¾«ÁéÀà
- * @defgroup Sprite ¾«ÁéÄ£¿é
+ * @brief æ¸¸æˆç²¾çµç±»
+ * @defgroup Sprite ç²¾çµæ¨¡å—
  */
 #pragma once
 #include <iostream>
@@ -11,109 +11,109 @@
 #include "F_Resource.h"
 class Sprite {
 private:
-    std::vector<Texture> frames; ///< ´æ´¢Ö¡µÄÏòÁ¿
-    size_t currentFrame = 0; ///< µ±Ç°Ö¡µÄË÷Òı
-    bool isOwner = true; ///< ÊÇ·ñÓµÓĞÖ¡×ÊÔ´µÄËùÓĞÈ¨
+    std::vector<Texture> frames; ///< å­˜å‚¨å¸§çš„å‘é‡
+    size_t currentFrame = 0; ///< å½“å‰å¸§çš„ç´¢å¼•
+    bool isOwner = true; ///< æ˜¯å¦æ‹¥æœ‰å¸§èµ„æºçš„æ‰€æœ‰æƒ
 
 public:
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     Sprite();
 
     /**
-     * @brief Ê¹ÓÃµ¥¸öÎÆÀí¹¹ÔìSprite
-     * @param texture ÎÆÀí
-     * @param takeOwnership ÊÇ·ñÓµÓĞÎÆÀí×ÊÔ´µÄËùÓĞÈ¨
+     * @brief ä½¿ç”¨å•ä¸ªçº¹ç†æ„é€ Sprite
+     * @param texture çº¹ç†
+     * @param takeOwnership æ˜¯å¦æ‹¥æœ‰çº¹ç†èµ„æºçš„æ‰€æœ‰æƒ
      */
     explicit Sprite(Texture2D texture, bool takeOwnership = true);
 
     /**
-     * @brief Ê¹ÓÃÎÄ¼şÂ·¾¶ÁĞ±í¹¹ÔìSprite
-     * @param filePaths ÎÄ¼şÂ·¾¶ÁĞ±í
+     * @brief ä½¿ç”¨æ–‡ä»¶è·¯å¾„åˆ—è¡¨æ„é€ Sprite
+     * @param filePaths æ–‡ä»¶è·¯å¾„åˆ—è¡¨
      */
     explicit Sprite(const std::vector<const char*>& filePaths);
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~Sprite();
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
+     * @brief æ‹·è´æ„é€ å‡½æ•°
      */
     Sprite(const Sprite&other) ;
 
     /**
-     * @brief ¿½±´¸³ÖµÔËËã·û
+     * @brief æ‹·è´èµ‹å€¼è¿ç®—ç¬¦
      */
     Sprite& operator=(const Sprite& other);
 
     /**
-     * @brief ÒÆ¶¯¹¹Ôìº¯Êı
-     * @param other ÒªÒÆ¶¯µÄ¶ÔÏó
+     * @brief ç§»åŠ¨æ„é€ å‡½æ•°
+     * @param other è¦ç§»åŠ¨çš„å¯¹è±¡
      */
     Sprite(Sprite&& other) noexcept;
 
     /**
-     * @brief ÒÆ¶¯¸³ÖµÔËËã·û
-     * @param other ÒªÒÆ¶¯µÄ¶ÔÏó
-     * @return ÒÆ¶¯ºóµÄ¶ÔÏóÒıÓÃ
+     * @brief ç§»åŠ¨èµ‹å€¼è¿ç®—ç¬¦
+     * @param other è¦ç§»åŠ¨çš„å¯¹è±¡
+     * @return ç§»åŠ¨åçš„å¯¹è±¡å¼•ç”¨
      */
     Sprite& operator=(Sprite&& other) noexcept;
 
     /**
-     * @brief Ìí¼ÓÖ¡
-     * @param texture ÒªÌí¼ÓµÄÎÆÀí
+     * @brief æ·»åŠ å¸§
+     * @param texture è¦æ·»åŠ çš„çº¹ç†
      */
     void AddFrame(const Texture2D&& texture);
 
     /**
-     * @brief ´ÓÎÄ¼ş¼ÓÔØÖ¡
-     * @param filePath ÎÄ¼şÂ·¾¶
-     * @return ¼ÓÔØ³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief ä»æ–‡ä»¶åŠ è½½å¸§
+     * @param filePath æ–‡ä»¶è·¯å¾„
+     * @return åŠ è½½æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool LoadFrame(const char* filePath);
     /**
-    * @brief ´ÓF_Resource¼ÓÔØÖ¡
-    * @param resource ×ÊÔ´Àà
-    * @param name ×ÊÔ´Ãû³Æ
-    * @return ¼ÓÔØ³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+    * @brief ä»F_ResourceåŠ è½½å¸§
+    * @param resource èµ„æºç±»
+    * @param name èµ„æºåç§°
+    * @return åŠ è½½æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
     */
     bool LoadFrameFromResource(const F_Resource* resource, const char* name);
     /**
-     * @brief ÉèÖÃµ±Ç°Ö¡
-     * @param index Ö¡Ë÷Òı
+     * @brief è®¾ç½®å½“å‰å¸§
+     * @param index å¸§ç´¢å¼•
      */
     void SetFrame(size_t index);
     /**
-	* @brief ¸üĞÂÖ¡Ë÷Òı£¨+1£©³¬³ö·¶Î§ÔòÖØÖÃÎª0
+	* @brief æ›´æ–°å¸§ç´¢å¼•ï¼ˆ+1ï¼‰è¶…å‡ºèŒƒå›´åˆ™é‡ç½®ä¸º0
     */
     void UpdateFrameIndex();
     /**
-    * @brief ĞŞ¸ÄÖ¡ÎÆÀí
-    * @param index Ö¡Ë÷Òı
+    * @brief ä¿®æ”¹å¸§çº¹ç†
+    * @param index å¸§ç´¢å¼•
     */
     void SetFrameTexture(size_t index,const Texture& tex);
     /**
-     * @brief »ñÈ¡µ±Ç°Ö¡
-     * @return µ±Ç°Ö¡µÄÎÆÀí
+     * @brief è·å–å½“å‰å¸§
+     * @return å½“å‰å¸§çš„çº¹ç†
      */
     Texture2D GetCurrentFrame() const;
 
     /**
-     * @brief »ñÈ¡µ±Ç°Ö¡
-     * @return µ±Ç°Ö¡µÄÎÆÀí
+     * @brief è·å–å½“å‰å¸§
+     * @return å½“å‰å¸§çš„çº¹ç†
      */
     Texture2D GetFrameIndex(int index) const;
     /**
-    * @brief »ñÈ¡ËùÓĞÖ¡
-    * @return ËùÓĞÖ¡µÄÎÆÀí
+    * @brief è·å–æ‰€æœ‰å¸§
+    * @return æ‰€æœ‰å¸§çš„çº¹ç†
     */
     Texture2D* GetAllFrame() const;
     /**
-     * @brief »ñÈ¡Ö¡µÄÊıÁ¿
-     * @return Ö¡µÄÊıÁ¿
+     * @brief è·å–å¸§çš„æ•°é‡
+     * @return å¸§çš„æ•°é‡
      */
     size_t FrameCount() const;
     

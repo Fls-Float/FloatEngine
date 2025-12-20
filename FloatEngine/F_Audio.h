@@ -1,123 +1,149 @@
 #pragma once
 
 #include <raylib.h>
-#include <raymath.h> // ÒıÈë Raylib µÄÊıÑ§¿â Vector2Distance, Vector2Normalize, etc.
+#include <raymath.h> // å¼•å…¥ Raylib çš„æ•°å­¦åº“ Vector2Distance, Vector2Normalize, etc.
 #include <string>
 
 // ----------------------------------------------------------------------------
-// 1. ½á¹¹ÌåºÍÃ¶¾Ù
+// 1. ç»“æ„ä½“å’Œæšä¸¾
 // ----------------------------------------------------------------------------
 
 /**
  * @enum AudioMode
- * @brief ÒôÆµÄ£Ê½Ã¶¾Ù£¬Ã÷È·Çø·Ö Sound (·ÇÁ÷Ê½) ºÍ Music (Á÷Ê½)
+ * @brief éŸ³é¢‘æ¨¡å¼æšä¸¾ï¼Œæ˜ç¡®åŒºåˆ† Sound (éæµå¼) å’Œ Music (æµå¼)
  */
 enum class AudioMode {
     NONE = 0,
-    SOUND,  ///< ÉùÒôÄ£Ê½ (·ÇÁ÷Ê½£¬Õû¸ö¼ÓÔØµ½ÄÚ´æ)
-    MUSIC   ///< ÒôÀÖÄ£Ê½ (Á÷Ê½£¬ÊÊÓÃÓÚ³¤ÎÄ¼ş)
+    SOUND,  ///< å£°éŸ³æ¨¡å¼ (éæµå¼ï¼Œæ•´ä¸ªåŠ è½½åˆ°å†…å­˜)
+    MUSIC   ///< éŸ³ä¹æ¨¡å¼ (æµå¼ï¼Œé€‚ç”¨äºé•¿æ–‡ä»¶)
 };
 
 /**
  * @class F_Audio
- * @brief Ìá¹© 2D ¿Õ¼äÒôÆµ¶¨Î» (Spatial Audio) ºÍ¹ÜÀí¹¦ÄÜ
+ * @brief æä¾› 2D ç©ºé—´éŸ³é¢‘å®šä½ (Spatial Audio) å’Œç®¡ç†åŠŸèƒ½
  *
- * ÔÚ Raylib »ù´¡ÉÏ£¬Í¨¹ıÊÖ¶¯¼ÆËãÒôÁ¿(Volume)ºÍÉùÏà(Pan)À´ÊµÏÖ 2D ¿Õ¼äĞ§¹û¡£
+ * åœ¨ Raylib åŸºç¡€ä¸Šï¼Œé€šè¿‡æ‰‹åŠ¨è®¡ç®—éŸ³é‡(Volume)å’Œå£°ç›¸(Pan)æ¥å®ç° 2D ç©ºé—´æ•ˆæœã€‚
  */
 class F_Audio {
 public:
     /**
-     * @brief ¿Õ¼äÒôÆµÅäÖÃ½á¹¹Ìå
+     * @brief ç©ºé—´éŸ³é¢‘é…ç½®ç»“æ„ä½“
      */
     struct SpatialConfig {
-        Vector2  SourcePos = { 0.0f, 0.0f };    ///< ÉùÔ´µÄ¾ø¶Ô×ø±ê
-        Vector2  ListenerPos = { 0.0f, 0.0f };  ///< ÌıÕßµÄ¾ø¶Ô×ø±ê (Í¨³£ÊÇÍæ¼Ò)
-        float    MaxDistance = 500.0f;          ///< ÉùÒôÄÜ±»Ìıµ½µÄ×î´ó¾àÀë
-        float    BaseVolume = 1.0f;             ///< ÉùÒôµÄ»ù´¡ÒôÁ¿ (0.0f ~ 1.0f)
+        Vector2  SourcePos = { 0.0f, 0.0f };    ///< å£°æºçš„ç»å¯¹åæ ‡
+        Vector2  ListenerPos = { 0.0f, 0.0f };  ///< å¬è€…çš„ç»å¯¹åæ ‡ (é€šå¸¸æ˜¯ç©å®¶)
+        float    MaxDistance = 500.0f;          ///< å£°éŸ³èƒ½è¢«å¬åˆ°çš„æœ€å¤§è·ç¦»
+        float    BaseVolume = 1.0f;             ///< å£°éŸ³çš„åŸºç¡€éŸ³é‡ (0.0f ~ 1.0f)
     };
 
     F_Audio();
     ~F_Audio();
 
-    // ½ûÓÃ¿½±´/ÒÆ¶¯£¬·ÀÖ¹ Raylib µÄÄÚ²¿ Sound/Music ×ÊÔ´±»ÒâÍâ¿½±´
+    // ç¦ç”¨æ‹·è´/ç§»åŠ¨ï¼Œé˜²æ­¢ Raylib çš„å†…éƒ¨ Sound/Music èµ„æºè¢«æ„å¤–æ‹·è´
     F_Audio(const F_Audio&) = delete;
     F_Audio& operator=(const F_Audio&) = delete;
     F_Audio(F_Audio&&) = default;
     F_Audio& operator=(F_Audio&&) = default;
 
     // ------------------------------------------------------------------------
-    // ¼ÓÔØ/Ğ¶ÔØ
+    // åŠ è½½/å¸è½½
     // ------------------------------------------------------------------------
 
     /**
-     * @brief ´ÓÎÄ¼ş¼ÓÔØÒôÆµ×ÊÔ´
-     * @param filename ÎÄ¼şÂ·¾¶
-     * @param mode ÒôÆµÄ£Ê½ (SOUND »ò MUSIC)
+     * @brief ä»æ–‡ä»¶åŠ è½½éŸ³é¢‘èµ„æº
+     * @param filename æ–‡ä»¶è·¯å¾„
+     * @param mode éŸ³é¢‘æ¨¡å¼ (SOUND æˆ– MUSIC)
      */
     void Load(const char* filename, AudioMode mode);
 
     /**
-     * @brief Ğ¶ÔØÒôÆµ×ÊÔ´
+     * @brief å¸è½½éŸ³é¢‘èµ„æº
      */
     void Unload();
 
     // ------------------------------------------------------------------------
-    // ²¥·Å/¿ØÖÆ
+    // æ’­æ”¾/æ§åˆ¶
     // ------------------------------------------------------------------------
 
     /**
-     * @brief ²¥·ÅÒôÆµ
-     * @param loop ÊÇ·ñÑ­»·²¥·Å (½ö¶Ô Music ÓĞĞ§)
+     * @brief æ’­æ”¾éŸ³é¢‘
+     * @param loop æ˜¯å¦å¾ªç¯æ’­æ”¾ (ä»…å¯¹ Music æœ‰æ•ˆ)
      */
     void Play(bool loop = false);
 
     /**
-     * @brief Í£Ö¹²¥·Å
+     * @brief åœæ­¢æ’­æ”¾
      */
     void Stop();
 
     /**
-     * @brief Ë¢ĞÂ¿Õ¼äÒôÆµ¶¨Î» (±ØĞëÃ¿Ö¡µ÷ÓÃ)
-     * @param listenerPos ÌıÕßµÄµ±Ç°Î»ÖÃ
+     * @brief åˆ·æ–°ç©ºé—´éŸ³é¢‘å®šä½ (å¿…é¡»æ¯å¸§è°ƒç”¨)
+     * @param listenerPos å¬è€…çš„å½“å‰ä½ç½®
      */
     void UpdateSpatialPosition(Vector2 listenerPos);
 
+    /**
+	 * @brief æ›´æ–°éŸ³é¢‘æµ (ä»…å¯¹ Music æœ‰æ•ˆï¼Œå¿…é¡»æ¯å¸§è°ƒç”¨)
+     */
+    void UpdateMusic() const{
+        if (m_mode == AudioMode::MUSIC) {
+            ::UpdateMusicStream(m_music);
+        }
+	}
     // ------------------------------------------------------------------------
     // Setters/Getters
     // ------------------------------------------------------------------------
 
     /**
-     * @brief ÉèÖÃÉùÔ´µÄ¾ø¶Ô×ø±ê
+     * @brief è®¾ç½®å£°æºçš„ç»å¯¹åæ ‡
      */
     void SetSourcePosition(Vector2 pos);
 
     /**
-     * @brief ÉèÖÃÉùÒôÄÜ±»Ìıµ½µÄ×î´ó¾àÀë (ÓÃÓÚ¼ÆËãË¥¼õ)
+     * @brief è®¾ç½®å£°éŸ³èƒ½è¢«å¬åˆ°çš„æœ€å¤§è·ç¦» (ç”¨äºè®¡ç®—è¡°å‡)
      */
     void SetMaxDistance(float distance);
 
     /**
-     * @brief »ñÈ¡µ±Ç°ÒôÆµÄ£Ê½
+     * @brief è·å–å½“å‰éŸ³é¢‘æ¨¡å¼
      */
     AudioMode GetMode() const { return m_mode; }
 
     /**
-     * @brief »ñÈ¡ÉùÔ´Î»ÖÃ
+     * @brief è·å–å£°æºä½ç½®
      */
     Vector2 GetSourcePosition() const { return m_config.SourcePos; }
 
+    /**
+     * @brief ä»SoundåŠ è½½ 
+    */
+    void LoadFromSound(const Sound& sound);
+    /**
+     * @brief ä»MusicåŠ è½½ 
+    */
+    void LoadFromMusic(const Music& music);
+
+    /*
+	 * @brief è·å–å½“å‰éŸ³é¢‘
+     */
+	Sound GetSound() { return m_sound; }
+
+    /*
+	 * @brief è·å–å½“å‰éŸ³ä¹
+     */
+	Music GetMusic() { return m_music; }
 private:
     AudioMode m_mode = AudioMode::NONE;
     SpatialConfig m_config;
 
-    // Raylib ×ÊÔ´
+    // Raylib èµ„æº
     Sound m_sound = { 0 };
     Music m_music = { 0 };
 
     /**
-     * @brief ¼ÆËã²¢Ó¦ÓÃÒôÁ¿ºÍÉùÏà (Pan)
-     * @param distance ÉùÔ´ÓëÌıÕßµÄ¾àÀë
-     * @param directionVector ÉùÔ´Ïà¶ÔÓÚÌıÕßµÄ·½ÏòÏòÁ¿
+     * @brief è®¡ç®—å¹¶åº”ç”¨éŸ³é‡å’Œå£°ç›¸ (Pan)
+     * @param distance å£°æºä¸å¬è€…çš„è·ç¦»
+     * @param directionVector å£°æºç›¸å¯¹äºå¬è€…çš„æ–¹å‘å‘é‡
      */
     void ApplySpatialEffect(float distance, Vector2 directionVector);
 };

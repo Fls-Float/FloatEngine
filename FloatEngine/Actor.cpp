@@ -27,15 +27,15 @@ void Actor::onUpdate()
     {
         float timeInSeconds = _timer*GetFrameTime()*_time_scale;
 
-        // ¼ÆËã³õÊ¼ËÙ¶È
+        // è®¡ç®—åˆå§‹é€Ÿåº¦
         float initialVelocityX = cos(moveDirection * PI / 180) * moveVelocity;
         float initialVelocityY = sin(moveDirection * PI / 180) * moveVelocity;
 
-        // ¼ÆËãĞÂµÄÎ»ÖÃ
+        // è®¡ç®—æ–°çš„ä½ç½®
         float newX = initialVelocityX * timeInSeconds;
         float newY = initialVelocityY * timeInSeconds + 0.5f * gravity.y * timeInSeconds * timeInSeconds;
 
-        // ¸üĞÂ½ÇÉ«µÄÎ»ÖÃ
+        // æ›´æ–°è§’è‰²çš„ä½ç½®
         x += newX;
         y += newY;
     }

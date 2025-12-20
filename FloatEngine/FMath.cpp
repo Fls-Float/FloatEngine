@@ -103,7 +103,7 @@ void F_Shape::Delete_Point(const FVec2& point, int number) {
         }
     }
     if (index == points.size()) {
-        std::cout << "´íÎó:F_Shape_Delete_Point: Î´ÕÒµ½µã" << std::endl;
+        std::cout << "é”™è¯¯:F_Shape_Delete_Point: æœªæ‰¾åˆ°ç‚¹" << std::endl;
     }
 }
 
@@ -424,15 +424,15 @@ void F_Ellipse::Set_NumPoints(int n)
 }
 void F_Ellipse::Shape_Set() {
     using namespace floatapi_math;
-    points.clear(); // Çå¿ÕÖ®Ç°µÄµã
-    // ±éÀúÉú³ÉÍÖÔ²ÉÏµÄµã
+    points.clear(); // æ¸…ç©ºä¹‹å‰çš„ç‚¹
+    // éå†ç”Ÿæˆæ¤­åœ†ä¸Šçš„ç‚¹
     for (int i = 0; i < numPoints; ++i) {
-        float a = (2 * PI * i) / numPoints; // ¼ÆËãµ±Ç°½Ç¶È
-        float _x = x + radiusX * std::cos(a); // ÍÖÔ²µÄ x ×ø±ê
-        float _y = y + radiusY * std::sin(a); // ÍÖÔ²µÄ y ×ø±ê
+        float a = (2 * PI * i) / numPoints; // è®¡ç®—å½“å‰è§’åº¦
+        float _x = x + radiusX * std::cos(a); // æ¤­åœ†çš„ x åæ ‡
+        float _y = y + radiusY * std::sin(a); // æ¤­åœ†çš„ y åæ ‡
         Vector2 p = { _x, _y };
         p = Rotate_Point(p, Vector2Add({ x, y }, Vector2Multiply(rot_origin,{ radiusX,radiusY })), angle);
-        points.push_back(p); // Ìí¼Óµãµ½ points ÈİÆ÷ÖĞ
+        points.push_back(p); // æ·»åŠ ç‚¹åˆ° points å®¹å™¨ä¸­
     }
 }
 F_Ellipse::~F_Ellipse() {
@@ -441,16 +441,16 @@ F_Ellipse::~F_Ellipse() {
 
 Vector2 F_Ellipse::Support(const Vector2 & u) const {
     using namespace floatapi_math;
-    // Ğı×ª·½ÏòÏòÁ¿µ½ÍÖÔ²µÄ¾Ö²¿×ø±êÏµ
-    Vector2 rotated_u = Vector2Rotate(u,-angle*PI / 180);  // ½«·½ÏòÏòÁ¿Ğı×ªµ½ÓëÍÖÔ²Ò»ÖÂµÄ½Ç¶È
+    // æ—‹è½¬æ–¹å‘å‘é‡åˆ°æ¤­åœ†çš„å±€éƒ¨åæ ‡ç³»
+    Vector2 rotated_u = Vector2Rotate(u,-angle*PI / 180);  // å°†æ–¹å‘å‘é‡æ—‹è½¬åˆ°ä¸æ¤­åœ†ä¸€è‡´çš„è§’åº¦
 
-    // ¼ì²é±ß½çÇé¿ö
-    if (rotated_u.x == 0 && rotated_u.y > 0) return Vector2Add(Vector2Rotate({ 0, radiusY },-angle * PI / 180),{x,y});  // ÉÏ
-    if (rotated_u.x == 0 && rotated_u.y < 0) return Vector2Add(Vector2Rotate({ 0, -radiusY },-angle * PI / 180),{x,y}); // ÏÂ
-    if (rotated_u.y == 0 && rotated_u.x > 0) return Vector2Add(Vector2Rotate({ radiusX, 0 },-angle * PI / 180), { x,y });  // ÓÒ
-    if (rotated_u.y == 0 && rotated_u.x < 0) return Vector2Add(Vector2Rotate({ -radiusX, 0 },-angle * PI / 180), { x,y }); // ×ó
+    // æ£€æŸ¥è¾¹ç•Œæƒ…å†µ
+    if (rotated_u.x == 0 && rotated_u.y > 0) return Vector2Add(Vector2Rotate({ 0, radiusY },-angle * PI / 180),{x,y});  // ä¸Š
+    if (rotated_u.x == 0 && rotated_u.y < 0) return Vector2Add(Vector2Rotate({ 0, -radiusY },-angle * PI / 180),{x,y}); // ä¸‹
+    if (rotated_u.y == 0 && rotated_u.x > 0) return Vector2Add(Vector2Rotate({ radiusX, 0 },-angle * PI / 180), { x,y });  // å³
+    if (rotated_u.y == 0 && rotated_u.x < 0) return Vector2Add(Vector2Rotate({ -radiusX, 0 },-angle * PI / 180), { x,y }); // å·¦
 
-    // ¼ÆËãÖ§³Öµã
+    // è®¡ç®—æ”¯æŒç‚¹
     float k = rotated_u.y / rotated_u.x;
     float d = std::sqrt((radiusX * radiusX + radiusY * radiusY * k * k) / (k * k ));
 
@@ -459,8 +459,8 @@ Vector2 F_Ellipse::Support(const Vector2 & u) const {
     float x2 = k * d - (radiusY * radiusY *k* k * k * d) / (radiusX * radiusX + radiusY * radiusY * k * k);
     float y2 = (radiusY * radiusY * k * k * d) / (radiusX * radiusX + radiusY * radiusY * k * k);
 
-    // ·µ»ØÊÀ½ç×ø±êÏµÖĞµÄÖ§³Öµã
-    return Vector2Add(Vector2Rotate({ x2, y2 }, angle*PI/180),{ x,y }); // Ğı×ª»ØÊÀ½ç×ø±êÏµ
+    // è¿”å›ä¸–ç•Œåæ ‡ç³»ä¸­çš„æ”¯æŒç‚¹
+    return Vector2Add(Vector2Rotate({ x2, y2 }, angle*PI/180),{ x,y }); // æ—‹è½¬å›ä¸–ç•Œåæ ‡ç³»
 }
 
 
@@ -482,7 +482,7 @@ F_Triangle::F_Triangle(FVec2 _a, FVec2 _b, FVec2 _c) :
 void F_Triangle::Shape_Set()
 {
     using namespace floatapi_math;
-    // ¼ÆËã origin ÔÚÊÀ½ç×ø±êÏµÖĞµÄÎ»ÖÃ
+    // è®¡ç®— origin åœ¨ä¸–ç•Œåæ ‡ç³»ä¸­çš„ä½ç½®
     FVec2 origin_pos = {
         (a.x + b.x + c.x) / (6 * rot_origin.x),
        (a.y + b.y + c.y) / (6 * rot_origin.y)
@@ -531,7 +531,7 @@ void F_Triangle::Set_Origin(FVec2 origin)
 
 
 namespace floatapi_math {
-    //º¯Êı
+    //å‡½æ•°
     bool Sign(float _x) {
         if (_x == 0) {
             return 0;
@@ -686,7 +686,7 @@ namespace floatapi_math {
                 direction = acPerp;
             }
             else {
-                return true;  // Ô­µãÔÚÈı½ÇĞÎÖĞ
+                return true;  // åŸç‚¹åœ¨ä¸‰è§’å½¢ä¸­
             }
         }
         else {
@@ -702,7 +702,7 @@ namespace floatapi_math {
         return false;
     }
     bool GJK_Collision(const F_Shape& shape1, const F_Shape& shape2) {
-        FVec2 direction = { 1, 0 };  // ³õÊ¼·½Ïò
+        FVec2 direction = { 1, 0 };  // åˆå§‹æ–¹å‘
         std::vector<FVec2> simplex;
         simplex.push_back(MinkowskiSupport(shape1, shape2, direction));
 
@@ -711,13 +711,13 @@ namespace floatapi_math {
         while (true) {
             FVec2 new_point = MinkowskiSupport(shape1, shape2, direction);
             if (Vector2Dot(new_point, direction) <= 0) {
-                return false;  // Èç¹û×îÔ¶µã²»ÔÚÔ­µãÇ°·½£¬Í¼ĞÎ²»Ïà½»
+                return false;  // å¦‚æœæœ€è¿œç‚¹ä¸åœ¨åŸç‚¹å‰æ–¹ï¼Œå›¾å½¢ä¸ç›¸äº¤
             }
 
             simplex.push_back(new_point);
 
             if (ContainsOrigin(simplex, direction)) {
-                return true;  // Ô­µãÔÚµ¥´¿ĞÎÄÚ£¬Í¼ĞÎÏà½»
+                return true;  // åŸç‚¹åœ¨å•çº¯å½¢å†…ï¼Œå›¾å½¢ç›¸äº¤
             }
         }
     }
@@ -731,7 +731,7 @@ namespace floatapi_math {
         return area / 2.0f;
     }
 
-    // º¯Êı£º¼ì²éµãÊÇ·ñÔÚ¶à±ßĞÎÄÚ²¿
+    // å‡½æ•°ï¼šæ£€æŸ¥ç‚¹æ˜¯å¦åœ¨å¤šè¾¹å½¢å†…éƒ¨
     bool PointInPolygon(const FVec2& p, const std::vector<FVec2>& points) {
         bool inside = false;
         int n = points.size();
@@ -745,7 +745,7 @@ namespace floatapi_math {
     }
     bool IsConvexPolygon(const std::vector<FVec2>& points) {
         int n = points.size();
-        if (n < 3) return false; // ÉÙÓÚ3¸öµã²»ÊÇ¶à±ßĞÎ
+        if (n < 3) return false; // å°‘äº3ä¸ªç‚¹ä¸æ˜¯å¤šè¾¹å½¢
 
         bool isPositive = false;
         for (int i = 0; i < n; ++i) {
@@ -755,50 +755,50 @@ namespace floatapi_math {
 
             float crossProduct = (B.x - A.x) * (C.y - A.y) - (B.y - A.y) * (C.x - A.x);
             if (i == 0) {
-                isPositive = crossProduct > 0; // ¼ÇÂ¼µÚÒ»¸ö²æ»ıµÄ·ûºÅ
+                isPositive = crossProduct > 0; // è®°å½•ç¬¬ä¸€ä¸ªå‰ç§¯çš„ç¬¦å·
             }
             else {
                 if ((crossProduct > 0) != isPositive) {
-                    return false; // ²æ»ı·ûºÅ²»Ò»ÖÂ£¬ËµÃ÷ÊÇ°¼ĞÎ
+                    return false; // å‰ç§¯ç¬¦å·ä¸ä¸€è‡´ï¼Œè¯´æ˜æ˜¯å‡¹å½¢
                 }
             }
         }
-        return true; // ËùÓĞ²æ»ı·ûºÅÒ»ÖÂ£¬ËµÃ÷ÊÇÍ¹ĞÎ
+        return true; // æ‰€æœ‰å‰ç§¯ç¬¦å·ä¸€è‡´ï¼Œè¯´æ˜æ˜¯å‡¸å½¢
     }
 
     std::vector<F_Shape> DecomposeConcavePolygon(const F_Shape& concavePolygon) {
         std::vector<F_Shape> triangles;
 
-        // »ñÈ¡µã¼¯
+        // è·å–ç‚¹é›†
         std::vector<FVec2> points = concavePolygon.Get_Points();
         int n = points.size();
 
-        // È·±£µãÊı×ã¹»
+        // ç¡®ä¿ç‚¹æ•°è¶³å¤Ÿ
         if (n < 3) return triangles;
 
-        // ¸¨Öúº¯Êı£ºÅĞ¶ÏÈıµãÊÇ·ñ¹¹³ÉÒ»¸öÄæÊ±ÕëÈı½ÇĞÎ
+        // è¾…åŠ©å‡½æ•°ï¼šåˆ¤æ–­ä¸‰ç‚¹æ˜¯å¦æ„æˆä¸€ä¸ªé€†æ—¶é’ˆä¸‰è§’å½¢
         auto IsCounterClockwise = [](const FVec2& a, const FVec2& b, const FVec2& c) {
             return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x) > 0;
             };
 
-        // ¸¨Öúº¯Êı£ºµãÊÇ·ñÔÚÈı½ÇĞÎÄÚ£¨ÓÃÃæ»ı·¨£©
+        // è¾…åŠ©å‡½æ•°ï¼šç‚¹æ˜¯å¦åœ¨ä¸‰è§’å½¢å†…ï¼ˆç”¨é¢ç§¯æ³•ï¼‰
         auto IsPointInTriangle = [](const FVec2& p, const FVec2& a, const FVec2& b, const FVec2& c) {
             float area1 = std::abs((a.x * (b.y - p.y) + b.x * (p.y - a.y) + p.x * (a.y - b.y)) / 2.0f);
             float area2 = std::abs((b.x * (c.y - p.y) + c.x * (p.y - b.y) + p.x * (b.y - c.y)) / 2.0f);
             float area3 = std::abs((c.x * (a.y - p.y) + a.x * (p.y - c.y) + p.x * (c.y - a.y)) / 2.0f);
             float totalArea = std::abs((a.x * (b.y - c.y) + b.x * (c.y - a.y) + c.x * (a.y - b.y)) / 2.0f);
-            return std::abs((area1 + area2 + area3) - totalArea) < 1e-6f;  // Èİ´í´¦Àí
+            return std::abs((area1 + area2 + area3) - totalArea) < 1e-6f;  // å®¹é”™å¤„ç†
             };
 
-        // Ê¹ÓÃ¶úÇĞ·¨
+        // ä½¿ç”¨è€³åˆ‡æ³•
         std::vector<int> indices(n);
-        std::iota(indices.begin(), indices.end(), 0);  // ³õÊ¼»¯Ë÷ÒıĞòÁĞ
+        std::iota(indices.begin(), indices.end(), 0);  // åˆå§‹åŒ–ç´¢å¼•åºåˆ—
 
         while (indices.size() > 3) {
             bool earFound = false;
             int earIndex = -1;
 
-            // ±éÀúËùÓĞµã£¬Ñ°ÕÒ¿ÉÇĞ¸îµÄ¶ú
+            // éå†æ‰€æœ‰ç‚¹ï¼Œå¯»æ‰¾å¯åˆ‡å‰²çš„è€³
             for (int i = 0; i < indices.size(); ++i) {
                 int prev = indices[(i - 1 + indices.size()) % indices.size()];
                 int curr = indices[i];
@@ -808,10 +808,10 @@ namespace floatapi_math {
                 const FVec2& b = points[curr];
                 const FVec2& c = points[next];
 
-                // Èç¹û²»ÊÇÄæÊ±Õë£¬ÔòÌø¹ı
+                // å¦‚æœä¸æ˜¯é€†æ—¶é’ˆï¼Œåˆ™è·³è¿‡
                 if (!IsCounterClockwise(a, b, c)) continue;
 
-                // È·±£ÆäËûµã²»ÔÚµ±Ç°Èı½ÇĞÎÄÚ
+                // ç¡®ä¿å…¶ä»–ç‚¹ä¸åœ¨å½“å‰ä¸‰è§’å½¢å†…
                 bool isEar = true;
                 for (int j = 0; j < indices.size(); ++j) {
                     if (j == prev || j == curr || j == next) continue;
@@ -828,10 +828,10 @@ namespace floatapi_math {
                 }
             }
 
-            // Èç¹ûÕÒ²»µ½¶ú£¬ËµÃ÷¶à±ßĞÎ¿ÉÄÜÓĞÎÊÌâ
+            // å¦‚æœæ‰¾ä¸åˆ°è€³ï¼Œè¯´æ˜å¤šè¾¹å½¢å¯èƒ½æœ‰é—®é¢˜
             if (!earFound) return triangles;
 
-            // ÇĞ¸î¶ú²¢Ìí¼ÓÎªÈı½ÇĞÎ
+            // åˆ‡å‰²è€³å¹¶æ·»åŠ ä¸ºä¸‰è§’å½¢
             int prev = indices[(earIndex - 1 + indices.size()) % indices.size()];
             int curr = indices[earIndex];
             int next = indices[(earIndex + 1) % indices.size()];
@@ -840,7 +840,7 @@ namespace floatapi_math {
             indices.erase(indices.begin() + earIndex);
         }
 
-        // Ê£ÓàµÄ×îºóÒ»¸öÈı½ÇĞÎ
+        // å‰©ä½™çš„æœ€åä¸€ä¸ªä¸‰è§’å½¢
         if (indices.size() == 3) {
             triangles.emplace_back(F_Shape({ points[indices[0]], points[indices[1]], points[indices[2]] }));
         }
@@ -858,16 +858,16 @@ namespace floatapi_math {
                 }
             }
         }
-        return false;  // ËùÓĞĞÎ×´¶¼Ã»ÓĞÏà½»
+        return false;  // æ‰€æœ‰å½¢çŠ¶éƒ½æ²¡æœ‰ç›¸äº¤
     }
     Vector2 Get_Closest_Point_On_Rectangle(const F_Rectangle& rect, Vector2 point) {
-        // 1. ¼ÆËãĞı×ªÔ­µãÎ»ÖÃ
+        // 1. è®¡ç®—æ—‹è½¬åŸç‚¹ä½ç½®
         Vector2 origin = { rect.x + rect.rot_origin.x * rect.width, rect.y + rect.rot_origin.y * rect.height };
 
-        // 2. ½«µãÆ½ÒÆµ½Ğı×ªÔ­µãµÄ×ø±êÏµÏÂ
+        // 2. å°†ç‚¹å¹³ç§»åˆ°æ—‹è½¬åŸç‚¹çš„åæ ‡ç³»ä¸‹
         Vector2 translatedPoint = { point.x - origin.x, point.y - origin.y };
 
-        // 3. Ğı×ª¾ØĞÎºÍµãµ½¾ØĞÎµÄĞı×ª×ø±êÏµÖĞ
+        // 3. æ—‹è½¬çŸ©å½¢å’Œç‚¹åˆ°çŸ©å½¢çš„æ—‹è½¬åæ ‡ç³»ä¸­
         float cosA = cos(-rect.angle * PI / 180);
         float sinA = sin(-rect.angle * PI / 180);
         Vector2 rotatedPoint = {
@@ -875,13 +875,13 @@ namespace floatapi_math {
             translatedPoint.x * sinA + translatedPoint.y * cosA
         };
 
-        // 4. ¼ÆËãµãÔÚĞı×ªºóµÄ¾ØĞÎ·¶Î§ÄÚµÄ×î½üµã
+        // 4. è®¡ç®—ç‚¹åœ¨æ—‹è½¬åçš„çŸ©å½¢èŒƒå›´å†…çš„æœ€è¿‘ç‚¹
         Vector2 closestPoint = {
             Clamp(rotatedPoint.x, -rect.width / 2.0f, rect.width / 2.0f),
             Clamp(rotatedPoint.y, -rect.height / 2.0f, rect.height / 2.0f)
         };
 
-        // 5. ½«½á¹ûµã´ÓĞı×ª×ø±êÏµ×ª»ØÊÀ½ç×ø±ê
+        // 5. å°†ç»“æœç‚¹ä»æ—‹è½¬åæ ‡ç³»è½¬å›ä¸–ç•Œåæ ‡
         Vector2 rotatedClosestPoint = {
             closestPoint.x * cosA + closestPoint.y * sinA,
             -closestPoint.x * sinA + closestPoint.y * cosA

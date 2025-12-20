@@ -19,6 +19,8 @@
     {
       "name": "curl",
       "features": [ "ssl" ]
-    }
+    },
+    "nlohmann-json",
+    "nativefiledialog-extended"
   ]
 }

@@ -1,12 +1,12 @@
 /**
  * @file Game.h
- * @brief ÓÎÏ·¹ÜÀíÀà
- * @defgroup Game ÓÎÏ·Ä£¿é
+ * @brief æ¸¸æˆç®¡ç†ç±»
+ * @defgroup Game æ¸¸æˆæ¨¡å—
  *
- * Ìá¹©ÓÎÏ·´°¿ÚµÄ´´½¨¡¢¹ÜÀíºÍ¿ØÖÆ¹¦ÄÜ£º
- * - ´´½¨ºÍÏú»Ù´°¿Ú
- * - ÉèÖÃ´°¿ÚÊôĞÔ£¨±êÌâ¡¢Í¼±ê¡¢±³¾°ÑÕÉ«µÈ£©
- * - ¿ØÖÆÓÎÏ·Ö¡ÂÊ
+ * æä¾›æ¸¸æˆçª—å£çš„åˆ›å»ºã€ç®¡ç†å’Œæ§åˆ¶åŠŸèƒ½ï¼š
+ * - åˆ›å»ºå’Œé”€æ¯çª—å£
+ * - è®¾ç½®çª—å£å±æ€§ï¼ˆæ ‡é¢˜ã€å›¾æ ‡ã€èƒŒæ™¯é¢œè‰²ç­‰ï¼‰
+ * - æ§åˆ¶æ¸¸æˆå¸§ç‡
  */
 
 #pragma once
@@ -20,7 +20,7 @@ enum MOD_FLAG{
 	MOD_ALL = 4
 };
 
-//³¢ÊÔ¹Ø±Õ´°¿Ú»Øµ÷Àà
+//å°è¯•å…³é—­çª—å£å›è°ƒç±»
 class IAttemptToCloseWindowCallback {
 public:
     virtual void OnAttemptToCloseWindow(bool& gameExit, bool& isAttempt) { gameExit = true; isAttempt = false; }
@@ -32,9 +32,9 @@ public:
   * @class Game
   * @ingroup Game
   *
-  * @brief Ìá¹©ÓÎÏ·´°¿ÚµÄ´´½¨¡¢¹ÜÀíºÍ¿ØÖÆ¹¦ÄÜ
+  * @brief æä¾›æ¸¸æˆçª—å£çš„åˆ›å»ºã€ç®¡ç†å’Œæ§åˆ¶åŠŸèƒ½
   *
-  * @note Ê¹ÓÃÊ¾Àı£º
+  * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
   * @code
   * Game game;
   * game.CreateWindow(800, 600, "My Game");
@@ -42,144 +42,144 @@ public:
   * @endcode
   */
 class Game {
-    double frame_time; ///< Ö¡Ê±¼ä
-    double now_time; ///<µ±Ç°Ê±¼ä
-    std::chrono::high_resolution_clock::time_point start_time; ///<¿ªÊ¼Ê±¼ä
-    int _fps; ///< ÓÎÏ·Ö¡ÂÊ
-    int _w; ///< ´°¿Ú¿í¶È
-    int _h; ///< ´°¿Ú¸ß¶È
-    char* _title; ///< ´°¿Ú±êÌâ
+    double frame_time; ///< å¸§æ—¶é—´
+    double now_time; ///<å½“å‰æ—¶é—´
+    std::chrono::high_resolution_clock::time_point start_time; ///<å¼€å§‹æ—¶é—´
+    int _fps; ///< æ¸¸æˆå¸§ç‡
+    int _w; ///< çª—å£å®½åº¦
+    int _h; ///< çª—å£é«˜åº¦
+    char* _title; ///< çª—å£æ ‡é¢˜
 
-    bool _load_icon; ///< ÊÇ·ñ¼ÓÔØÍ¼±ê
-    bool _load_icon_pre; ///< ÊÇ·ñÔ¤¼ÓÔØÍ¼±ê
-    int _icon_number; ///< Í¼±êÊıÁ¿
-    Image _icons[100]; ///< Í¼±êÊı×é
-    FilePathList _icon_path; ///< Í¼±êÂ·¾¶ÁĞ±í
-    Color background_col; ///< ±³¾°ÑÕÉ«
-	bool m_isAttemptingToClose; ///< ÊÇ·ñÕıÔÚ³¢ÊÔ¹Ø±Õ´°¿Ú
-	IAttemptToCloseWindowCallback* m_attemptToCloseCallback; ///< ³¢ÊÔ¹Ø±Õ´°¿Ú»Øµ÷½Ó¿Ú
-	bool m_gameExit; ///< ÓÎÏ·ÊÇ·ñÍË³ö
+    bool _load_icon; ///< æ˜¯å¦åŠ è½½å›¾æ ‡
+    bool _load_icon_pre; ///< æ˜¯å¦é¢„åŠ è½½å›¾æ ‡
+    int _icon_number; ///< å›¾æ ‡æ•°é‡
+    Image _icons[100]; ///< å›¾æ ‡æ•°ç»„
+    FilePathList _icon_path; ///< å›¾æ ‡è·¯å¾„åˆ—è¡¨
+    Color background_col; ///< èƒŒæ™¯é¢œè‰²
+	bool m_isAttemptingToClose; ///< æ˜¯å¦æ­£åœ¨å°è¯•å…³é—­çª—å£
+	IAttemptToCloseWindowCallback* m_attemptToCloseCallback; ///< å°è¯•å…³é—­çª—å£å›è°ƒæ¥å£
+	bool m_gameExit; ///< æ¸¸æˆæ˜¯å¦é€€å‡º
     bool m_AttemptCallbackHasRender;
 public:
     /**
-     * @brief ¹¹Ôìº¯Êı
+     * @brief æ„é€ å‡½æ•°
      */
     Game();
 
     /**
-     * @brief ´´½¨ÓÎÏ·´°¿Ú
-     * @param w ´°¿Ú¿í¶È
-     * @param h ´°¿Ú¸ß¶È
-     * @param title ´°¿Ú±êÌâ
-     * @param debug ÊÇ·ñ¿ªÆôµ÷ÊÔÄ£Ê½
-     * @param flags ´°¿Ú±êÖ¾
+     * @brief åˆ›å»ºæ¸¸æˆçª—å£
+     * @param w çª—å£å®½åº¦
+     * @param h çª—å£é«˜åº¦
+     * @param title çª—å£æ ‡é¢˜
+     * @param debug æ˜¯å¦å¼€å¯è°ƒè¯•æ¨¡å¼
+     * @param flags çª—å£æ ‡å¿—
      */
     void CreateWindow(int w, int h, const char* title, bool debug = true, int flags = 8608,bool loadAllMod=false);
 
     /**
-     * @brief ¼ÓÔØÄ£¿é
+     * @brief åŠ è½½æ¨¡å—
      */
     void LoadMod(int modFlag);
     /**
-     * @brief ÅĞ¶ÏÓÎÏ·ÊÇ·ñ¿ÉÒÔ¿ªÊ¼
-     * @return Èç¹û¿ÉÒÔ¿ªÊ¼·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤æ–­æ¸¸æˆæ˜¯å¦å¯ä»¥å¼€å§‹
+     * @return å¦‚æœå¯ä»¥å¼€å§‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool CanStart();
 
     /**
-     * @brief ¿ªÊ¼ÓÎÏ·Ñ­»·
-     * @param fps Ö¡ÂÊ
+     * @brief å¼€å§‹æ¸¸æˆå¾ªç¯
+     * @param fps å¸§ç‡
      */
     void Play(int fps);
 
     /**
-     * @brief ÉèÖÃÓÎÏ·Ö¡ÂÊ
-     * @param fps Ö¡ÂÊ
+     * @brief è®¾ç½®æ¸¸æˆå¸§ç‡
+     * @param fps å¸§ç‡
      */
     void SetFPS(int fps);
 
     /**
-     * @brief »ñÈ¡ÓÎÏ·Ö¡ÂÊ
-     * @return Ö¡ÂÊ
+     * @brief è·å–æ¸¸æˆå¸§ç‡
+     * @return å¸§ç‡
      */
     int GetFPS() const;
     /**
-     * @brief »ñÈ¡ÕæÊµÖ¡ÂÊ
-     * @return Ö¡ÂÊ
+     * @brief è·å–çœŸå®å¸§ç‡
+     * @return å¸§ç‡
      */
     int GetRealFPS() const;
 
     /**
-     * @brief ÉèÖÃ´°¿Ú×ø±ê
-     * @param x x×ø±ê£¨-1´ú±í²»±ä£©
-     * @param y y×ø±ê£¨-1´ú±í²»±ä£©
+     * @brief è®¾ç½®çª—å£åæ ‡
+     * @param x xåæ ‡ï¼ˆ-1ä»£è¡¨ä¸å˜ï¼‰
+     * @param y yåæ ‡ï¼ˆ-1ä»£è¡¨ä¸å˜ï¼‰
      */
     void Set_Window_Pos(int x = -1, int y = -1);
 
     /**
-     * @brief ÉèÖÃ´°¿ÚÍ¸Ã÷¶È
-     * @param op Í¸Ã÷¶È
+     * @brief è®¾ç½®çª—å£é€æ˜åº¦
+     * @param op é€æ˜åº¦
      */
     void Set_Window_Opacity(float op);
 
     /**
-     * @brief Ïú»ÙÓÎÏ·´°¿Ú
+     * @brief é”€æ¯æ¸¸æˆçª—å£
      */
     void Destroy();
 
     /**
-     * @brief ÉèÖÃ±³¾°ÑÕÉ«
-     * @param bk_col ±³¾°ÑÕÉ«
+     * @brief è®¾ç½®èƒŒæ™¯é¢œè‰²
+     * @param bk_col èƒŒæ™¯é¢œè‰²
      */
     void Set_Background_Color(Color bk_col);
 
     /**
-     * @brief ÉèÖÃ¿ØÖÆÌ¨Í¼±ê
-     * @param id Í¼±êID
+     * @brief è®¾ç½®æ§åˆ¶å°å›¾æ ‡
+     * @param id å›¾æ ‡ID
      */
     void Set_Console_Icon(int id);
 
     /**
-     * @brief ÉèÖÃ´°¿Ú±êÌâ
-     * @param title ´°¿Ú±êÌâ
+     * @brief è®¾ç½®çª—å£æ ‡é¢˜
+     * @param title çª—å£æ ‡é¢˜
      */
     void Set_Title(const char* title);
 
     /**
-     * @brief ÉèÖÃ´°¿ÚÍ¼±ê
-     * @param icons Í¼±êÊı×é
-     * @param n Í¼±êÊıÁ¿
+     * @brief è®¾ç½®çª—å£å›¾æ ‡
+     * @param icons å›¾æ ‡æ•°ç»„
+     * @param n å›¾æ ‡æ•°é‡
      */
     void Set_Icons(Image* icons, int n);
 
     /**
-     * @brief ÉèÖÃ´°¿ÚÍ¼±ê
-     * @param icon Í¼±ê
+     * @brief è®¾ç½®çª—å£å›¾æ ‡
+     * @param icon å›¾æ ‡
      */
     void Set_Icon(Image icon);
 
     /**
-     * @brief Ô¤¼ÓÔØ´°¿ÚÍ¼±ê
-     * @param filePath Í¼±êÎÄ¼şÂ·¾¶
+     * @brief é¢„åŠ è½½çª—å£å›¾æ ‡
+     * @param filePath å›¾æ ‡æ–‡ä»¶è·¯å¾„
      */
     void Set_Icon_Pre(const char* filePath);
 
     /**
-     * @brief Ô¤¼ÓÔØ´°¿ÚÍ¼±ê
-     * @param filePathList Í¼±êÎÄ¼şÂ·¾¶ÁĞ±í
+     * @brief é¢„åŠ è½½çª—å£å›¾æ ‡
+     * @param filePathList å›¾æ ‡æ–‡ä»¶è·¯å¾„åˆ—è¡¨
      */
     void Set_Icons_Pre(FilePathList filePathList);
 
     /*
-     * @brief »ñÈ¡µ±Ç°Ê±¼ä£¨ºÁÃë£©
+     * @brief è·å–å½“å‰æ—¶é—´ï¼ˆæ¯«ç§’ï¼‰
     */
     double Get_Now_Time();
     /*
-     * @brief »ñÈ¡µ±Ç°Ö¡Ê±¼ä£¨ºÁÃë£©
+     * @brief è·å–å½“å‰å¸§æ—¶é—´ï¼ˆæ¯«ç§’ï¼‰
     */
     double Get_Frame_Time();
     /*
-     * @brief ÖØÖÃ¼ÆÊ±Æ÷
+     * @brief é‡ç½®è®¡æ—¶å™¨
     */
     void Reset_Clock();
 };

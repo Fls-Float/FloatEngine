@@ -7,12 +7,12 @@
 #include <memory>
 
 // ----------------------------------------------------------------------------
-// SLikeNet PIMPL Ç°ÖÃÉùÃ÷ (ÎŞĞè°üº¬ÈÎºÎÍ·ÎÄ¼ş)
+// SLikeNet PIMPL å‰ç½®å£°æ˜ (æ— éœ€åŒ…å«ä»»ä½•å¤´æ–‡ä»¶)
 // ----------------------------------------------------------------------------
-namespace SLNet { class RakPeerInterface; } // Ç°ÖÃÉùÃ÷ SLikeNet µÄºËĞÄ½Ó¿Ú
+namespace SLNet { class RakPeerInterface; } // å‰ç½®å£°æ˜ SLikeNet çš„æ ¸å¿ƒæ¥å£
 
 // ----------------------------------------------------------------------------
-// »ù´¡Êı¾İ½á¹¹¶¨Òå
+// åŸºç¡€æ•°æ®ç»“æ„å®šä¹‰
 // ----------------------------------------------------------------------------
 
 enum class NetEventType {
@@ -34,14 +34,14 @@ struct NetError {
 
 struct NetEvent {
     NetEventType type = NetEventType::NONE;
-    uint64_t connectionID = 0;             // Î¨Ò»Á¬½Ó±êÊ¶ (RakNetGUID.g)
+    uint64_t connectionID = 0;             // å”¯ä¸€è¿æ¥æ ‡è¯† (RakNetGUID.g)
     std::vector<unsigned char> packetData;
-    std::string message;                   // ¸½´øĞÅÏ¢
+    std::string message;                   // é™„å¸¦ä¿¡æ¯
 };
 
 /* 
  *----------------------------------------------------------------------------
- * F_NetWork Àà¶¨Òå
+ * F_NetWork ç±»å®šä¹‰
  *----------------------------------------------------------------------------
 */
 class F_NetWork {
@@ -57,7 +57,7 @@ public:
     bool ConnectToServer(const char* host, int port);
     void Shutdown();
 
-    // targetID: Ä¿±êÁ¬½ÓID¡£0 ¹ã²¥/·¢·şÎñÆ÷¡£
+    // targetID: ç›®æ ‡è¿æ¥IDã€‚0 å¹¿æ’­/å‘æœåŠ¡å™¨ã€‚
     void SendPacket(uint64_t targetID, const void* data, size_t dataLength, bool reliable = true);
     void BroadcastPacket(const void* data, size_t dataLength, bool reliable = true);
 
@@ -76,6 +76,6 @@ private:
     std::unique_ptr<Impl> m_impl;
     void SetError(NetErrorCode code, const std::string& msg);
 
-    // ×Ô¶¨ÒåĞ­ÒéÍ· (ÔÚ .cpp ÖĞÊ¹ÓÃ)
+    // è‡ªå®šä¹‰åè®®å¤´ (åœ¨ .cpp ä¸­ä½¿ç”¨)
     static const unsigned char ID_FLOAT_ENGINE_DATA = 135;
 };

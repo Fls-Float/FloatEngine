@@ -3,7 +3,7 @@
 #include <iostream>
 
 // ----------------------------------------------------------------------------
-// ¹¹Ôìº¯Êı/Îö¹¹º¯Êı
+// æ„é€ å‡½æ•°/ææ„å‡½æ•°
 // ----------------------------------------------------------------------------
 
 F_Audio::F_Audio() {}
@@ -13,11 +13,11 @@ F_Audio::~F_Audio() {
 }
 
 // ----------------------------------------------------------------------------
-// ¼ÓÔØ/Ğ¶ÔØ
+// åŠ è½½/å¸è½½
 // ----------------------------------------------------------------------------
 
 void F_Audio::Load(const char* filename, AudioMode mode) {
-    Unload(); // ÏÈĞ¶ÔØ¾É×ÊÔ´
+    Unload(); // å…ˆå¸è½½æ—§èµ„æº
 
     m_mode = mode;
     if (m_mode == AudioMode::SOUND) {
@@ -49,7 +49,7 @@ void F_Audio::Unload() {
 }
 
 // ----------------------------------------------------------------------------
-// ²¥·Å/¿ØÖÆ
+// æ’­æ”¾/æ§åˆ¶
 // ----------------------------------------------------------------------------
 
 void F_Audio::Play(bool loop) {
@@ -72,7 +72,7 @@ void F_Audio::Stop() {
 }
 
 // ----------------------------------------------------------------------------
-// ¿Õ¼äÒôÆµºËĞÄÂß¼­
+// ç©ºé—´éŸ³é¢‘æ ¸å¿ƒé€»è¾‘
 // ----------------------------------------------------------------------------
 
 void F_Audio::UpdateSpatialPosition(Vector2 listenerPos) {
@@ -80,52 +80,48 @@ void F_Audio::UpdateSpatialPosition(Vector2 listenerPos) {
 
     m_config.ListenerPos = listenerPos;
 
-    // 1. ¼ÆËã¾àÀë (Distance)
+    // 1. è®¡ç®—è·ç¦» (Distance)
     float distance = Vector2Distance(m_config.SourcePos, m_config.ListenerPos);
 
-    // 2. ¼ÆËã·½ÏòÏòÁ¿ (Direction Vector)
+    // 2. è®¡ç®—æ–¹å‘å‘é‡ (Direction Vector)
     Vector2 directionVector = Vector2Subtract(m_config.SourcePos, m_config.ListenerPos);
 
-    // 3. Ó¦ÓÃ¿Õ¼äĞ§¹û
+    // 3. åº”ç”¨ç©ºé—´æ•ˆæœ
     ApplySpatialEffect(distance, directionVector);
 
-    // 4. ¸üĞÂÁ÷Ê½ÒôÀÖ
-    if (m_mode == AudioMode::MUSIC) {
-        UpdateMusicStream(m_music);
-    }
 }
 
 void F_Audio::ApplySpatialEffect(float distance, Vector2 directionVector) {
-    // === 1. ÒôÁ¿Ë¥¼õ (Volume Attenuation) ===
+    // === 1. éŸ³é‡è¡°å‡ (Volume Attenuation) ===
     float volume = m_config.BaseVolume;
 
     if (distance >= m_config.MaxDistance) {
-        volume = 0.0f; // ³¬¹ı×î´ó¾àÀë£¬ÒôÁ¿ÎªÁã
+        volume = 0.0f; // è¶…è¿‡æœ€å¤§è·ç¦»ï¼ŒéŸ³é‡ä¸ºé›¶
     }
     else if (distance > 0.0f) {
         float attenuation = 1.0f - (distance / m_config.MaxDistance);
         volume *= attenuation;
     }
 
-    // === 2. ÉùÏà (Pan) ¼ÆËã ===
+    // === 2. å£°ç›¸ (Pan) è®¡ç®— ===
     float pan = 0.0f;
     if (distance > 0.0f) {
         Vector2 dirNorm = Vector2Normalize(directionVector);
         pan = dirNorm.x;
-        // ½µµÍÖĞÑëÉùÒôµÄPan£¬ÈÃËü¸ü¼¯ÖĞ
+        // é™ä½ä¸­å¤®å£°éŸ³çš„Panï¼Œè®©å®ƒæ›´é›†ä¸­
         pan *= 0.8f;
     }
 
-    // === 3. Ó¦ÓÃµ½ Raylib API ===
+    // === 3. åº”ç”¨åˆ° Raylib API ===
     if (m_mode == AudioMode::SOUND) {
         SetSoundVolume(m_sound, volume);
         SetSoundPan(m_sound, pan);
-        // SetSoundPitch(m_sound, 1.0f); // ±£³Ö²»±ä
+        SetSoundPitch(m_sound, 1.0f); // ä¿æŒä¸å˜
     }
     else if (m_mode == AudioMode::MUSIC) {
         SetMusicVolume(m_music, volume);
         SetMusicPan(m_music, pan);
-        // SetMusicPitch(m_music, 1.0f); // ±£³Ö²»±ä
+        SetMusicPitch(m_music, 1.0f); // ä¿æŒä¸å˜
     }
 }
 
@@ -139,5 +135,18 @@ void F_Audio::SetSourcePosition(Vector2 pos) {
 
 void F_Audio::SetMaxDistance(float distance) {
     m_config.MaxDistance = distance;
-    if (m_config.MaxDistance < 10.0f) m_config.MaxDistance = 10.0f; // ×îĞ¡¾àÀë±£»¤
+    if (m_config.MaxDistance < 10.0f) m_config.MaxDistance = 10.0f; // æœ€å°è·ç¦»ä¿æŠ¤
 }
+
+void F_Audio::LoadFromSound(const Sound& sound) {
+    Unload();
+    m_sound = sound;
+    m_mode = AudioMode::SOUND;
+}
+
+void F_Audio::LoadFromMusic(const Music& music) {
+    Unload();
+    m_music = music;
+    m_mode = AudioMode::MUSIC;
+}
+

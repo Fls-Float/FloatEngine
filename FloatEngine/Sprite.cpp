@@ -108,7 +108,7 @@ bool Sprite::LoadFrameFromResource(const F_Resource* resource, const char* name)
 		return true;
     }
     else {
-		DEBUG_LOG(LOG_WARNING, "Sprite.LoadFrameFromResource:×ÊÔ´Î´ÕÒµ½",0);
+		DEBUG_LOG(LOG_WARNING, "Sprite.LoadFrameFromResource:èµ„æºæœªæ‰¾åˆ°",0);
         return false;
     }
 }
@@ -119,7 +119,7 @@ void Sprite::SetFrame(size_t index) {
         currentFrame = index;
     }
     else {
-		DEBUG_LOG(LOG_WARNING, "Sprite.SetFrame:Ë÷Òı³¬³ö·¶Î§", 0);
+		DEBUG_LOG(LOG_WARNING, "Sprite.SetFrame:ç´¢å¼•è¶…å‡ºèŒƒå›´", 0);
     }
 }
 
@@ -134,7 +134,7 @@ void Sprite::SetFrameTexture(size_t index, const Texture& tex)
 		frames[index] = tex;
 	}
     else {
-		DEBUG_LOG(LOG_WARNING, "Sprite.SetFrameTexture:Ë÷Òı³¬³ö·¶Î§", 0);
+		DEBUG_LOG(LOG_WARNING, "Sprite.SetFrameTexture:ç´¢å¼•è¶…å‡ºèŒƒå›´", 0);
     }
 }
 

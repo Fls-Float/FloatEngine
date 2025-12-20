@@ -4,7 +4,7 @@
 #include <algorithm>
 
 // ----------------------------------------------------------------------------
-// ÒıÈë SLikeNet Í·ÎÄ¼ş (Ö»ÔÚ .cpp ÖĞ)
+// å¼•å…¥ SLikeNet å¤´æ–‡ä»¶ (åªåœ¨ .cpp ä¸­)
 // ----------------------------------------------------------------------------
 #include "slikenet/peerinterface.h"
 #include "slikenet/Peer.h"
@@ -17,7 +17,7 @@ using namespace SLNet;
 
 
 // ----------------------------------------------------------------------------
-// F_NetWork ÊµÏÖ
+// F_NetWork å®ç°
 // ----------------------------------------------------------------------------
 
 F_NetWork::F_NetWork() : m_impl(std::make_unique<Impl>()) {
@@ -114,13 +114,13 @@ void F_NetWork::SendPacket(uint64_t targetID, const void* data, size_t dataLengt
     bool broadcast = false;
 
     if (m_impl->mode == NetMode::CLIENT) {
-        // ¿Í»§¶Ë·¢¸ø·şÎñÆ÷ (UNASSIGNED_SYSTEM_ADDRESS)
+        // å®¢æˆ·ç«¯å‘ç»™æœåŠ¡å™¨ (UNASSIGNED_SYSTEM_ADDRESS)
         target = UNASSIGNED_SYSTEM_ADDRESS;
-        broadcast = true; // ¶Ô¿Í»§¶ËÀ´Ëµ£¬¶Ô UNASSIGNED_SYSTEM_ADDRESS ¹ã²¥¾ÍÊÇ·¢ËÍ¸ø·şÎñÆ÷
+        broadcast = true; // å¯¹å®¢æˆ·ç«¯æ¥è¯´ï¼Œå¯¹ UNASSIGNED_SYSTEM_ADDRESS å¹¿æ’­å°±æ˜¯å‘é€ç»™æœåŠ¡å™¨
     }
     else {
-        // ·şÎñÆ÷·¢¸øÖ¸¶¨ ID
-        if (targetID == 0) return; // ÎŞĞ§ ID
+        // æœåŠ¡å™¨å‘ç»™æŒ‡å®š ID
+        if (targetID == 0) return; // æ— æ•ˆ ID
         target.rakNetGuid.g = targetID;
         broadcast = false;
     }
@@ -147,7 +147,7 @@ void F_NetWork::BroadcastPacket(const void* data, size_t dataLength, bool reliab
 NetEvent F_NetWork::Service() {
     NetEvent result;
 
-    // 1. ÓÅÏÈ·µ»Ø¶ÓÁĞÖĞ»ıÑ¹µÄÊÂ¼ş
+    // 1. ä¼˜å…ˆè¿”å›é˜Ÿåˆ—ä¸­ç§¯å‹çš„äº‹ä»¶
     if (!m_impl->eventQueue.empty()) {
         result = m_impl->eventQueue.front();
         m_impl->eventQueue.pop();
@@ -156,7 +156,7 @@ NetEvent F_NetWork::Service() {
 
     if (!m_impl->peer) return result;
 
-    // 2. ´Ó RakNet ½ÓÊÕĞÂÊı¾İ°ü
+    // 2. ä» RakNet æ¥æ”¶æ–°æ•°æ®åŒ…
     Packet* packet;
 
     for (packet = static_cast<RakPeerInterface*>(m_impl.get()->peer)->Receive(); packet; static_cast<RakPeerInterface*>(m_impl.get()->peer)->DeallocatePacket(packet), packet = static_cast<RakPeerInterface*>(m_impl.get()->peer)->Receive()) {
@@ -164,7 +164,7 @@ NetEvent F_NetWork::Service() {
         uint64_t guid = packet->guid.g;
         unsigned char packetIdentifier = (unsigned char)packet->data[0];
 
-        // ´¦ÀíÊ±¼ä´ÁÆ«ÒÆ
+        // å¤„ç†æ—¶é—´æˆ³åç§»
         if (packetIdentifier == ID_TIMESTAMP) {
             if (packet->length > sizeof(MessageID) + sizeof(Time)) {
                 packetIdentifier = (unsigned char)packet->data[sizeof(MessageID) + sizeof(Time)];
@@ -174,10 +174,10 @@ NetEvent F_NetWork::Service() {
         NetEvent evt = { NetEventType::NONE, 0, {}, "" };
         evt.connectionID = guid;
 
-        // 3. ¸ù¾İ ID ·ÖÀà´¦Àí
+        // 3. æ ¹æ® ID åˆ†ç±»å¤„ç†
         switch (packetIdentifier) {
-        case ID_CONNECTION_REQUEST_ACCEPTED: // ¿Í»§¶ËÁ¬½Ó³É¹¦
-        case ID_NEW_INCOMING_CONNECTION:     // ·şÎñÆ÷ÊÕµ½ĞÂÁ¬½Ó
+        case ID_CONNECTION_REQUEST_ACCEPTED: // å®¢æˆ·ç«¯è¿æ¥æˆåŠŸ
+        case ID_NEW_INCOMING_CONNECTION:     // æœåŠ¡å™¨æ”¶åˆ°æ–°è¿æ¥
             evt.type = NetEventType::CONNECT;
             evt.message = (packetIdentifier == ID_CONNECTION_REQUEST_ACCEPTED) ? "Connected to Server" : "New Client: " + std::string(packet->systemAddress.ToString(false));
             m_impl->eventQueue.push(evt);
@@ -190,11 +190,11 @@ NetEvent F_NetWork::Service() {
             m_impl->eventQueue.push(evt);
             break;
 
-        case ID_FLOAT_ENGINE_DATA: // ÊÕµ½ÓÎÏ·Êı¾İ
+        case ID_FLOAT_ENGINE_DATA: // æ”¶åˆ°æ¸¸æˆæ•°æ®
         {
             evt.type = NetEventType::RECEIVE;
 
-            // Ìø¹ıĞ­ÒéÍ· (1 ×Ö½Ú) »ò (1 ×Ö½Ú ID + 4 ×Ö½Ú Time)
+            // è·³è¿‡åè®®å¤´ (1 å­—èŠ‚) æˆ– (1 å­—èŠ‚ ID + 4 å­—èŠ‚ Time)
             unsigned int offset = (packet->data[0] == ID_TIMESTAMP) ? (sizeof(MessageID) + sizeof(Time) + 1) : 1;
 
             if (packet->length > offset) {
@@ -205,12 +205,12 @@ NetEvent F_NetWork::Service() {
         }
 
         default:
-            // ºöÂÔÆäËûÏµÍ³°ü
+            // å¿½ç•¥å…¶ä»–ç³»ç»ŸåŒ…
             break;
         }
     }
 
-    // 3. ·µ»Ø¶ÓÁĞÖĞµÄÊÂ¼ş (Èç¹û Service Ñ­»·ÖĞ²úÉúÁËĞÂµÄÊÂ¼ş)
+    // 3. è¿”å›é˜Ÿåˆ—ä¸­çš„äº‹ä»¶ (å¦‚æœ Service å¾ªç¯ä¸­äº§ç”Ÿäº†æ–°çš„äº‹ä»¶)
     if (!m_impl->eventQueue.empty()) {
         result = m_impl->eventQueue.front();
         m_impl->eventQueue.pop();

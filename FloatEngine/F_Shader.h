@@ -2,27 +2,27 @@
 #include <raylib.h>
 /**
  * @file F_Shader.h
- * @brief ×ÅÉ«Æ÷¹ÜÀíÀà
- * @defgroup Shader ×ÅÉ«Æ÷Ä£¿é
+ * @brief ç€è‰²å™¨ç®¡ç†ç±»
+ * @defgroup Shader ç€è‰²å™¨æ¨¡å—
  *
- * Ìá¹©×ÅÉ«Æ÷µÄ¼ÓÔØ¡¢ÉèÖÃºÍ¹ÜÀí¹¦ÄÜ£º
- * - ´ÓÎÄ¼ş»ò´úÂë¼ÓÔØ×ÅÉ«Æ÷
- * - ÉèÖÃ×ÅÉ«Æ÷²ÎÊı
- * - ¹ÜÀí×ÅÉ«Æ÷ÉúÃüÖÜÆÚ
+ * æä¾›ç€è‰²å™¨çš„åŠ è½½ã€è®¾ç½®å’Œç®¡ç†åŠŸèƒ½ï¼š
+ * - ä»æ–‡ä»¶æˆ–ä»£ç åŠ è½½ç€è‰²å™¨
+ * - è®¾ç½®ç€è‰²å™¨å‚æ•°
+ * - ç®¡ç†ç€è‰²å™¨ç”Ÿå‘½å‘¨æœŸ
  */
 
  /**
   * @class F_Shader
   * @ingroup Shader
   *
-  * @brief Ìá¹©×ÅÉ«Æ÷µÄ¼ÓÔØ¡¢ÉèÖÃºÍ¹ÜÀí¹¦ÄÜ
+  * @brief æä¾›ç€è‰²å™¨çš„åŠ è½½ã€è®¾ç½®å’Œç®¡ç†åŠŸèƒ½
   *
-  * @note Ê¹ÓÃÊ¾Àı£º
+  * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
   * @code
   * F_Shader shader;
   * shader.LoadFromFile("vertex.vs", "fragment.fs");
   * shader.Begin();
-  * // ÉèÖÃ×ÅÉ«Æ÷²ÎÊı
+  * // è®¾ç½®ç€è‰²å™¨å‚æ•°
   * shader.End();
   * @endcode
   */
@@ -31,71 +31,71 @@ class F_Shader
     Shader m_shader;
 public:
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Shader();
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param shader ×ÅÉ«Æ÷¶ÔÏó
+     * @brief æ„é€ å‡½æ•°
+     * @param shader ç€è‰²å™¨å¯¹è±¡
      */
     F_Shader(const Shader& shader);
 
     /**
-     * @brief ´ÓÎÄ¼ş¼ÓÔØ×ÅÉ«Æ÷
-     * @param vs ¶¥µã×ÅÉ«Æ÷ÎÄ¼şÂ·¾¶
-     * @param fs Æ¬¶Î×ÅÉ«Æ÷ÎÄ¼şÂ·¾¶
+     * @brief ä»æ–‡ä»¶åŠ è½½ç€è‰²å™¨
+     * @param vs é¡¶ç‚¹ç€è‰²å™¨æ–‡ä»¶è·¯å¾„
+     * @param fs ç‰‡æ®µç€è‰²å™¨æ–‡ä»¶è·¯å¾„
      */
     void LoadFromFile(const char* vs, const char* fs);
 
     /**
-     * @brief ´Ó´úÂë¼ÓÔØ×ÅÉ«Æ÷
-     * @param vs ¶¥µã×ÅÉ«Æ÷´úÂë
-     * @param fs Æ¬¶Î×ÅÉ«Æ÷´úÂë
+     * @brief ä»ä»£ç åŠ è½½ç€è‰²å™¨
+     * @param vs é¡¶ç‚¹ç€è‰²å™¨ä»£ç 
+     * @param fs ç‰‡æ®µç€è‰²å™¨ä»£ç 
      */
     void LoadFromCode(const char* vs, const char* fs);
 
     /**
-     * @brief ÉèÖÃ×ÅÉ«Æ÷²ÎÊı
-     * @param name ²ÎÊıÃû³Æ
-     * @param value ²ÎÊıÖµ
-     * @param type ²ÎÊıÀàĞÍ
+     * @brief è®¾ç½®ç€è‰²å™¨å‚æ•°
+     * @param name å‚æ•°åç§°
+     * @param value å‚æ•°å€¼
+     * @param type å‚æ•°ç±»å‹
      */
     void SetValue(const char* name, const void* value, int type);
 
     /**
-     * @brief ÉèÖÃÎÆÀí²ÎÊı
-     * @param name ²ÎÊıÃû³Æ
-     * @param texture ÎÆÀí¶ÔÏó
+     * @brief è®¾ç½®çº¹ç†å‚æ•°
+     * @param name å‚æ•°åç§°
+     * @param texture çº¹ç†å¯¹è±¡
      */
     void SetValueTexture(const char* name, Texture texture);
 
     /**
-     * @brief ÉèÖÃ¾ØÕó²ÎÊı
-     * @param name ²ÎÊıÃû³Æ
-     * @param mat ¾ØÕó¶ÔÏó
+     * @brief è®¾ç½®çŸ©é˜µå‚æ•°
+     * @param name å‚æ•°åç§°
+     * @param mat çŸ©é˜µå¯¹è±¡
      */
     void SetrValueMatrix(const char* name, Matrix mat);
 
     /**
-     * @brief »ñÈ¡²ÎÊıÎ»ÖÃ
-     * @param name ²ÎÊıÃû³Æ
-     * @return ²ÎÊıÎ»ÖÃ
+     * @brief è·å–å‚æ•°ä½ç½®
+     * @param name å‚æ•°åç§°
+     * @return å‚æ•°ä½ç½®
      */
     int GetLoc(const char* name);
 
     /**
-     * @brief Ğ¶ÔØ×ÅÉ«Æ÷
+     * @brief å¸è½½ç€è‰²å™¨
      */
     void Unload();
 
     /**
-     * @brief ¿ªÊ¼Ê¹ÓÃ×ÅÉ«Æ÷
+     * @brief å¼€å§‹ä½¿ç”¨ç€è‰²å™¨
      */
     void Begin();
 
     /**
-     * @brief ½áÊøÊ¹ÓÃ×ÅÉ«Æ÷
+     * @brief ç»“æŸä½¿ç”¨ç€è‰²å™¨
      */
     void End();
 };

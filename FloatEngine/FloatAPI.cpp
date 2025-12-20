@@ -7,7 +7,8 @@
 
 #include "gui/include/imgui.h"
 #include "gui/include/rlImGui.h"
-
+#include "nfd.hpp"
+using namespace nlohmann;
 int F_Debug::m_debug = 1;
 bool F_Debug::m_showConsole = true;
 std::vector<F_Debug::Log_Info> F_Debug::m_logs;
@@ -33,21 +34,21 @@ void F_Debug::RegisterExpressionHandler(const std::string& prefix, std::function
 
 std::string F_Debug::EvaluateExpression(const std::string& expression)
 {
-	// ²éÕÒÆ¥ÅäµÄ±í´ïÊ½´¦ÀíÆ÷
+	// æŸ¥æ‰¾åŒ¹é…çš„è¡¨è¾¾å¼å¤„ç†å™¨
 	for (const auto& [prefix, handler] : m_expressionHandlers) {
 		if (expression.find(prefix) == 0) {
 			return handler(expression.substr(prefix.length()));
 		}
 	}
 
-	// Ä¬ÈÏ´¦Àí£º³¢ÊÔ×÷Îª±äÁ¿Ãû
+	// é»˜è®¤å¤„ç†ï¼šå°è¯•ä½œä¸ºå˜é‡å
 	for (const auto& var : m_watchedVariables) {
 		if (var.name == expression) {
 			return var.getter();
 		}
 	}
 
-	return "Î´Öª";
+	return "æœªçŸ¥";
 	
 }
 
@@ -87,58 +88,58 @@ void F_Debug::ShowDebugConsole() {
 	const float footer_height = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
 	ImGui::SetNextWindowSize(ImVec2(600, 450), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin("µ÷ÊÔ¿ØÖÆÌ¨", &m_showConsole)) {
-		// ¹¤¾ßÀ¸
-		if (ImGui::Button("Çå¿Õ")) {
+	if (ImGui::Begin("è°ƒè¯•æ§åˆ¶å°", &m_showConsole)) {
+		// å·¥å…·æ 
+		if (ImGui::Button("æ¸…ç©º")) {
 			m_logs.clear();
 		}
 		ImGui::SameLine();
 
-		// ÈÕÖ¾¹ıÂËÑ¡Ïî
-		ImGui::Checkbox("ÆôÓÃ¹ıÂË", &m_showFilteredLogsOnly);
+		// æ—¥å¿—è¿‡æ»¤é€‰é¡¹
+		ImGui::Checkbox("å¯ç”¨è¿‡æ»¤", &m_showFilteredLogsOnly);
 		ImGui::SameLine();
 
-		// Ìí¼Ó¹ıÂË¹Ø¼ü´Ê°´Å¥
+		// æ·»åŠ è¿‡æ»¤å…³é”®è¯æŒ‰é’®
 		static char filterBuf[128] = "";
 		ImGui::PushItemWidth(120);
 		ImGui::InputText("##FilterInput", filterBuf, IM_ARRAYSIZE(filterBuf));
 		ImGui::PopItemWidth();
 		ImGui::SameLine();
-		if (ImGui::Button("ĞÂ½¨¹ıÂËÄÚÈİ")) {
+		if (ImGui::Button("æ–°å»ºè¿‡æ»¤å†…å®¹")) {
 			if (filterBuf[0] != '\0') {
 				AddLogFilter(filterBuf);
 				filterBuf[0] = '\0';
 			}
 		}
 
-		// ÏÔÊ¾µ±Ç°¹ıÂË¹Ø¼ü´Ê
+		// æ˜¾ç¤ºå½“å‰è¿‡æ»¤å…³é”®è¯
 		if (!m_logFilters.empty()) {
 			ImGui::SameLine();
-			ImGui::Text("¹ıÂËÄÚÈİ: ");
+			ImGui::Text("è¿‡æ»¤å†…å®¹: ");
 			for (const auto& filter : m_logFilters) {
 				ImGui::SameLine();
 				ImGui::Text("%s", filter.c_str());
 				ImGui::SameLine();
-				if (ImGui::SmallButton("É¾³ı")) {
+				if (ImGui::SmallButton("åˆ é™¤")) {
 					RemoveLogFilter(filter);
 				}
 			}
 		}
 
-		// ·Ö¸ôÏß
+		// åˆ†éš”çº¿
 		ImGui::Separator();
 
-		// ÈÕÖ¾ÏÔÊ¾ÇøÓò
-		ImGui::BeginChild("ÈÕÖ¾Çø", ImVec2(0, -footer_height), false, ImGuiWindowFlags_HorizontalScrollbar);
+		// æ—¥å¿—æ˜¾ç¤ºåŒºåŸŸ
+		ImGui::BeginChild("æ—¥å¿—åŒº", ImVec2(0, -footer_height), false, ImGuiWindowFlags_HorizontalScrollbar);
 
-		// ÏÔÊ¾ÈÕÖ¾£¨Ó¦ÓÃ¹ıÂË£©
+		// æ˜¾ç¤ºæ—¥å¿—ï¼ˆåº”ç”¨è¿‡æ»¤ï¼‰
 		for (const auto& logIf : m_logs) {
 			const std::string& log = logIf.log;
-			// Ó¦ÓÃ¹ıÂË
+			// åº”ç”¨è¿‡æ»¤
 			bool shouldShow = !m_showFilteredLogsOnly || ShouldShowLog(log);
 
 			if (shouldShow) {
-				// ¸ù¾İÈÕÖ¾ÀàĞÍ×ÅÉ«
+				// æ ¹æ®æ—¥å¿—ç±»å‹ç€è‰²
 				if (logIf.lv == 3) {
 					ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(255, 50, 50, 255));
 				}
@@ -157,19 +158,19 @@ void F_Debug::ShowDebugConsole() {
 			}
 		}
 
-		// ×Ô¶¯¹ö¶¯µ½µ×²¿
+		// è‡ªåŠ¨æ»šåŠ¨åˆ°åº•éƒ¨
 		if (m_scrollToBottom) {
 			ImGui::SetScrollHereY(1.0f);
 			m_scrollToBottom = false;
 		}
 		ImGui::EndChild();
 
-		// ·Ö¸ôÏß
+		// åˆ†éš”çº¿
 		ImGui::Separator();
 
-		// ±äÁ¿¼à¿ØÏÔÊ¾
+		// å˜é‡ç›‘æ§æ˜¾ç¤º
 		if (!m_watchedVariables.empty()) {
-			ImGui::Text("±äÁ¿¼àÊÓ:");
+			ImGui::Text("å˜é‡ç›‘è§†:");
 			for (const auto& var : m_watchedVariables) {
 				if (var.showInConsole) {
 					ImGui::Text("%s: %s", var.name.c_str(), var.getter().c_str());
@@ -178,7 +179,7 @@ void F_Debug::ShowDebugConsole() {
 			ImGui::Separator();
 		}
 
-		// ÃüÁîÊäÈëÇøÓò
+		// å‘½ä»¤è¾“å…¥åŒºåŸŸ
 		bool reclaim_focus = false;
 		ImGui::PushItemWidth(-1);
 		if (ImGui::InputText("##Input", m_inputBuffer, IM_ARRAYSIZE(m_inputBuffer),
@@ -187,24 +188,24 @@ void F_Debug::ShowDebugConsole() {
 				return F_Debug::TextEditCallback(data);
 			}))
 		{
-			// Ö´ĞĞÃüÁî
+			// æ‰§è¡Œå‘½ä»¤
 			if (m_inputBuffer[0] != '\0') {
 				ExecuteCommand(m_inputBuffer);
 
-				// ±£´æµ½ÀúÊ·¼ÇÂ¼
+				// ä¿å­˜åˆ°å†å²è®°å½•
 				m_commandHistory.push_back(m_inputBuffer);
 				if (m_commandHistory.size() > 100) {
 					m_commandHistory.erase(m_commandHistory.begin());
 				}
 
-				// ÖØÖÃÊäÈë
+				// é‡ç½®è¾“å…¥
 				strcpy(m_inputBuffer, "");
 				reclaim_focus = true;
 			}
 		}
 		ImGui::PopItemWidth();
 
-		// ×Ô¶¯¾Û½¹µ½ÊäÈë¿ò
+		// è‡ªåŠ¨èšç„¦åˆ°è¾“å…¥æ¡†
 		ImGui::SetItemDefaultFocus();
 		if (reclaim_focus) {
 			ImGui::SetKeyboardFocusHere(-1);
@@ -215,19 +216,19 @@ void F_Debug::ShowDebugConsole() {
 
 
 /**
- * @brief Ìí¼ÓÈÕÖ¾ÏûÏ¢
- * @param message ÈÕÖ¾ÄÚÈİ
- * @param level ÈÕÖ¾¼¶±ğ (0=none,1=info, 2=warn, 3=error)
+ * @brief æ·»åŠ æ—¥å¿—æ¶ˆæ¯
+ * @param message æ—¥å¿—å†…å®¹
+ * @param level æ—¥å¿—çº§åˆ« (0=none,1=info, 2=warn, 3=error)
  */
 void F_Debug::Log(const std::string& message, int level) {
 	if (!IsOpen()) return;
-	// Ìí¼ÓÊ±¼ä´Á
+	// æ·»åŠ æ—¶é—´æˆ³
 	time_t now = time(0);
 	tm* ltm = localtime(&now);
 	char timeBuf[20];
 	strftime(timeBuf, sizeof(timeBuf), "%H:%M:%S", ltm);
 
-	// ¸ñÊ½»¯ÈÕÖ¾
+	// æ ¼å¼åŒ–æ—¥å¿—
 	const char* levelStr = "";
 	if (level == 1) levelStr = "[INFO] ";
 	else if (level == 2) levelStr = "[WARN] ";
@@ -246,10 +247,10 @@ void F_Debug::ClearLog()
 }
 
 /**
- * @brief ×¢²áµ÷ÊÔÃüÁî
- * @param name ÃüÁîÃû³Æ
- * @param description ÃüÁîÃèÊö
- * @param action ÃüÁîÖ´ĞĞº¯Êı
+ * @brief æ³¨å†Œè°ƒè¯•å‘½ä»¤
+ * @param name å‘½ä»¤åç§°
+ * @param description å‘½ä»¤æè¿°
+ * @param action å‘½ä»¤æ‰§è¡Œå‡½æ•°
  */
 void F_Debug::RegisterCommand(const std::string& name, const std::string& description,
 	std::function<void(const std::vector<std::string>&)> action)
@@ -271,29 +272,29 @@ F_Debug::DebugCommand F_Debug::GetCommand(const std::string& name)
 		cmd = *it;
 	}
 	else {
-		Log("Î´ÖªÃüÁî: " + name,2);
+		Log("æœªçŸ¥å‘½ä»¤: " + name,2);
 		return F_Debug::DebugCommand();
 	}
 	return cmd;
 }
 
 /**
-* @brief Ö´ĞĞµ÷ÊÔÃüÁî
-* @param command ÍêÕûÃüÁî×Ö·û´®
+* @brief æ‰§è¡Œè°ƒè¯•å‘½ä»¤
+* @param command å®Œæ•´å‘½ä»¤å­—ç¬¦ä¸²
 */
 void F_Debug::ExecuteCommand(const std::string& command) {
-	// Ìí¼ÓÈÕÖ¾
-	Log(" [Ö¸Áî]> " + command);
+	// æ·»åŠ æ—¥å¿—
+	Log(" [æŒ‡ä»¤]> " + command);
 
-	// ½âÎöÃüÁîºÍ²ÎÊı
+	// è§£æå‘½ä»¤å’Œå‚æ•°
 	std::vector<std::string> tokens;
 	TokenizeCommand(command, tokens);
 
 	if (tokens.empty()) return;
 
-	// ²éÕÒÃüÁî
+	// æŸ¥æ‰¾å‘½ä»¤
 	std::string cmdName = tokens[0];
-	tokens.erase(tokens.begin()); // ÒÆ³ıÃüÁîÃû£¬±£Áô²ÎÊı
+	tokens.erase(tokens.begin()); // ç§»é™¤å‘½ä»¤åï¼Œä¿ç•™å‚æ•°
 
 	auto it = std::find_if(m_commands.begin(), m_commands.end(),
 		[&](const DebugCommand& cmd) { return cmd.name == cmdName; });
@@ -303,21 +304,21 @@ void F_Debug::ExecuteCommand(const std::string& command) {
 			it->action(tokens);
 		}
 		catch (const std::exception& e) {
-			Log("Ö´ĞĞÃüÁî´íÎó: " + std::string(e.what()), 3);
+			Log("æ‰§è¡Œå‘½ä»¤é”™è¯¯: " + std::string(e.what()), 3);
 		}
 	}
 	else {
-		Log("Î´ÖªÃüÁî: " + cmdName, 2);
+		Log("æœªçŸ¥å‘½ä»¤: " + cmdName, 2);
 	}
 }
 
 void F_Debug::InitCommand()
 {
-	F_Debug::RegisterCommand("clear", "Çå¿ÕËùÓĞÈÕÖ¾\n", [](const auto& args) {
+	F_Debug::RegisterCommand("clear", "æ¸…ç©ºæ‰€æœ‰æ—¥å¿—\n", [](const auto& args) {
 		F_Debug::ClearLog();
 		});
-	F_Debug::RegisterCommand("help", "°ïÖú\n", [](const auto& args) {
-		F_Debug::Log("¿ÉÓÃµÄµ÷ÊÔÃüÁî:");
+	F_Debug::RegisterCommand("help", "å¸®åŠ©\n", [](const auto& args) {
+		F_Debug::Log("å¯ç”¨çš„è°ƒè¯•å‘½ä»¤:");
 		std::string tmp = "\n";
 		for (auto cmd : F_Debug::GetCommands()) {
 			tmp += (TextFormat("%s:\n    %s", cmd.name.c_str(), cmd.description.c_str()));
@@ -325,13 +326,13 @@ void F_Debug::InitCommand()
 		F_Debug::Log(tmp);
 		});
 	F_Debug::RegisterCommand("logsave",
-		"±£´æÈÕÖ¾µ½ÎÄ¼ş\n",
+		"ä¿å­˜æ—¥å¿—åˆ°æ–‡ä»¶\n",
 		[](const auto& args) {
 
 			std::string filename = "logs.txt";
 			bool filtered = false;
 			if (args[0] == "/?") {
-				F_Debug::Log("±£´æÈÕÖ¾µ½ÎÄ¼ş\n    logsave [filename] [filtered]\n    filename - ÎÄ¼şÃû(¿ÉÊ¡ÂÔ)\n    filtered - Ö¸¶¨±£´æ¹ıÂËµÄÈÕÖ¾(¿ÉÊ¡ÂÔ)\n    Àı:logsave logs.txt filtered");
+				F_Debug::Log("ä¿å­˜æ—¥å¿—åˆ°æ–‡ä»¶\n    logsave [filename] [filtered]\n    filename - æ–‡ä»¶å(å¯çœç•¥)\n    filtered - æŒ‡å®šä¿å­˜è¿‡æ»¤çš„æ—¥å¿—(å¯çœç•¥)\n    ä¾‹:logsave logs.txt filtered");
 				return;
 			}
 			if (args.size() > 0) filename = args[0];
@@ -339,9 +340,9 @@ void F_Debug::InitCommand()
 
 			F_Debug::SaveLogsToFile(filename, filtered);
 		});
-	F_Debug::RegisterCommand("filter", "¹ÜÀíÈÕÖ¾¹ıÂË\n", [](const auto& args) {
+	F_Debug::RegisterCommand("filter", "ç®¡ç†æ—¥å¿—è¿‡æ»¤\n", [](const auto& args) {
 		if (args.empty() || args[0] == "/?") {
-			F_Debug::Log("¹ÜÀíÈÕÖ¾¹ıÂË\n    ÓÃ·¨: filter [add|remove|list] [keyword]\n    Àı:filter add [ERROR]\n    filter remove [WARN]");
+			F_Debug::Log("ç®¡ç†æ—¥å¿—è¿‡æ»¤\n    ç”¨æ³•: filter [add|remove|list] [keyword]\n    ä¾‹:filter add [ERROR]\n    filter remove [WARN]");
 			return;
 		}
 
@@ -353,26 +354,26 @@ void F_Debug::InitCommand()
 		}
 		else if (args[0] == "list") {
 			if (F_Debug::m_logFilters.empty()) {
-				F_Debug::Log("Ã»ÓĞÓĞĞ§µÄ¹ıÂËÄÚÈİ");
+				F_Debug::Log("æ²¡æœ‰æœ‰æ•ˆçš„è¿‡æ»¤å†…å®¹");
 			}
 			else {
-				F_Debug::Log("ÓĞĞ§µÄ¹ıÂËÄÚÈİ:");
+				F_Debug::Log("æœ‰æ•ˆçš„è¿‡æ»¤å†…å®¹:");
 				for (const auto& filter : F_Debug::m_logFilters) {
 					F_Debug::Log("  " + filter);
 				}
 			}
 		}
 		});
-	RegisterCommand("watch", "¹ÜÀí¼àÊÓµÄ±äÁ¿\n", [](const std::vector<std::string>& args) {
+	RegisterCommand("watch", "ç®¡ç†ç›‘è§†çš„å˜é‡\n", [](const std::vector<std::string>& args) {
 		if (args.empty() || args[0]=="/?") {
 			std::string tmp = "";
-			tmp += ("ÓÃ·¨:\n");
-			tmp += ("  watch list                     - ÁĞ³öËùÓĞ±»¼àÊÓµÄ±äÁ¿\n");
-			tmp += ("  watch add <name> <expression>  - Ìí¼ÓÒ»¸öĞÂµÄ±»¼àÊÓµÄ±äÁ¿\n");
-			tmp += ("  watch remove <name>            - ÒÆ³ıÒ»¸ö±»¼àÊÓµÄ±äÁ¿\n");
-			tmp += ("  watch show <name>              - ÏÔÊ¾Ò»¸ö±»¼àÊÓµÄ±äÁ¿\n");
-			tmp += ("  watch hide <name>              - Òş²ØÒ»¸ö±»¼àÊÓµÄ±äÁ¿\n");
-			tmp += ("  watch eval <expression>        - ¼ÆËã±í´ïÊ½\n");
+			tmp += ("ç”¨æ³•:\n");
+			tmp += ("  watch list                     - åˆ—å‡ºæ‰€æœ‰è¢«ç›‘è§†çš„å˜é‡\n");
+			tmp += ("  watch add <name> <expression>  - æ·»åŠ ä¸€ä¸ªæ–°çš„è¢«ç›‘è§†çš„å˜é‡\n");
+			tmp += ("  watch remove <name>            - ç§»é™¤ä¸€ä¸ªè¢«ç›‘è§†çš„å˜é‡\n");
+			tmp += ("  watch show <name>              - æ˜¾ç¤ºä¸€ä¸ªè¢«ç›‘è§†çš„å˜é‡\n");
+			tmp += ("  watch hide <name>              - éšè—ä¸€ä¸ªè¢«ç›‘è§†çš„å˜é‡\n");
+			tmp += ("  watch eval <expression>        - è®¡ç®—è¡¨è¾¾å¼\n");
 			Log(tmp);
 			return;
 		}
@@ -381,21 +382,21 @@ void F_Debug::InitCommand()
 
 		if (action == "list") {
 			if (m_watchedVariables.empty()) {
-				Log("Ã»ÓĞ±»¼àÊÓµÄ±äÁ¿");
+				Log("æ²¡æœ‰è¢«ç›‘è§†çš„å˜é‡");
 			}
 			else {
-				Log("±»¼àÊÓµÄ±äÁ¿:");
+				Log("è¢«ç›‘è§†çš„å˜é‡:");
 				for (const auto& var : m_watchedVariables) {
 					Log("  " + var.name + " = " + var.lastValue +
 						" (" + var.expression + ")" +
-						" [ÏÔÊ¾×´Ì¬: " + (var.showInConsole ? "ÏÔÊ¾" : "²»ÏÔÊ¾") + "]");
+						" [æ˜¾ç¤ºçŠ¶æ€: " + (var.showInConsole ? "æ˜¾ç¤º" : "ä¸æ˜¾ç¤º") + "]");
 				}
 			}
 		}
 		else if (action == "add" && args.size() >= 3) {
 			std::string name = args[1];
 			std::string expr = args[2];
-			// ºÏ²¢Ê£Óà²ÎÊı×÷Îª±í´ïÊ½
+			// åˆå¹¶å‰©ä½™å‚æ•°ä½œä¸ºè¡¨è¾¾å¼
 			for (int i = 3; i < args.size(); i++) {
 				expr += " " + args[i];
 			}
@@ -415,15 +416,15 @@ void F_Debug::InitCommand()
 			for (int i = 2; i < args.size(); i++) {
 				expr += " " + args[i];
 			}
-			Log("½á¹ûÎª: " + EvaluateExpression(expr));
+			Log("ç»“æœä¸º: " + EvaluateExpression(expr));
 		}
 		else {
-			Log("ÎŞĞ§µÄÃüÁî", 1);
+			Log("æ— æ•ˆçš„å‘½ä»¤", 1);
 		}
 		});
 
 	RegisterExpressionHandler("Math.", [](const std::vector<std::string>& tokens) {
-		// Ê¾Àı£ºmath.sin(1.57), math.add(5,3)
+		// ç¤ºä¾‹ï¼šmath.sin(1.57), math.add(5,3)
 		if (tokens.size() < 2) return std::string("Invalid math expression");
 
 		try {
@@ -441,7 +442,7 @@ void F_Debug::InitCommand()
 			}
 			else if (tokens[0] == "sqrt") {
 				float value = std::stof(tokens[1]);
-				if (value < 0) return std::string("¸ºÊı²»ÄÜ¿ª·½");
+				if (value < 0) return std::string("è´Ÿæ•°ä¸èƒ½å¼€æ–¹");
 				return std::to_string(sqrtf(value));
 			}
 			else if (tokens[0] == "abs") {
@@ -455,7 +456,7 @@ void F_Debug::InitCommand()
 			}
 			else if (tokens[0] == "log" && tokens.size() > 1) {
 				float value = std::stof(tokens[1]);
-				if (value <= 0) return std::string("¶ÔÊıµÄÊäÈë±ØĞë´óÓÚ0");
+				if (value <= 0) return std::string("å¯¹æ•°çš„è¾“å…¥å¿…é¡»å¤§äº0");
 				return std::to_string(logf(value));
 			}
 			else if (tokens[0] == "exp" && tokens.size() > 1) {
@@ -497,12 +498,12 @@ void F_Debug::InitCommand()
 			}
 		}
 		catch (...) {
-			return std::string("ÊıÑ§±í´ïÊ½´íÎó");
+			return std::string("æ•°å­¦è¡¨è¾¾å¼é”™è¯¯");
 		}
-		return "Î´ÖªÊıÑ§º¯Êı: " + tokens[0];
+		return "æœªçŸ¥æ•°å­¦å‡½æ•°: " + tokens[0];
 		});
 	RegisterExpressionHandler("System.", [](const std::vector<std::string>& tokens) {
-		// Ê¾Àı£ºsystem.fps, system.memory
+		// ç¤ºä¾‹ï¼šsystem.fps, system.memory
 		if (tokens.empty()) return std::string("Invalid system expression");
 
 		if (tokens[0] == "fps") {
@@ -511,14 +512,14 @@ void F_Debug::InitCommand()
 		else if (tokens[0] == "time") {
 			return std::to_string(GetTime());
 		}
-		return "Î´ÖªÏµÍ³ÊôĞÔ: " + tokens[0];
+		return "æœªçŸ¥ç³»ç»Ÿå±æ€§: " + tokens[0];
 		});
 }
 
 /**
-* @brief ÃüÁî·Ö´Ê
-* @param input ÊäÈëÃüÁî
-* @param tokens Êä³ö·Ö´Ê½á¹û
+* @brief å‘½ä»¤åˆ†è¯
+* @param input è¾“å…¥å‘½ä»¤
+* @param tokens è¾“å‡ºåˆ†è¯ç»“æœ
 */
 void F_Debug::TokenizeCommand(const std::string& input, std::vector<std::string>& tokens) {
 	tokens.clear();
@@ -534,14 +535,14 @@ void F_Debug::TokenizeCommand(const std::string& input, std::vector<std::string>
 void F_Debug::AddLogFilter(const std::string& keyword)
 {
 	m_logFilters.insert(keyword);
-//	Log("Ìí¼ÓÁËÈÕÖ¾¹ıÂËÄÚÈİ: " + keyword,1);
+//	Log("æ·»åŠ äº†æ—¥å¿—è¿‡æ»¤å†…å®¹: " + keyword,1);
 }
 
 void F_Debug::RemoveLogFilter(const std::string& keyword)
 {
 	std::string tmp = keyword;
 	if (m_logFilters.erase(keyword) > 0) {
-	//	Log("ÒÆ³ıÁËÈÕÖ¾¹ıÂËÄÚÈİ: " + tmp,1);
+	//	Log("ç§»é™¤äº†æ—¥å¿—è¿‡æ»¤å†…å®¹: " + tmp,1);
 	}
 }
 
@@ -560,7 +561,7 @@ void F_Debug::SaveLogsToFile(const std::string& filename, bool filtered)
 {
 	std::ofstream file(filename);
 	if (!file.is_open()) {
-		Log("´ò¿ªÈÕÖ¾ÎÄ¼şÊ§°Ü: " + filename, 3);
+		Log("æ‰“å¼€æ—¥å¿—æ–‡ä»¶å¤±è´¥: " + filename, 3);
 		return;
 	}
 
@@ -574,12 +575,12 @@ void F_Debug::SaveLogsToFile(const std::string& filename, bool filtered)
 	}
 
 	file.close();
-	Log("±£´æ " + std::to_string(count) + " ÌõÈÕÖ¾µ½ " + filename,1);
+	Log("ä¿å­˜ " + std::to_string(count) + " æ¡æ—¥å¿—åˆ° " + filename,1);
 }
 void F_Debug::RegisterAlias(const std::string& alias, const std::string& command)
 {
 	m_commandAliases[alias] = command;
-	Log("×¢²áÃüÁî±ğÃû: " + alias + " -> " + command);
+	Log("æ³¨å†Œå‘½ä»¤åˆ«å: " + alias + " -> " + command);
 }
 void F_Debug::WatchVariable(const std::string& name, std::function<std::string()> getter, bool showInConsole)
 {
@@ -587,7 +588,7 @@ void F_Debug::WatchVariable(const std::string& name, std::function<std::string()
 		[&](const WatchedVariable& v) { return v.name == name; });
 
 	if (it != m_watchedVariables.end()) {
-		Log("±äÁ¿ '" + name + "' ÒÔ¼°±»¼àÊÓÁË", 1);
+		Log("å˜é‡ '" + name + "' ä»¥åŠè¢«ç›‘è§†äº†", 1);
 		return;
 	}
 
@@ -598,26 +599,26 @@ void F_Debug::WatchVariable(const std::string& name, std::function<std::string()
 	t.name = name;
 	t.showInConsole = showInConsole;
 	m_watchedVariables.push_back(t);
-	Log("¿ªÊ¼¼àÌı±äÁ¿: " + name);
+	Log("å¼€å§‹ç›‘å¬å˜é‡: " + name);
 }
 void F_Debug::WatchVariable(const std::string& name, const std::string& expression, bool showInConsole)
 
 {
-	// ¼ì²éÊÇ·ñÒÑ´æÔÚÍ¬Ãû±äÁ¿
+	// æ£€æŸ¥æ˜¯å¦å·²å­˜åœ¨åŒåå˜é‡
 	auto it = std::find_if(m_watchedVariables.begin(), m_watchedVariables.end(),
 		[&](const WatchedVariable& v) { return v.name == name; });
 
 	if (it != m_watchedVariables.end()) {
-		Log("±äÁ¿ '" + name + "' ÒÔ¼°±»¼àÊÓÁË", 1);
+		Log("å˜é‡ '" + name + "' ä»¥åŠè¢«ç›‘è§†äº†", 1);
 		return;
 	}
 
-	// ´´½¨»ñÈ¡º¯Êı
+	// åˆ›å»ºè·å–å‡½æ•°
 	auto getter = [expression]() -> std::string {
 		return EvaluateExpression(expression);
 		};
 
-	// »ñÈ¡³õÊ¼Öµ
+	// è·å–åˆå§‹å€¼
 	std::string initialValue;
 	try {
 		initialValue = getter();
@@ -626,7 +627,7 @@ void F_Debug::WatchVariable(const std::string& name, const std::string& expressi
 		initialValue = "Error";
 	}
 
-	// Ìí¼Ó¼àÊÓ±äÁ¿
+	// æ·»åŠ ç›‘è§†å˜é‡
 	m_watchedVariables.push_back({
 		name,
 		expression,
@@ -635,7 +636,7 @@ void F_Debug::WatchVariable(const std::string& name, const std::string& expressi
 		initialValue
 		});
 
-	Log("¿ªÊ¼¼àÌı±äÁ¿: " + name);
+	Log("å¼€å§‹ç›‘å¬å˜é‡: " + name);
 }
 void F_Debug::UnwatchVariable(const std::string& name)
 {
@@ -644,10 +645,10 @@ void F_Debug::UnwatchVariable(const std::string& name)
 
 	if (it != m_watchedVariables.end()) {
 		m_watchedVariables.erase(it, m_watchedVariables.end());
-		Log("Í£Ö¹¼àÊÓ±äÁ¿: " + name);
+		Log("åœæ­¢ç›‘è§†å˜é‡: " + name);
 	}
 	else {
-		Log("Î´ÕÒµ½±äÁ¿: " + name, 1);
+		Log("æœªæ‰¾åˆ°å˜é‡: " + name, 1);
 	}
 }
 void F_Debug::SetVariableVisibility(const std::string& name, bool show)
@@ -655,44 +656,44 @@ void F_Debug::SetVariableVisibility(const std::string& name, bool show)
 	for (auto& var : m_watchedVariables) {
 		if (var.name == name) {
 			var.showInConsole = show;
-			Log("'" + name + "'µÄ¿ÉÊÓ×´Ì¬ÉèÖÃÎª" + (show ? "ÏÔÊ¾" : "Òş²Ø"));
+			Log("'" + name + "'çš„å¯è§†çŠ¶æ€è®¾ç½®ä¸º" + (show ? "æ˜¾ç¤º" : "éšè—"));
 			return;
 		}
 	}
-	Log("Ã»ÓĞÕÒµ½±äÁ¿: " + name, 1);
+	Log("æ²¡æœ‰æ‰¾åˆ°å˜é‡: " + name, 1);
 }
 void F_Debug::UpdateWatchedVariables()
 {
 	static int frameCount = 0;
 	frameCount++;
 
-	// Ã¿5Ö¡¸üĞÂÒ»´Î£¬±ÜÃâĞÔÄÜ¿ªÏú
+	// æ¯5å¸§æ›´æ–°ä¸€æ¬¡ï¼Œé¿å…æ€§èƒ½å¼€é”€
 	if (frameCount % 5 == 0) {
 		for (auto& var : m_watchedVariables) {
 			try {
 				std::string currentValue = var.getter();
 
-				// ¼ì²âÖµ±ä»¯
+				// æ£€æµ‹å€¼å˜åŒ–
 				if (var.lastValue != currentValue) {
-					// ¼ÇÂ¼±ä»¯ÈÕÖ¾
-					Log(var.name + " ±ä»¯: " + var.lastValue + " -> " + currentValue);
+					// è®°å½•å˜åŒ–æ—¥å¿—
+					Log(var.name + " å˜åŒ–: " + var.lastValue + " -> " + currentValue);
 					var.lastValue = currentValue;
 				}
 			}
 			catch (const std::exception& e) {
-				Log("±í´ïÊ½¼ÆËã´íÎó " + var.name + ": " + e.what(), 2);
+				Log("è¡¨è¾¾å¼è®¡ç®—é”™è¯¯ " + var.name + ": " + e.what(), 2);
 			}
 		}
 	}
 }
 /**
-* @brief ÊäÈë¿ò»Øµ÷º¯Êı (´¦Àí×Ô¶¯²¹È«ºÍÀúÊ·¼ÇÂ¼)
-* @param data ImGui»Øµ÷Êı¾İ
+* @brief è¾“å…¥æ¡†å›è°ƒå‡½æ•° (å¤„ç†è‡ªåŠ¨è¡¥å…¨å’Œå†å²è®°å½•)
+* @param data ImGuiå›è°ƒæ•°æ®
 */
 int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
 	switch (data->EventFlag) {
 	case ImGuiInputTextFlags_CallbackHistory: {
-		// ÉÏ/ÏÂ·½Ïò¼ü´¦ÀíÀúÊ·¼ÇÂ¼
+		// ä¸Š/ä¸‹æ–¹å‘é”®å¤„ç†å†å²è®°å½•
 		const int prev_history_pos = m_historyPos;
 		if (data->EventKey == ImGuiKey_UpArrow) {
 			if (m_historyPos == -1) {
@@ -710,7 +711,7 @@ int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
 			}
 		}
 
-		// Ó¦ÓÃÀúÊ·¼ÇÂ¼
+		// åº”ç”¨å†å²è®°å½•
 		if (prev_history_pos != m_historyPos) {
 			const char* history_str = (m_historyPos >= 0) ? m_commandHistory[m_historyPos].c_str() : "";
 			data->DeleteChars(0, data->BufTextLen);
@@ -719,7 +720,7 @@ int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
 		break;
 	}
 	case ImGuiInputTextFlags_CallbackCompletion: {
-		// Tab¼ü×Ô¶¯²¹È«
+		// Tabé”®è‡ªåŠ¨è¡¥å…¨
 		const char* word_end = data->Buf + data->CursorPos;
 		const char* word_start = word_end;
 		while (word_start > data->Buf) {
@@ -728,7 +729,7 @@ int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
 			word_start--;
 		}
 
-		// ÊÕ¼¯Æ¥ÅäµÄÃüÁî
+		// æ”¶é›†åŒ¹é…çš„å‘½ä»¤
 		std::vector<std::string> candidates;
 		const std::string partial(word_start, word_end);
 
@@ -739,15 +740,15 @@ int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
 		}
 
 		if (!candidates.empty()) {
-			// ×Ô¶¯²¹È«
+			// è‡ªåŠ¨è¡¥å…¨
 			if (candidates.size() == 1) {
 				data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
 				data->InsertChars(data->CursorPos, candidates[0].c_str());
 				data->InsertChars(data->CursorPos, " ");
 			}
-			// ÏÔÊ¾¶à¸öÆ¥ÅäÏî
+			// æ˜¾ç¤ºå¤šä¸ªåŒ¹é…é¡¹
 			else {
-				Log("¿ÉÄÜ½á¹û:");
+				Log("å¯èƒ½ç»“æœ:");
 				for (const auto& candidate : candidates) {
 					Log("  " + candidate);
 				}
@@ -758,17 +759,17 @@ int F_Debug::TextEditCallback(ImGuiInputTextCallbackData* data) {
 	}
 	return 0;
 }
-std::mutex log_mutex; // È«¾Ö»¥³âËø
+std::mutex log_mutex; // å…¨å±€äº’æ–¥é”
 
 void DEBUG_LOG(int lv, const char* text, bool english, bool auto_enter , bool with_imgui_console ) {
 	if (!F_Debug::IsOpen()) return;
 
-	std::lock_guard<std::mutex> lock(log_mutex); // ×Ô¶¯¼ÓËø
+	std::lock_guard<std::mutex> lock(log_mutex); // è‡ªåŠ¨åŠ é”
 
 	char buffer[1024];
 	size_t pos = 0;
 
-	// ¹¹½¨Ç°×º
+	// æ„å»ºå‰ç¼€
 	auto append = [&](const char* str) {
 		size_t len = snprintf(buffer + pos, sizeof(buffer) - pos, "%s", str);
 		pos += std::min(len, sizeof(buffer) - pos - 1);
@@ -778,55 +779,55 @@ void DEBUG_LOG(int lv, const char* text, bool english, bool auto_enter , bool wi
 	case LOG_ALL:
 		if (english)
 			append("LOG:");
-		else append("ÈÕÖ¾:");
+		else append("æ—¥å¿—:");
 		break;
 	case LOG_DEBUG:
 		if (english)
 			append("DEBUG:");
-		else append("µ÷ÊÔ£º");
+		else append("è°ƒè¯•ï¼š");
 		break;
 	case LOG_ERROR:
 		if (english)
 			append("ERROR:");
-		else append("´íÎó:");
+		else append("é”™è¯¯:");
 		break;
 	case LOG_FATAL:
 		if (english)
 			append("FATAL:");
-		else append("ÖÂÃü´íÎó:");
+		else append("è‡´å‘½é”™è¯¯:");
 		break;
 	case LOG_INFO:
 		if (english)
 			append("INFO:");
-		else append("ĞÅÏ¢:");
+		else append("ä¿¡æ¯:");
 		break;
 	case LOG_NONE:
 		if (english)
 			append("NONE:");
-		else append("ÎŞ:");
+		else append("æ— :");
 		break;
 	case LOG_WARNING:
 		if (english)
 			append("WARNING:");
-		else append("¾¯¸æ:");
+		else append("è­¦å‘Š:");
 		break;
 	default:
 		if (english)
 			append("NONE:");
-		else append("ÎŞ:");
+		else append("æ— :");
 		break;
 	};
 	append(text);
 	if (auto_enter) append("\n");
 
-	fwrite(buffer, 1, pos, stdout); // µ¥´ÎÔ­×Ó²Ù×÷
+	fwrite(buffer, 1, pos, stdout); // å•æ¬¡åŸå­æ“ä½œ
 	if (with_imgui_console) {
 		append("\0");
 		if (lv == LOG_INFO) lv = 1;
 		else if (lv == LOG_WARNING) lv = 2;
 		else if (lv == LOG_ERROR) lv = 3;
 		else lv = 0;
-		F_Debug::Log(buffer, lv); // Ìí¼Óµ½µ÷ÊÔ¿ØÖÆÌ¨
+		F_Debug::Log(buffer, lv); // æ·»åŠ åˆ°è°ƒè¯•æ§åˆ¶å°
 	}
 }
 int letter_to_kv(char letter)
@@ -864,7 +865,7 @@ void F_Render::Draw_Sprite(Sprite spr, float x, float y, float x_scale, float y_
 
 void Audio_Play(F_Audio& audio, bool loop = false) {
 	if (audio.GetMode() == AudioMode::NONE) {
-		DEBUG_LOG(LOG_WARNING, "Audio_Play: Î´³õÊ¼»¯µÄaudio!", false);
+		DEBUG_LOG(LOG_WARNING, "Audio_Play: æœªåˆå§‹åŒ–çš„audio!", false);
 		return;
 	}
 	audio.Play(loop);
@@ -872,7 +873,7 @@ void Audio_Play(F_Audio& audio, bool loop = false) {
 
 void Audio_Stop(F_Audio& audio) {
 	if (audio.GetMode() == AudioMode::NONE) {
-		DEBUG_LOG(LOG_WARNING, "Audio_Stop: Î´³õÊ¼»¯µÄaudio!", false);
+		DEBUG_LOG(LOG_WARNING, "Audio_Stop: æœªåˆå§‹åŒ–çš„audio!", false);
 		return;
 	}
 
@@ -881,7 +882,7 @@ void Audio_Stop(F_Audio& audio) {
 
 void Audio_Music_Update(F_Audio& audio, Vector2 listenerPos = { 0.0f, 0.0f }) {
 	if (audio.GetMode() != AudioMode::MUSIC) {
-		DEBUG_LOG(LOG_ERROR, "Audio_Music_Update: Ö»ÄÜ¶Ô Music ½øĞĞ¸üĞÂ!", false);
+		DEBUG_LOG(LOG_ERROR, "Audio_Music_Update: åªèƒ½å¯¹ Music è¿›è¡Œæ›´æ–°!", false);
 		return;
 	}
 
@@ -903,7 +904,7 @@ Font Load_Font_File_Codepoints(const char* filePath, int size, const char* codeP
 	const char* codepoint = LoadFileText(codePoints_File);
 	return Load_Font(filePath, size, codepoint);
 }
-// ÔÚÀàÍâ¸³Öµ
+// åœ¨ç±»å¤–èµ‹å€¼
 const int F_Input::key_null = 0;
 const int F_Input::key_apostrophe = 39;
 const int F_Input::key_comma = 44;
@@ -1014,7 +1015,7 @@ const int F_Input::key_back = 4;
 const int F_Input::key_menu = 82;
 const int F_Input::key_volume_up = 24;
 const int F_Input::key_volume_down = 25;
-// Êó±ê°´Å¥¸³Öµ
+// é¼ æ ‡æŒ‰é’®èµ‹å€¼
 const int F_Input::mouse_button_left = 0;
 const int F_Input::mouse_button_right = 1;
 const int F_Input::mouse_button_middle = 2;
@@ -1104,7 +1105,7 @@ void F_Render::Draw_Text_Ex(Font font, const char* text, float x, float y, float
 void F_Render::Draw_Shape( F_Shape shape,Color col)
 {
 	if (shape.Get_Points_Number()<=0) {
-		DEBUG_LOG(LOG_WARNING, "Draw_Shape:Ã»ÓĞµã´æÔÚ", 0);
+		DEBUG_LOG(LOG_WARNING, "Draw_Shape:æ²¡æœ‰ç‚¹å­˜åœ¨", 0);
 	}
 	for (int i=0; i < shape.Get_Points_Number()-1; i++) {
 		DrawLineV(shape.Get_Points()[i], shape.Get_Points()[i+1],  col);
@@ -1142,17 +1143,17 @@ void F_Render::Draw_Polygon(F_Polygon polygon, Color col)
 
 void F_Render::Draw_Polygon(std::vector<FVec2> points, Color color) {
 	int pointsCount = static_cast<int>(points.size());
-	// È·±£µãµÄÊıÁ¿ÓĞĞ§
-	if (pointsCount < 3) return; // ÖÁÉÙĞèÒªÈı¸öµã
+	// ç¡®ä¿ç‚¹çš„æ•°é‡æœ‰æ•ˆ
+	if (pointsCount < 3) return; // è‡³å°‘éœ€è¦ä¸‰ä¸ªç‚¹
 
-	// ¼ÆËã²¢»æÖÆ¶à±ßĞÎµÄ±ß
+	// è®¡ç®—å¹¶ç»˜åˆ¶å¤šè¾¹å½¢çš„è¾¹
 	for (int i = 0; i < pointsCount; i++) {
-		int nextIndex = (i + 1) % pointsCount; // ÏÂÒ»¸öµãµÄË÷Òı
-		DrawLineV(points[i], points[nextIndex], color); // »æÖÆ±ß
+		int nextIndex = (i + 1) % pointsCount; // ä¸‹ä¸€ä¸ªç‚¹çš„ç´¢å¼•
+		DrawLineV(points[i], points[nextIndex], color); // ç»˜åˆ¶è¾¹
 	}
 
-	// Ìî³ä¶à±ßĞÎ
-	// Ê¹ÓÃ raylib Ìá¹©µÄ DrawTriangleFan À´Ìî³ä¶à±ßĞÎ
+	// å¡«å……å¤šè¾¹å½¢
+	// ä½¿ç”¨ raylib æä¾›çš„ DrawTriangleFan æ¥å¡«å……å¤šè¾¹å½¢
 	for (int i = 1; i < pointsCount - 1; i++) {
 		DrawTriangle(points[0], points[i], points[i + 1], color);
 	}
@@ -1187,26 +1188,26 @@ void F_Render::Draw_Rectangle(float x, float y, float w, float h, float rot, FVe
 	if(!line_mode)
 		DrawRectanglePro({ x,y,w,h }, {origin.x,origin.y}, rot, col);
 	else {
-		// ¼ÆËã¾ØĞÎµÄ°ë¿íºÍ°ë¸ß
+		// è®¡ç®—çŸ©å½¢çš„åŠå®½å’ŒåŠé«˜
 		float hw = w / 2.0f;
 		float hh = h / 2.0f;
 
-		// »ùÓÚÔ­µã¼ÆËã¾ØĞÎµÄËÄ¸ö¶¥µã£¨Î´¾­Ğı×ª£©
+		// åŸºäºåŸç‚¹è®¡ç®—çŸ©å½¢çš„å››ä¸ªé¡¶ç‚¹ï¼ˆæœªç»æ—‹è½¬ï¼‰
 		FVec2 vertices[4] = {
-			{ -hw - origin.x, -hh - origin.y },  // ×óÏÂ½Ç
-			{  hw - origin.x, -hh - origin.y },  // ÓÒÏÂ½Ç
-			{  hw - origin.x,  hh - origin.y },  // ÓÒÉÏ½Ç
-			{ -hw - origin.x,  hh - origin.y }   // ×óÉÏ½Ç
+			{ -hw - origin.x, -hh - origin.y },  // å·¦ä¸‹è§’
+			{  hw - origin.x, -hh - origin.y },  // å³ä¸‹è§’
+			{  hw - origin.x,  hh - origin.y },  // å³ä¸Šè§’
+			{ -hw - origin.x,  hh - origin.y }   // å·¦ä¸Šè§’
 		};
 
-		// Ğı×ª¾ØÕóµÄÕıÓàÏÒÖµ
+		// æ—‹è½¬çŸ©é˜µçš„æ­£ä½™å¼¦å€¼
 		float cosRot = cosf(rot);
 		float sinRot = sinf(rot);
 
-		// ÓÃÀ´±£´æĞı×ªºóµÄ¶¥µã
+		// ç”¨æ¥ä¿å­˜æ—‹è½¬åçš„é¡¶ç‚¹
 		Vector2 transformedVertices[4];
 
-		// ¼ÆËãĞı×ªºÍÆ½ÒÆºóµÄ¶¥µãÎ»ÖÃ
+		// è®¡ç®—æ—‹è½¬å’Œå¹³ç§»åçš„é¡¶ç‚¹ä½ç½®
 		for (int i = 0; i < 4; ++i) {
 			float rotatedX = vertices[i].x * cosRot - vertices[i].y * sinRot;
 			float rotatedY = vertices[i].x * sinRot + vertices[i].y * cosRot;
@@ -1214,7 +1215,7 @@ void F_Render::Draw_Rectangle(float x, float y, float w, float h, float rot, FVe
 		}
 		for (int i = 0; i < 4; i++) {
 			for (int i = 0; i < 4; ++i) {
-				int next = (i + 1) % 4; // ÏÂÒ»¸ö¶¥µã£¬ĞÎ³ÉÒ»¸öÑ­»·
+				int next = (i + 1) % 4; // ä¸‹ä¸€ä¸ªé¡¶ç‚¹ï¼Œå½¢æˆä¸€ä¸ªå¾ªç¯
 				DrawLineV(transformedVertices[i], transformedVertices[next], col);
 			}
 		}
@@ -1433,294 +1434,121 @@ F_Camera::~F_Camera()
 	}
 }
 
-#include <string.h>
-using namespace WinFuns;
-typedef struct tagOFNA {
-	DWORD         lStructSize;
-	void*         hwndOwner;
-	void*     hInstance;
-	const char*       lpstrFilter;
-	const char*        lpstrCustomFilter;
-	DWORD         nMaxCustFilter;
-	DWORD         nFilterIndex;
-	char*        lpstrFile;
-	DWORD         nMaxFile;
-	char*        lpstrFileTitle;
-	DWORD         nMaxFileTitle;
-	const char*       lpstrInitialDir;
-	const char*    lpstrTitle;
-	DWORD         Flags;
-	WORD          nFileOffset;
-	WORD          nFileExtension;
-	const char*       lpstrDefExt;
-	long unsigned*        lCustData;
-	const char*       lpTemplateName;
-	const char*        lpstrPrompt;
-	void* pvReserved;
-	DWORD         dwReserved;
-	DWORD         FlagsEx;
-} OPENFILENAMEA, * LPOPENFILENAMEA;
-typedef struct tagOFNW {
-	DWORD         lStructSize;
-	void* hwndOwner;
-	void* hInstance;
-	const wchar_t* lpstrFilter;
-	const wchar_t* lpstrCustomFilter;
-	DWORD         nMaxCustFilter;
-	DWORD         nFilterIndex;
-	wchar_t* lpstrFile;
-	DWORD         nMaxFile;
-	wchar_t* lpstrFileTitle;
-	DWORD         nMaxFileTitle;
-	const wchar_t* lpstrInitialDir;
-	const wchar_t* lpstrTitle;
-	DWORD         Flags;
-	WORD          nFileOffset;
-	WORD          nFileExtension;
-	const wchar_t* lpstrDefExt;
-	long unsigned* lCustData;
-	const wchar_t* lpTemplateName;
-	const wchar_t* lpstrPrompt;
-	void* pvReserved;
-	DWORD         dwReserved;
-	DWORD         FlagsEx;
-} OPENFILENAMEW, * LPOPENFILENAMEW;
-#define OPENFILENAME OPENFILENAMEA
-extern "C" int GetOpenFileNameA(OPENFILENAME* ofn);
-extern "C" int GetOpenFileNameW(OPENFILENAMEW* ofn);
-extern "C" int GetSaveFileNameA(OPENFILENAME* ofn);
-extern "C" int GetSaveFileNameW(OPENFILENAMEW* ofn);
-#define TCHAR wchar_t
-std::string F_File::Get_Open_File_Name(const char*strFilter)
-{
-	using namespace WinFuns;
-	OPENFILENAME ofn;
-	char szFile[260] = { 0 };
+FilePathList F_File::drop_list = {};
+bool F_File::loaded = 0;
 
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn),0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = strFilter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
+struct FilterItem {
+	std::string name;
+	std::string extensions;
+};
 
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetOpenFileNameA(&ofn) == 1) {
-		return std::string(ofn.lpstrFile);
+std::vector<nfdu8filteritem_t> ParseFilterString(const char* strFilter, std::vector<FilterItem>& outItems) {
+	if (!strFilter || strFilter[0] == '\0') {
+		return {};
 	}
-	else {
-		return "";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
-	}
-}
-bool F_File::loaded = false;
-FilePathList F_File::drop_list = FilePathList();
-#include <fstream>
-std::string F_File::Get_Open_File_Name(const char* strFilter,unsigned int flag)
-{
-	// ³õÊ¼»¯ OPENFILENAME ½á¹¹Ìå
-	OPENFILENAMEA ofn;
-	char szFile[260] = ""; // ÎÄ¼şÃû»º³åÇø
-	memset(&ofn, 0, sizeof(ofn));
-	ofn.lStructSize = sizeof(ofn);
-	ofn.hwndOwner = GetWindowHandle(); // Èç¹ûÊÇ´°¿Ú³ÌĞò£¬¿É´«Èë´°¿Ú¾ä±ú
-	ofn.lpstrFile = szFile;  // ½«ÎÄ¼şÃû»º³åÇø°ó¶¨µ½½á¹¹Ìå
-	ofn.nMaxFile = sizeof(szFile);
-	// ÉèÖÃÎÄ¼ş¹ıÂËÆ÷
-	ofn.lpstrFilter = strFilter;
-	ofn.nFilterIndex = 1;
-	ofn.Flags = 0x00000800 | 0x00001000;
 
-	// ´ò¿ª¡°´ò¿ªÎÄ¼ş¡±¶Ô»°¿ò
-	if (GetOpenFileNameA(&ofn)) {
-		std::ifstream file(ofn.lpstrFile);
-		if (file.is_open()) {
-			file.close();
-			return ofn.lpstrFile;
-		}
-		else {
-			std::cerr << "Failed to open file: " << ofn.lpstrFile << std::endl;
+	std::stringstream ss(strFilter);
+	std::string segment;
+	std::vector<nfdu8filteritem_t> nfdFilters;
+	while (std::getline(ss, segment, ';')) {
+		if (segment.empty()) continue;
+
+		std::string name = segment;
+
+		// å°è¯•è·å–ä¸‹ä¸€ä¸ª segment ä½œä¸º extensions
+		if (std::getline(ss, segment, ';')) {
+			std::string extensions = segment;
+
+			// å¡«å……å†…éƒ¨ç»“æ„ä½“
+			outItems.push_back({ name, extensions });
+
+			nfdFilters.push_back({
+				(const nfdu8char_t*)outItems.back().name.c_str(),
+				(const nfdu8char_t*)outItems.back().extensions.c_str()
+				});
 		}
 	}
-	else {
-		std::cerr << "Open file dialog canceled or failed." << std::endl;
+
+	if (!outItems.empty()) {
+		outItems.push_back({ "All Files", "*" });
+		nfdFilters.push_back({
+			(const nfdu8char_t*)outItems.back().name.c_str(),
+			(const nfdu8char_t*)outItems.back().extensions.c_str()
+			});
 	}
-	return "";
+
+	return nfdFilters;
 }
 
-std::wstring F_File::Get_Open_File_NameW(const wchar_t* strFilter)
-{
-	using namespace WinFuns;
-	OPENFILENAMEW ofn;
-	wchar_t szFile[260] = { 0 };
 
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn), 0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = strFilter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetOpenFileNameW(&ofn) == 1) {
-		return std::wstring(ofn.lpstrFile);
+static std::string execute_nfd_open(const char* strFilter) {
+	nfdu8char_t* outPath = nullptr;
+
+	std::vector<FilterItem> filterStrings;
+	std::vector<nfdu8filteritem_t> nfdFilters = ParseFilterString(strFilter, filterStrings);
+
+	// 2. è°ƒç”¨ NFD API
+	nfdresult_t result = NFD_OpenDialog(
+		&outPath,
+		nfdFilters.empty() ? nullptr : nfdFilters.data(), 
+		(nfdfiltersize_t)nfdFilters.size(),              
+		nullptr                                        
+	);
+
+	
+	if (result == NFD_OKAY) {
+		std::string path((const char*)outPath);
+		NFD_FreePath(outPath); 
+		return path;
+	}
+	else if (result == NFD_CANCEL) {
+		return "";
 	}
 	else {
-		return L"";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
-	}
-}
-
-std::wstring F_File::Get_Open_File_NameW(const wchar_t* strFilter, unsigned int flag)
-{
-	using namespace WinFuns;
-	OPENFILENAMEW ofn;
-	wchar_t szFile[260] = { 0 };
-
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn), 0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter);
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = flag;
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetOpenFileNameW(&ofn) == 1) {
-		return std::wstring(ofn.lpstrFile);
-	}
-	else {
-		return L"";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
+		std::cerr << "NFD Open Dialog Error: " << NFD_GetError() << std::endl;
+		return "";
 	}
 }
 
-std::string F_File::Get_Save_File_Name(const char* strFilter)
-{
-	using namespace WinFuns;
-	OPENFILENAME ofn;
-	char szFile[260] = { 0 };
+static std::string execute_nfd_save(const char* strFilter,const char* d_name) {
+	nfdu8char_t* outPath = nullptr;
+	
+	
+	std::vector<FilterItem> filterStrings;
+	std::vector<nfdu8filteritem_t> nfdFilters = ParseFilterString(strFilter, filterStrings);
 
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn), 0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = strFilter;
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
+	
+	nfdresult_t result = NFD_SaveDialog(
+		&outPath,
+		nfdFilters.empty() ? nullptr : nfdFilters.data(),
+		(nfdfiltersize_t)nfdFilters.size(),
+		nullptr,
+		d_name
+	);
 
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetSaveFileNameA(&ofn) == 1) {
-		return std::string(ofn.lpstrFile);
+
+	if (result == NFD_OKAY) {
+		std::string path((const char*)outPath);
+		NFD_FreePath(outPath); // ã€å…³é”®ä¿®æ­£ã€‘ä½¿ç”¨ NFD_FreePath
+		return path;
+	}
+	else if (result == NFD_CANCEL) {
+		return "";
 	}
 	else {
-		return "";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
+		std::cerr << "NFD Save Dialog Error: " << NFD_GetError() << std::endl;
+		return "";
 	}
 }
-
-std::string F_File::Get_Save_File_Name(const char* strFilter, unsigned int flag)
-{
-	using namespace WinFuns;
-	OPENFILENAME ofn;
-	char szFile[260] = { 0 };
-
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn), 0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter);
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = flag;
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetSaveFileNameA(&ofn) == 1) {
-		return std::string(ofn.lpstrFile);
-	}
-	else {
-		return "";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
-	}
+std::string F_File::Get_Open_File_Name(const char* strFilter) {
+	return execute_nfd_open(strFilter);
 }
 
-std::wstring F_File::Get_Save_File_NameW(const wchar_t* strFilter)
+
+
+std::string F_File::Get_Save_File_Name(const char* strFilter, const char* d_name)
 {
-	using namespace WinFuns;
-	OPENFILENAMEW ofn;
-	wchar_t szFile[260] = { 0 };
-
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn), 0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter);
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = 0x00000004 | 0x00000800 | 0x00001000 | 0x00100000;
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetOpenFileNameW(&ofn) == 1) {
-		return std::wstring(ofn.lpstrFile);
-	}
-	else {
-		return L"";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
-	}
-}
-
-std::wstring F_File::Get_Save_File_NameW(const wchar_t* strFilter, unsigned int flag)
-{
-	using namespace WinFuns;
-	OPENFILENAMEW ofn;
-	wchar_t szFile[260] = { 0 };
-
-	// ³õÊ¼»¯OPENFILENAME½á¹¹Ìå
-	memset(&ofn, sizeof(ofn), 0);
-	ofn.lStructSize = sizeof(ofn);
-	ofn.lpstrFile = szFile;
-	ofn.lpstrFile[0] = '\0';
-	ofn.nMaxFile = sizeof(szFile);
-	ofn.lpstrFilter = (strFilter);
-	ofn.nFilterIndex = 1;
-	ofn.lpstrFileTitle = NULL;
-	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = NULL;
-	ofn.hwndOwner = GetWindowHandle();
-	ofn.Flags = flag;
-	// ÏÔÊ¾ÎÄ¼ş¶Ô»°¿ò
-	if (GetOpenFileNameW(&ofn) == 1) {
-		return std::wstring(ofn.lpstrFile);
-	}
-	else {
-		return L"";  // ÓÃ»§È¡ÏûÑ¡Ôñ»ò·¢Éú´íÎó
-	}
+	return execute_nfd_save(strFilter, d_name);
 }
 
 void F_File::Flush_Drop_Files()
@@ -1734,10 +1562,10 @@ void F_File::Flush_Drop_Files()
 const char* F_File::Get_Drop_File(int index)
 {
 	if (drop_list.count <= 0) {
-		DEBUG_LOG(LOG_WARNING,"F_File_Get_Drop_FileÃ»ÓĞÎÄ¼şÍÏÈë",0);
+		DEBUG_LOG(LOG_WARNING,"F_File_Get_Drop_Fileæ²¡æœ‰æ–‡ä»¶æ‹–å…¥",0);
 	}
 	else if (index >= drop_list.count) {
-     	DEBUG_LOG(LOG_WARNING, "F_File_Get_Drop_FileË÷Òı³¬³ö·¶Î§", 0);
+     	DEBUG_LOG(LOG_WARNING, "F_File_Get_Drop_Fileç´¢å¼•è¶…å‡ºèŒƒå›´", 0);
 	}
 	else {
 		return drop_list.paths[index];
@@ -1769,7 +1597,7 @@ F_Color::operator struct Color()
 }
 
 #include <fstream>
-// ×Ö·û´®ĞŞ¼ô¸¨Öúº¯Êı
+// å­—ç¬¦ä¸²ä¿®å‰ªè¾…åŠ©å‡½æ•°
 static inline std::string& trim(std::string& s) {
 	s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
 		return !std::isspace(ch);
@@ -1781,7 +1609,7 @@ static inline std::string& trim(std::string& s) {
 }
 
 void F_Ini::parse_line(std::string& line) {
-	line = line.substr(0, line.find(';'));  // ÒÆ³ıĞĞÄÚ×¢ÊÍ
+	line = line.substr(0, line.find(';'));  // ç§»é™¤è¡Œå†…æ³¨é‡Š
 	trim(line);
 
 	if (line.empty()) return;
@@ -1789,7 +1617,7 @@ void F_Ini::parse_line(std::string& line) {
 	if (line[0] == '[' && line.back() == ']') {
 		currentSection = line.substr(1, line.size() - 2);
 		trim(currentSection);
-		sections[currentSection];  // È·±£section´æÔÚ
+		sections[currentSection];  // ç¡®ä¿sectionå­˜åœ¨
 	}
 	else if (auto eq_pos = line.find('='); eq_pos != std::string::npos) {
 		std::string key = line.substr(0, eq_pos);
@@ -1808,7 +1636,7 @@ F_Ini::F_Ini(const std::string& filename ) {
 bool F_Ini::Load(const std::string& filename) {
 	sections.clear();
 	currentFile = filename;
-	currentSection = "default";  // Ä¬ÈÏsection
+	currentSection = "default";  // é»˜è®¤section
 
 	std::ifstream file(filename);
 	if (!file.is_open()) return false;
@@ -1837,7 +1665,7 @@ bool F_Ini::Save(const std::string& filename) {
 	return true;
 }
 
-// ¶ÁÈ¡·½·¨
+// è¯»å–æ–¹æ³•
 int F_Ini::Get_Int_Value_From_Name(const std::string& Class, const std::string& name) {
 	try {
 		return std::stoi(sections[Class][name]);
@@ -1860,7 +1688,7 @@ double F_Ini::Get_Double_Value_From_Name(const std::string& Class, const std::st
 	}
 }
 
-// Ğ´Èë·½·¨
+// å†™å…¥æ–¹æ³•
 bool F_Ini::Write_Int_Value(const std::string& Class, const std::string& name, int value) {
 	sections[Class][name] = std::to_string(value);
 	return true;
@@ -1875,455 +1703,275 @@ bool F_Ini::Write_Double_Value(const std::string& Class, const std::string& name
 	sections[Class][name] = std::to_string(value);
 	return true;
 }
-#include <sstream>
-#include <cctype>
-#include <algorithm>
+//json
+
 
 namespace F_Json {
 
-	// JsonNull ÊµÏÖ
-	JsonType JsonNull::type() const { return JsonType::Null; }
-	std::string JsonNull::serialize(bool no_name) const { return "null"; }
+	class Json::iterator {
+		using array_iterator_type = json::iterator;
 
-	// JsonBoolean ÊµÏÖ
-	JsonBoolean::JsonBoolean(bool v) : val(v) {}
-	JsonType JsonBoolean::type() const { return JsonType::Boolean; }
-	std::string JsonBoolean::serialize(bool no_name) const { return val ? "true" : "false"; }
-	bool JsonBoolean::value() const { return val; }
+		using object_iterator_type = json::iterator; 
 
-	// JsonNumber ÊµÏÖ
-	JsonNumber::JsonNumber(double v) : val(v) {}
-	JsonType JsonNumber::type() const { return JsonType::Number; }
-	std::string JsonNumber::serialize(bool no_name) const {
-		std::ostringstream oss;
-		if (val == static_cast<int>(val)) {
-			oss << static_cast<int>(val);
+		json* m_json_ptr;
+
+		union {
+			array_iterator_type array_it;
+			object_iterator_type object_it;
+		};
+		bool is_object_iterator;
+
+	public:
+		using difference_type = std::ptrdiff_t;
+		using value_type = Json;
+		using pointer = Json*;
+		using reference = Json&;
+		using iterator_category = std::forward_iterator_tag;
+
+
+		iterator(json* ptr, array_iterator_type it, bool is_object)
+			: m_json_ptr(ptr), is_object_iterator(is_object)
+		{
+			if (is_object) new (&object_it) object_iterator_type(it);
+			else new (&array_it) array_iterator_type(it);
 		}
-		else {
-			oss << val;
-		}
-		return oss.str();
-	}
-	double JsonNumber::value() const { return val; }
 
-	// JsonString ÊµÏÖ
-	JsonString::JsonString(std::string v) : val(std::move(v)) {}
-	JsonType JsonString::type() const { return JsonType::String; }
-	std::string JsonString::serialize(bool no_name) const {
-		std::ostringstream oss;
-		oss << '"';
-		for (char c : val) {
-			switch (c) {
-			case '"':  oss << "\\\""; break;
-			case '\\': oss << "\\\\"; break;
-			case '\b': oss << "\\b";  break;
-			case '\f': oss << "\\f";  break;
-			case '\n': oss << "\\n";  break;
-			case '\r': oss << "\\r";  break;
-			case '\t': oss << "\\t";  break;
-			default:   oss << c;      break;
+		value_type operator*() const {
+			if (is_object_iterator) {
+				return Json(std::make_shared<JsonValueImpl>(*object_it));
+			}
+			else {
+				return Json(std::make_shared<JsonValueImpl>(*array_it));
 			}
 		}
-		oss << '"';
-		return oss.str();
-	}
-	std::string JsonString::value() const { return val; }
 
-	// JsonArray ÊµÏÖ
-	JsonType JsonArray::type() const { return JsonType::Array; }
-	std::string JsonArray::serialize(bool no_name) const {
-		std::string res = "[";
-		for (size_t i = 0; i < vals.size(); ++i) {
-			if (i > 0) res += ", ";
-			res += vals[i]->serialize();
+		iterator& operator++() {
+			if (is_object_iterator) ++object_it;
+			else ++array_it;
+			return *this;
 		}
-		return res + "]";
-	}
-	void JsonArray::add(std::shared_ptr<JsonValue> v) { vals.push_back(v); }
-	size_t JsonArray::size() const { return vals.size(); }
-	std::shared_ptr<JsonValue> JsonArray::get(size_t i) const { return vals.at(i); }
 
-	// JsonObject ÊµÏÖ
-	JsonType JsonObject::type() const { return JsonType::Object; }
-	std::string JsonObject::serialize(bool no_name) const {
-		std::string res = "{";
-		bool first = true;
-		for (const auto& [k, v] : vals) {
-			if (!first) res += ", ";
-			if(no_name==0)
-				res += JsonString(k).serialize() + ": " + v->serialize();
-			else res+= v->serialize();
-			first = false;
+		bool operator==(const iterator& other) const {
+			if (is_object_iterator) return object_it == other.object_it;
+			return array_it == other.array_it;
 		}
-		return res + "}";
+		bool operator!=(const iterator& other) const { return !(*this == other); }
+	};//è¿­ä»£å™¨
+	
+	class Json::const_iterator {
+		using nlohmann_const_iterator = json::const_iterator;
+
+		const json* m_json_ptr;
+
+		union {
+			nlohmann_const_iterator array_it;
+			nlohmann_const_iterator object_it; 
+		};
+		bool is_object_iterator;
+
+	public:
+		using difference_type = std::ptrdiff_t;
+		using value_type = Json;
+		using pointer = Json*;
+		using reference = Json&;
+		using iterator_category = std::forward_iterator_tag;
+
+		const_iterator(const json* ptr, nlohmann_const_iterator it, bool is_object)
+			: m_json_ptr(ptr), is_object_iterator(is_object)
+		{
+			if (is_object) new (&object_it) nlohmann_const_iterator(it);
+			else new (&array_it) nlohmann_const_iterator(it);
+		}
+
+		value_type operator*() const {
+			if (is_object_iterator) {
+				return Json(std::make_shared<JsonValueImpl>(*object_it)); 
+			}
+			else {
+				return Json(std::make_shared<JsonValueImpl>(*array_it));
+			}
+		}
+
+		const_iterator& operator++() {
+			if (is_object_iterator) ++object_it;
+			else ++array_it;
+			return *this;
+		}
+
+		bool operator==(const const_iterator& other) const {
+			if (is_object_iterator) return object_it == other.object_it;
+			return array_it == other.array_it;
+		}
+		bool operator!=(const const_iterator& other) const { return !(*this == other); }
+	};//constè¿­ä»£å™¨
+
+
+	using nlohmann::json;
+	
+
+	JsonType to_json_type(const json& j) {
+		if (j.is_null()) return JsonType::Null;
+		if (j.is_boolean()) return JsonType::Boolean;
+		if (j.is_number()) return JsonType::Number;
+		if (j.is_string()) return JsonType::String;
+		if (j.is_array()) return JsonType::Array;
+		if (j.is_object()) return JsonType::Object;
+		throw std::runtime_error("Unknown JSON type in conversion.");
 	}
-	void JsonObject::set(const std::string& k, std::shared_ptr<JsonValue> v) { vals[k] = v; }
-	bool JsonObject::has(const std::string& k) const { return vals.count(k); }
-	std::shared_ptr<JsonValue> JsonObject::get(const std::string& k) const { return vals.at(k); }
 
-	size_t JsonObject::size() const {
-		return vals.size();
+	Json::Json(std::shared_ptr<JsonValueImpl> v) : val(std::move(v)) {}
+
+	Json::Json() : val(std::make_shared<JsonValueImpl>()) {
+	}
+	Json::Json(std::initializer_list<Json> list) {
+		val = std::make_shared<JsonValueImpl>(json::array());
+		for (const auto& item : list) {
+			val->data.push_back(item.val->data);
+		}
 	}
 
-	// Json °ü×°ÀàÊµÏÖ
-	Json::Json(std::shared_ptr<JsonValue> v) : val(v) {}
-	Json::Json() : val(std::make_shared<JsonNull>()) {}
+	Json::Json(std::initializer_list<std::pair<const std::string, Json>> list) {	
+		val = std::make_shared<JsonValueImpl>(json::object());
+		for (const auto& pair : list) {
+			val->data[pair.first] = pair.second.val->data;
+		}
+	}
+	
+	const JsonValueImpl& Json::getInternalValue() const {
+		return *val;
+	}
+	Json::iterator Json::begin() {
+		json* ptr = &val->data;
 
-	Json Json::Null() { return Json(std::make_shared<JsonNull>()); }
-	Json Json::Boolean(bool b) { return Json(std::make_shared<JsonBoolean>(b)); }
-	Json Json::Number(double d) { return Json(std::make_shared<JsonNumber>(d)); }
-	Json Json::String(const std::string& s) { return Json(std::make_shared<JsonString>(s)); }
-	Json Json::Array() { return Json(std::make_shared<JsonArray>()); }
-	Json Json::Object() { return Json(std::make_shared<JsonObject>()); }
-
-	JsonType Json::type() const { return val->type(); }
-
-	bool Json::asBoolean() const {
-		auto p = dynamic_cast<JsonBoolean*>(val.get());
-		if (!p) throw std::runtime_error("Not a boolean");
-		return p->value();
+		if (val->data.is_array()) {
+			return iterator(ptr, ptr->begin(), false);
+		}
+		else if (val->data.is_object()) {
+			return iterator(ptr, ptr->begin(), true);
+		}
+		else {
+			return end();
+		}
 	}
 
-	double Json::asNumber() const {
-		auto p = dynamic_cast<JsonNumber*>(val.get());
-		if (!p) throw std::runtime_error("Not a number");
-		return p->value();
+	Json::iterator Json::end() {
+		json* ptr = &val->data;
+
+		if (val->data.is_array()) {
+			return iterator(ptr, ptr->end(), false);
+		}
+		else {
+			return iterator(ptr, ptr->end(), true); 
+		}
+	}
+	Json::const_iterator Json::cbegin() const {
+		const json* ptr = &val->data;
+
+		if (val->data.is_array()) {
+			return const_iterator(ptr, ptr->cbegin(), false);
+		}
+		else if (val->data.is_object()) {
+			return const_iterator(ptr, ptr->cbegin(), true);
+		}
+		else {
+			return cend();
+		}
 	}
 
-	void Json::setNoName()
-	{
-		no_name = 1;
+	Json::const_iterator Json::cend() const {
+		const json* ptr = &val->data;
+
+		if (val->data.is_array()) {
+			return const_iterator(ptr, ptr->cend(), false);
+		}
+		else {
+			return const_iterator(ptr, ptr->cend(), true);
+		}
 	}
 
-	void Json::setHasName()
-	{
-		no_name = 0;
+	// --- å·¥å‚æ–¹æ³• ---
+	Json Json::Null() { return Json(); }
+	Json Json::Boolean(bool b) { return Json(std::make_shared<JsonValueImpl>(json(b))); }
+	Json Json::Number(double d) { return Json(std::make_shared<JsonValueImpl>(json(d))); }
+	Json Json::String(const std::string& s) { return Json(std::make_shared<JsonValueImpl>(json(s))); }
+	Json Json::Array() { return Json(std::make_shared<JsonValueImpl>(json::array())); }
+	Json Json::Object() { return Json(std::make_shared<JsonValueImpl>(json::object())); }
+
+
+
+	Json& Json::operator=(double n) { val->data = n; return *this; }
+	Json& Json::operator=(const char* str) { val->data = str; return *this; }
+	Json& Json::operator=(const std::string& s) { val->data = s; return *this; }
+	Json& Json::operator=(bool b) { val->data = b; return *this; }
+	Json& Json::operator=(const Json& j) {
+		val = std::make_shared<JsonValueImpl>(j.val->data);
+		return *this;
 	}
 
-	std::string Json::asString() const {
-		auto p = dynamic_cast<JsonString*>(val.get());
-		if (!p) throw std::runtime_error("Not a string");
-		return p->value();
-	}
+	JsonType Json::type() const { return to_json_type(val->data); }
+	bool Json::isNull() const { return val->data.is_null(); }
+	bool Json::has(const std::string& key) const { return val->data.contains(key); }
+	size_t Json::size() const { return val->data.size(); }
 
+	bool Json::asBoolean() const { return val->data.get<bool>(); }
+	double Json::asNumber() const { return val->data.get<double>(); }
+	std::string Json::asString() const { return val->data.get<std::string>(); }
 	Json& Json::add(const Json& item) {
-		if (val->type() != JsonType::Array) {
-			throw std::runtime_error("Not an array");
-		}
-		auto p = static_cast<JsonArray*>(val.get());
-		p->add(item.val);
+		if (!val->data.is_array()) throw std::logic_error("Json::add() on non-array type.");
+		val->data.push_back(item.val->data);
 		return *this;
 	}
 
 	Json Json::get(size_t index) const {
-		auto p = dynamic_cast<JsonArray*>(val.get());
-		if (!p) throw std::runtime_error("Not an array");
-		return Json(p->get(index));
+		if (!val->data.is_array()) throw std::logic_error("Json::get(index) on non-array type.");
+		if (index >= val->data.size()) return Json::Null();
+		return Json(std::make_shared<JsonValueImpl>(val->data.at(index)));
 	}
 
-	Json Json::operator[](size_t index) const
-	{
-		return get(index);
-	}
+	Json Json::operator[](size_t index) const { return get(index); }
 
 	Json& Json::set(const std::string& key, const Json& v) {
-		auto p = dynamic_cast<JsonObject*>(val.get());
-		if (!p) throw std::runtime_error("Not an object");
-		p->set(key, v.val);
+		if (!val->data.is_object()) throw std::logic_error("Json::set() on non-object type.");
+		val->data[key] = v.val->data;
 		return *this;
 	}
+
 	Json Json::get(const std::string& key) const {
-		auto p = dynamic_cast<JsonObject*>(val.get());
-		if (!p) throw std::runtime_error("Not an object");
-		return Json(p->get(key));
+		if (!val->data.is_object()) return Json::Null();
+		if (!val->data.contains(key)) return Json::Null();
+		return Json(std::make_shared<JsonValueImpl>(val->data.at(key)));
 	}
 
-	Json Json::operator[](const std::string& key) const
-	{
-		return get(key);
+	Json Json::operator[](const std::string& key) const { return get(key); }
+
+
+	// --- åºåˆ—åŒ–å’Œè§£æ ---
+	std::string Json::serialize() const {
+		return val->data.dump(-1, ' ', val->data.is_array() ? false : true); // -1 = ç´§å‡‘æ¨¡å¼
 	}
 
-	std::string Json::serialize() const { return val->serialize(no_name); }
-
-	std::string Json::serialize_with_format() const
-	{
-		std::string json = val->serialize(no_name);
-		std::string formatted;
-		int indent_level = 0;
-		bool in_quotes = false;
-
-		for (char c : json) {
-			if (c == '\"') in_quotes = !in_quotes;
-
-			if (!in_quotes) {
-				if (c == '{' ) {
-					formatted += "{\n";
-					indent_level++;
-					formatted += std::string(indent_level, '\t');
-				}
-				else if (c == '}') {
-					formatted += "\n";
-					indent_level--;
-					formatted += std::string(indent_level, '\t') + "}";
-				}
-				else if (c == '[') {
-					formatted += "[\n";
-					indent_level++;
-					formatted += std::string(indent_level, '\t');
-				}
-				else if (c == ']') {
-					formatted += "\n";
-					indent_level--;
-					formatted += std::string(indent_level, '\t') + "]";
-				}
-				else if (c == ',') {
-					formatted += ",\n" + std::string(indent_level, '\t');
-				}
-				else if (c == ':') {
-					formatted += ": ";
-				}
-				else if (c == ' ') {
-					continue;
-				}
-				else {
-					formatted += c;
-				}
-			}
-			else {
-				formatted += c;
-			}
-		}
-		return formatted;
-		
-	}
-
-	// ½âÎöÏà¹Ø¸¨Öúº¯Êı
-	namespace {
-		// f_json.cpp
-		static void skip_ws(const std::string& s, size_t& pos) {
-			while (pos < s.size()) {
-				// ´¦Àíµ¥ĞĞ×¢ÊÍ
-				if (s[pos] == '/' && pos + 1 < s.size() && s[pos + 1] == '/') {
-					pos += 2;
-					while (pos < s.size() && s[pos] != '\n') pos++;
-					continue;
-				}
-
-				// ´¦Àí¶àĞĞ×¢ÊÍ
-				if (s[pos] == '/' && pos + 1 < s.size() && s[pos + 1] == '*') {
-					pos += 2;
-					while (pos < s.size()) {
-						if (s[pos] == '*' && pos + 1 < s.size() && s[pos + 1] == '/') {
-							pos += 2;
-							break;
-						}
-						pos++;
-					}
-					continue;
-				}
-
-				// ¿Õ°×´¦Àí
-				if (!std::isspace(s[pos])) break;
-				pos++;
-			}
-		}
-
-		Json parse_value(const std::string& s, size_t& pos);
-		Json parse_string(const std::string& s, size_t& pos);
-		
-		Json parse_object(const std::string& s, size_t& pos) {
-			Json obj = Json::Object();
-			pos++; // Skip '{'
-			bool expect_comma = false; // ±ê¼ÇÊÇ·ñÆÚÍû¶ººÅ
-
-			while (pos < s.size()) {
-				skip_ws(s, pos);
-
-				// ¼ì²é¶ÔÏó½áÊø
-				if (s[pos] == '}') {
-					pos++;
-					return obj;
-				}
-
-				// ¼ì²é¶ººÅ£¨Èç¹ûÊÇÆÚÍûµÄ£©
-				if (expect_comma) {
-					if (s[pos] == ',') {
-						pos++;
-						skip_ws(s, pos);
-					}
-					else {
-						throw std::runtime_error("Expected ',' or '}'");
-					}
-				}
-
-				// ½âÎö¼üÖµ¶Ô
-				auto key = parse_string(s, pos).asString();
-				skip_ws(s, pos);
-
-				if (s[pos++] != ':') {
-					throw std::runtime_error("Expected ':'");
-				}
-
-				auto val = parse_value(s, pos);
-				obj.set(key, val);
-				expect_comma = true; // ÏÂÒ»¸öÓ¦ÆÚÍû¶ººÅ»ò½áÊø·û
-			}
-
-			throw std::runtime_error("Unterminated object");
-		}
-
-		Json parse_array(const std::string& s, size_t& pos) {
-			Json arr = Json::Array();
-			pos++; // Skip '['
-			while (pos < s.size()) {
-				skip_ws(s, pos);
-				if (s[pos] == ']') { pos++; break; }
-
-				arr.add(parse_value(s, pos));
-				skip_ws(s, pos);
-				if (s[pos] == ',') pos++;
-				else if (s[pos] != ']') throw std::runtime_error("Expected ',' or ']'");
-			}
-			return arr;
-		}
-
-		static Json parse_string(const std::string& s, size_t& pos) {
-			std::string res;
-			bool escape = false;
-			pos++; // Skip opening "
-			while (pos < s.size()) {
-				char c = s[pos++];
-				if (escape) {
-					switch (c) {
-					case '"':  res += '"';  break;
-					case '\\': res += '\\'; break;
-					case 'b':  res += '\b'; break;
-					case 'f':  res += '\f'; break;
-					case 'n':  res += '\n'; break;
-					case 'r':  res += '\r'; break;
-					case 't':  res += '\t'; break;
-					default:   throw std::runtime_error("Invalid escape");
-					}
-					escape = false;
-				}
-				else if (c == '"') {
-					return Json::String(res);
-				}
-				else if (c == '\\') {
-					escape = true;
-				}
-				else {
-					res += c;
-				}
-			}
-			throw std::runtime_error("Unterminated string");
-		}
-
-		Json parse_bool(const std::string& s, size_t& pos) {
-			if (s.substr(pos, 4) == "true") {
-				pos += 4;
-				return Json::Boolean(true);
-			}
-			else if (s.substr(pos, 5) == "false") {
-				pos += 5;
-				return Json::Boolean(false);
-			}
-			throw std::runtime_error("Invalid boolean");
-		}
-
-		Json parse_null(const std::string& s, size_t& pos) {
-			if (s.substr(pos, 4) == "null") {
-				pos += 4;
-				return Json::Null();
-			}
-			throw std::runtime_error("Invalid null");
-		}
-
-		Json parse_number(const std::string& s, size_t& pos) {
-			size_t end = pos;
-			if (s[end] == '-') end++;
-			while (end < s.size() && std::isdigit(s[end])) end++;
-			if (s[end] == '.') end++;
-			while (end < s.size() && std::isdigit(s[end])) end++;
-			if (s[end] == 'e' || s[end] == 'E') {
-				end++;
-				if (s[end] == '+' || s[end] == '-') end++;
-				while (end < s.size() && std::isdigit(s[end])) end++;
-			}
-			double num = std::stod(s.substr(pos, end - pos));
-			pos = end;
-			return Json::Number(num);
-		}
-
-		Json parse_value(const std::string& s, size_t& pos) {
-			skip_ws(s, pos);
-			if (pos >= s.size()) throw std::runtime_error("Unexpected end");
-
-			switch (s[pos]) {
-			case '{': return parse_object(s, pos);
-			case '[': return parse_array(s, pos);
-			case '"': return parse_string(s, pos);
-			case 't': case 'f': return parse_bool(s, pos);
-			case 'n': return parse_null(s, pos);
-			default:  return parse_number(s, pos);
-			}
-		}
+	std::string Json::serialize_with_format() const {
+		return val->data.dump(4); // 4 = 4ä¸ªç©ºæ ¼ç¼©è¿›
 	}
 
 	Json Json::parse(const std::string& s) {
-		size_t pos = 0;
-		return parse_value(s, pos);
-	}
-	bool Json::has(const std::string& key) const {
-		if (auto obj = dynamic_cast<JsonObject*>(val.get())) {
-			return obj->has(key);
+		try {
+			json parsedData = json::parse(s);
+			return Json(std::make_shared<JsonValueImpl>(parsedData));
 		}
-		throw std::runtime_error("Not an object");
-	}
-
-	bool Json::isNull() const {
-		return val->type() == JsonType::Null;
-	}
-
-	size_t Json::size() const {
-		if (auto arr = dynamic_cast<JsonArray*>(val.get())) {
-			return arr->size();
+		catch (const json::parse_error& e) {
+			std::stringstream ss;
+			ss << "JSON Parse Failed: " << e.what() << " at position " << e.byte;
+			throw std::invalid_argument(ss.str());
 		}
-		if (auto obj = dynamic_cast<JsonObject*>(val.get())) {
-			return obj->size();
-		}
-		throw std::runtime_error("Not a container type");
 	}
 
-	Json& Json::operator=(double n)
-	{
-		val = std::make_shared<JsonNumber>(n);
-		return *this;
-	}
-	Json& Json::operator=(const std::string& s)
-	{
-		val = std::make_shared<JsonString>(s);
-		return *this;
-	}
-	Json& Json::operator=(const char* s)
-	{
-		val = std::make_shared<JsonString>(s);
-		return *this;
-	}
-	Json& Json::operator=(bool b)
-	{
-		val = std::make_shared<JsonBoolean>(b);
-		return *this;
-	}
-	Json& Json::operator=(const Json& j)
-	{
-		val = j.val;
-		return *this;
-	}
-}
+} // namespace F_Json
 
+
+//lua
 F_Lua::F_Lua() {
-	// ³õÊ¼»¯Lua×´Ì¬£¬´ò¿ªËùÓĞ±ê×¼¿â
+	// åˆå§‹åŒ–LuaçŠ¶æ€ï¼Œæ‰“å¼€æ‰€æœ‰æ ‡å‡†åº“
 	lua_.open_libraries(
 		sol::lib::base,
 		sol::lib::package,
@@ -2338,9 +1986,9 @@ F_Lua::F_Lua() {
 		sol::lib::utf8
 	);
 
-	// ÉèÖÃ´íÎó´¦Àí
+	// è®¾ç½®é”™è¯¯å¤„ç†
 	lua_.set_exception_handler([](lua_State* L, sol::optional<const std::exception&> maybe_exception, sol::string_view description) {
-		std::cerr << "LuaÒì³£: ";
+		std::cerr << "Luaå¼‚å¸¸: ";
 		if (maybe_exception) {
 			std::cerr << maybe_exception->what() << " - ";
 		}
@@ -2350,7 +1998,7 @@ F_Lua::F_Lua() {
 }
 
 F_Lua::~F_Lua() {
-	// sol::state»á×Ô¶¯ÇåÀí×ÊÔ´
+	// sol::stateä¼šè‡ªåŠ¨æ¸…ç†èµ„æº
 }
 
 bool F_Lua::ExecuteScript(const std::string& filepath) {
@@ -2359,7 +2007,7 @@ bool F_Lua::ExecuteScript(const std::string& filepath) {
 		return result.valid();
 	}
 	catch (const sol::error& e) {
-		std::cerr << "Ö´ĞĞ½Å±¾´íÎó: " << e.what() << std::endl;
+		std::cerr << "æ‰§è¡Œè„šæœ¬é”™è¯¯: " << e.what() << std::endl;
 		return false;
 	}
 }
@@ -2369,13 +2017,13 @@ bool F_Lua::ExecuteString(const std::string& code) {
 		auto result = lua_.script(code, sol::script_pass_on_error);
 		if (!result.valid()) {
 			sol::error err = result;
-			std::cerr << "Lua´úÂëÖ´ĞĞ´íÎó: " << err.what() << std::endl;
+			std::cerr << "Luaä»£ç æ‰§è¡Œé”™è¯¯: " << err.what() << std::endl;
 			return false;
 		}
 		return true;
 	}
 	catch (const sol::error& e) {
-		std::cerr << "Ö´ĞĞ×Ö·û´®´íÎó: " << e.what() << std::endl;
+		std::cerr << "æ‰§è¡Œå­—ç¬¦ä¸²é”™è¯¯: " << e.what() << std::endl;
 		return false;
 	}
 }
@@ -2387,20 +2035,20 @@ sol::protected_function_result F_Lua::ExecuteStringSafe(const std::string& code)
 void F_Lua::HandleError(const sol::protected_function_result& result) {
 	if (!result.valid()) {
 		sol::error err = result;
-		std::cerr << "Lua´íÎó: " << err.what() << std::endl;
+		std::cerr << "Luaé”™è¯¯: " << err.what() << std::endl;
 	}
 }
 
 
 
 
-// È«¾Ö×´Ì¬
+// å…¨å±€çŠ¶æ€
 static std::map<std::string, F_Gui::CustomWidgetFunc> customWidgets;
 static ImGuiStyle defaultStyle;
 
 namespace F_Gui {
 	void Init() {
-		rlImGuiSetup(true);  // ÆôÓÃÉîÉ«Ö÷Ìâ
+		rlImGuiSetup(true);  // å¯ç”¨æ·±è‰²ä¸»é¢˜
 		defaultStyle = ImGui::GetStyle();
 	}
 
@@ -2416,7 +2064,7 @@ namespace F_Gui {
 		rlImGuiEnd();
 	}
 
-	// ´°¿Ú¹ÜÀí
+	// çª—å£ç®¡ç†
 	void BeginWindow(const char* title, bool* p_open, int flags) {
 		ImGui::Begin(title, p_open, flags);
 	}
@@ -2425,7 +2073,7 @@ namespace F_Gui {
 		ImGui::End();
 	}
 
-	// »ù´¡¿Ø¼ş
+	// åŸºç¡€æ§ä»¶
 	bool Button(const char* label, const Vector2& size) {
 		return ImGui::Button(label, ImVec2(size.x, size.y));
 	}
@@ -2449,7 +2097,7 @@ namespace F_Gui {
 		return ImGui::ColorEdit3(label, col);
 	}
 
-	// ²¼¾Ö¿Ø¼ş
+	// å¸ƒå±€æ§ä»¶
 	void BeginGroup(const char* id) {
 		ImGui::BeginGroup();
 		ImGui::PushID(id);
@@ -2464,7 +2112,7 @@ namespace F_Gui {
 		ImGui::SameLine(offset_x, spacing);
 	}
 
-	// ¸ß¼¶¿Ø¼ş
+	// é«˜çº§æ§ä»¶
 	bool TreeNode(const char* label) {
 		return ImGui::TreeNode(label);
 	}
@@ -2478,7 +2126,7 @@ namespace F_Gui {
 		ImGui::PlotLines(label, values, values_count, 0, NULL, scale_min, scale_max, ImVec2(size.x, size.y));
 	}
 
-	// ÓÎÏ·ÒıÇæ×¨ÓÃ×é¼ş
+	// æ¸¸æˆå¼•æ“ä¸“ç”¨ç»„ä»¶
 	void Vector3Control(const char* label, Vector3& values, float resetValue) {
 		ImGui::PushID(label);
 		ImGui::Columns(2);
@@ -2555,7 +2203,7 @@ namespace F_Gui {
 		ImGui::End();
 	}
 
-	// ÑùÊ½ÏµÍ³
+	// æ ·å¼ç³»ç»Ÿ
 	void PushStyleColor(Color idx, Color color) {
 		ImColor i = ImColor((int)color.r, (int)color.g, (int)color.b, (int)color.a);
 		ImGui::PushStyleColor(i, ImVec4(
@@ -2585,7 +2233,7 @@ namespace F_Gui {
 		}
 	}
 
-	// ×Ô¶¨Òå»æÖÆ
+	// è‡ªå®šä¹‰ç»˜åˆ¶
 	void DrawLine(const Vector2& start, const Vector2& end, Color color, float thickness) {
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 		drawList->AddLine(
@@ -2606,7 +2254,7 @@ namespace F_Gui {
 		);
 	}
 
-	// À©Õ¹ÏµÍ³
+	// æ‰©å±•ç³»ç»Ÿ
 	void RegisterWidget(const char* name, CustomWidgetFunc func) {
 		customWidgets[name] = func;
 	}

@@ -1,12 +1,12 @@
 /**
  * @file FMath.h
- * @brief ÊıÑ§¹¤¾ßÀà
- * @defgroup Math ÊıÑ§Ä£¿é
+ * @brief æ•°å­¦å·¥å…·ç±»
+ * @defgroup Math æ•°å­¦æ¨¡å—
  *
- * Ìá¹©¸÷ÖÖÊıÑ§¼ÆËãºÍ¼¸ºÎĞÎ×´´¦Àí¹¦ÄÜ£º
- * - ÏòÁ¿¼ÆËã
- * - ¾ØĞÎ¡¢Ô²ĞÎ¡¢ÍÖÔ²ĞÎ¡¢Èı½ÇĞÎµÈ¼¸ºÎĞÎ×´´¦Àí
- * - Åö×²¼ì²â
+ * æä¾›å„ç§æ•°å­¦è®¡ç®—å’Œå‡ ä½•å½¢çŠ¶å¤„ç†åŠŸèƒ½ï¼š
+ * - å‘é‡è®¡ç®—
+ * - çŸ©å½¢ã€åœ†å½¢ã€æ¤­åœ†å½¢ã€ä¸‰è§’å½¢ç­‰å‡ ä½•å½¢çŠ¶å¤„ç†
+ * - ç¢°æ’æ£€æµ‹
  */
 
 #pragma once
@@ -21,20 +21,20 @@
   * @struct Size
   * @ingroup Math
   *
-  * @brief ³ß´ç½á¹¹Ìå
+  * @brief å°ºå¯¸ç»“æ„ä½“
   */
 struct Size {
-    float width;  ///< ¿í¶È
-    float height; ///< ¸ß¶È
+    float width;  ///< å®½åº¦
+    float height; ///< é«˜åº¦
 };
 
 /**
  * @class FVec2
  * @ingroup Math
  *
- * @brief ×Ô¶¨Òå¶şÎ¬ÏòÁ¿Àà
+ * @brief è‡ªå®šä¹‰äºŒç»´å‘é‡ç±»
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * FVec2 vec1(1.0f, 2.0f);
  * FVec2 vec2(3.0f, 4.0f);
@@ -46,87 +46,87 @@ public:
     float x, y;
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     FVec2();
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
+     * @brief æ„é€ å‡½æ•°
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
      */
     FVec2(float _x, float _y);
 
     /**
-     * @brief ´ÓVector2¹¹Ôì
-     * @param vec Vector2¶ÔÏó
+     * @brief ä»Vector2æ„é€ 
+     * @param vec Vector2å¯¹è±¡
      */
     FVec2(const Vector2& vec);
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param v FVec2¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param v FVec2å¯¹è±¡
      */
     FVec2(const FVec2& v);
 
     /**
-     * @brief µÈÓÚ²Ù×÷·ûÖØÔØ
-     * @param v FVec2¶ÔÏó
-     * @return Èç¹ûÏàµÈ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief ç­‰äºæ“ä½œç¬¦é‡è½½
+     * @param v FVec2å¯¹è±¡
+     * @return å¦‚æœç›¸ç­‰è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool operator==(const FVec2& v);
 
     /**
-     * @brief ¼Ó·¨²Ù×÷·ûÖØÔØ
-     * @param vec FVec2¶ÔÏó
-     * @return ·µ»ØÏà¼ÓºóµÄFVec2¶ÔÏó
+     * @brief åŠ æ³•æ“ä½œç¬¦é‡è½½
+     * @param vec FVec2å¯¹è±¡
+     * @return è¿”å›ç›¸åŠ åçš„FVec2å¯¹è±¡
      */
     FVec2 operator+(const FVec2& vec);
 
     /**
-     * @brief ¼õ·¨²Ù×÷·ûÖØÔØ
-     * @param vec FVec2¶ÔÏó
-     * @return ·µ»ØÏà¼õºóµÄFVec2¶ÔÏó
+     * @brief å‡æ³•æ“ä½œç¬¦é‡è½½
+     * @param vec FVec2å¯¹è±¡
+     * @return è¿”å›ç›¸å‡åçš„FVec2å¯¹è±¡
      */
     FVec2 operator-(const FVec2& vec);
 
     /**
-     * @brief ³Ë·¨²Ù×÷·ûÖØÔØ
-     * @param vec FVec2¶ÔÏó
-     * @return ·µ»ØÏà³ËºóµÄFVec2¶ÔÏó
+     * @brief ä¹˜æ³•æ“ä½œç¬¦é‡è½½
+     * @param vec FVec2å¯¹è±¡
+     * @return è¿”å›ç›¸ä¹˜åçš„FVec2å¯¹è±¡
      */
     FVec2 operator*(const FVec2& vec);
 
     /**
-     * @brief ³Ë·¨²Ù×÷·ûÖØÔØ
-     * @param f ¸¡µãÊı
-     * @return ·µ»ØÏà³ËºóµÄFVec2¶ÔÏó
+     * @brief ä¹˜æ³•æ“ä½œç¬¦é‡è½½
+     * @param f æµ®ç‚¹æ•°
+     * @return è¿”å›ç›¸ä¹˜åçš„FVec2å¯¹è±¡
      */
     FVec2 operator*(float f);
 
     /**
-     * @brief ³ı·¨²Ù×÷·ûÖØÔØ
-     * @param vec FVec2¶ÔÏó
-     * @return ·µ»ØÏà³ıºóµÄFVec2¶ÔÏó
+     * @brief é™¤æ³•æ“ä½œç¬¦é‡è½½
+     * @param vec FVec2å¯¹è±¡
+     * @return è¿”å›ç›¸é™¤åçš„FVec2å¯¹è±¡
      */
     FVec2 operator/(const FVec2& vec);
 
     /**
-     * @brief ³ı·¨²Ù×÷·ûÖØÔØ
-     * @param f ¸¡µãÊı
-     * @return ·µ»ØÏà³ıºóµÄFVec2¶ÔÏó
+     * @brief é™¤æ³•æ“ä½œç¬¦é‡è½½
+     * @param f æµ®ç‚¹æ•°
+     * @return è¿”å›ç›¸é™¤åçš„FVec2å¯¹è±¡
      */
     FVec2 operator/(float f);
 
     /**
-     * @brief ×ª»»ÎªVector2
-     * @return Vector2¶ÔÏó
+     * @brief è½¬æ¢ä¸ºVector2
+     * @return Vector2å¯¹è±¡
      */
     operator Vector2();
 
     /**
-     * @brief ´Óconst FVec2×ª»»ÎªVector2
-     * @return Vector2¶ÔÏó
+     * @brief ä»const FVec2è½¬æ¢ä¸ºVector2
+     * @return Vector2å¯¹è±¡
      */
     operator const Vector2() const;
 };
@@ -135,130 +135,130 @@ public:
  * @class F_Line
  * @ingroup Math
  *
- * @brief Ïß¶ÎÀà
+ * @brief çº¿æ®µç±»
  */
 class F_Line {
 public:
-    FVec2 p1, p2; ///< Ïß¶ÎµÄÁ½¸ö¶Ëµã
+    FVec2 p1, p2; ///< çº¿æ®µçš„ä¸¤ä¸ªç«¯ç‚¹
 };
 
 /**
  * @class F_Shape
  * @ingroup Math
  *
- * @brief »ù´¡ĞÎ×´Àà
+ * @brief åŸºç¡€å½¢çŠ¶ç±»
  */
 class F_Shape {
 protected:
-    std::vector<FVec2> points; ///< ĞÎ×´µÄ¶¥µã
+    std::vector<FVec2> points; ///< å½¢çŠ¶çš„é¡¶ç‚¹
 public:
-    float angle; ///< ĞÎ×´µÄĞı×ª½Ç¶È
-    FVec2 rot_origin; ///< ĞÎ×´µÄĞı×ªÔ­µã
+    float angle; ///< å½¢çŠ¶çš„æ—‹è½¬è§’åº¦
+    FVec2 rot_origin; ///< å½¢çŠ¶çš„æ—‹è½¬åŸç‚¹
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Shape();
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param shape F_Shape¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param shape F_Shapeå¯¹è±¡
      */
     F_Shape(const F_Shape& shape);
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param p ¶¥µãÊı×é
+     * @brief æ„é€ å‡½æ•°
+     * @param p é¡¶ç‚¹æ•°ç»„
      */
     F_Shape(const std::vector<FVec2>& p);
 
     /**
-     * @brief ¼ÓÈëµã
-     * @param point ¶¥µã
+     * @brief åŠ å…¥ç‚¹
+     * @param point é¡¶ç‚¹
      */
     void Add_Point(const FVec2& point);
 
     /**
-     * @brief É¾³ı×îºóÒ»¸öµã
+     * @brief åˆ é™¤æœ€åä¸€ä¸ªç‚¹
      */
     void Delete_Point_Back();
 
     /**
-     * @brief É¾³ınumber¸öÖµÎªpointµÄµã(-1ÎªÉ¾³ıËùÓĞ)
-     * @param point ¶¥µã
-     * @param number É¾³ıµÄÊıÁ¿
+     * @brief åˆ é™¤numberä¸ªå€¼ä¸ºpointçš„ç‚¹(-1ä¸ºåˆ é™¤æ‰€æœ‰)
+     * @param point é¡¶ç‚¹
+     * @param number åˆ é™¤çš„æ•°é‡
      */
     void Delete_Point(const FVec2& point, int number = -1);
 
     /**
-     * @brief É¾³ıµÚindex¸öµã
-     * @param index Ë÷Òı
+     * @brief åˆ é™¤ç¬¬indexä¸ªç‚¹
+     * @param index ç´¢å¼•
      */
     void Delete_Point(int index);
 
     /**
-     * @brief ÊÇ·ñÓĞÄ³¸öµã
-     * @param point ¶¥µã
-     * @return Èç¹û´æÔÚ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ˜¯å¦æœ‰æŸä¸ªç‚¹
+     * @param point é¡¶ç‚¹
+     * @return å¦‚æœå­˜åœ¨è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Is_Exists_Point(const FVec2& point);
 
     /**
-     * @brief µãÈ¥ÖØ
+     * @brief ç‚¹å»é‡
      */
     void Points_Deduplication();
 
     /**
-     * @brief ¸ù¾İµãµÄË÷ÒıÀ´»ñÈ¡µã
-     * @param index Ë÷Òı
-     * @return ¶¥µã
+     * @brief æ ¹æ®ç‚¹çš„ç´¢å¼•æ¥è·å–ç‚¹
+     * @param index ç´¢å¼•
+     * @return é¡¶ç‚¹
      */
     FVec2 Get_Point_FromIndex(int index) const;
 
     /**
-     * @brief »ñÈ¡µãµÄ±àºÅ
-     * @param point ¶¥µã
-     * @return ±àºÅ
+     * @brief è·å–ç‚¹çš„ç¼–å·
+     * @param point é¡¶ç‚¹
+     * @return ç¼–å·
      */
     int Get_Point_Index(const FVec2& point);
 
     /**
-     * @brief ÉèÖÃ½Ç¶È
-     * @param _angle ½Ç¶È
+     * @brief è®¾ç½®è§’åº¦
+     * @param _angle è§’åº¦
      */
     void Set_Angle(float _angle);
 
     /**
-     * @brief ÉèÖÃĞı×ªÔ­µã(Í¬»æÖÆÔ­µã)
-     * @param origin Ğı×ªÔ­µã
+     * @brief è®¾ç½®æ—‹è½¬åŸç‚¹(åŒç»˜åˆ¶åŸç‚¹)
+     * @param origin æ—‹è½¬åŸç‚¹
      */
     void Set_Rot_Origin(FVec2 origin);
 
     /**
-     * @brief »ñÈ¡µãµÄÊıÁ¿
-     * @return µãµÄÊıÁ¿
+     * @brief è·å–ç‚¹çš„æ•°é‡
+     * @return ç‚¹çš„æ•°é‡
      */
     inline int Get_Points_Number() const {
         return static_cast<int>(points.size());
     }
 
     /**
-     * @brief »ñÈ¡ËùÓĞµã
-     * @return ¶¥µãÊı×é
+     * @brief è·å–æ‰€æœ‰ç‚¹
+     * @return é¡¶ç‚¹æ•°ç»„
      */
     inline std::vector<FVec2> Get_Points() const {
         return points;
     }
 
     /**
-     * @brief ÉèÖÃĞÎ×´
+     * @brief è®¾ç½®å½¢çŠ¶
      */
     virtual void Shape_Set();
 
     /**
-     * @brief Ö§³Öº¯Êı
-     * @param dir ·½Ïò
-     * @return Ö§³Öµã
+     * @brief æ”¯æŒå‡½æ•°
+     * @param dir æ–¹å‘
+     * @return æ”¯æŒç‚¹
      */
     virtual FVec2 Support(const FVec2& dir) const;
 };
@@ -267,52 +267,52 @@ public:
  * @class F_Polygon
  * @ingroup Math
  *
- * @brief ¶à±ßĞÎÀà
+ * @brief å¤šè¾¹å½¢ç±»
  */
 class F_Polygon : public F_Shape {
 public:
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Polygon();
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param polygon F_Polygon¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param polygon F_Polygonå¯¹è±¡
      */
     F_Polygon(const F_Polygon& polygon);
 
     /**
-     * @brief ¼ÓÈë±ß
-     * @param point1 ±ßµÄÆğµã
-     * @param point2 ±ßµÄÖÕµã
+     * @brief åŠ å…¥è¾¹
+     * @param point1 è¾¹çš„èµ·ç‚¹
+     * @param point2 è¾¹çš„ç»ˆç‚¹
      */
     void Add_Edge(const Vector2& point1, const Vector2& point2);
 
     /**
-     * @brief É¾³ı±ß
-     * @param point1 ±ßµÄÆğµã
-     * @param point2 ±ßµÄÖÕµã
+     * @brief åˆ é™¤è¾¹
+     * @param point1 è¾¹çš„èµ·ç‚¹
+     * @param point2 è¾¹çš„ç»ˆç‚¹
      */
     void Delete_Edge(const Vector2& point1, const Vector2& point2);
 
     /**
-     * @brief É¾³ı×îºóÒ»Ìõ±ß
+     * @brief åˆ é™¤æœ€åä¸€æ¡è¾¹
      */
     void Delete_Edge_Back();
 
     /**
-     * @brief »ñÈ¡±ßµÄÊıÁ¿
-     * @return ±ßµÄÊıÁ¿
+     * @brief è·å–è¾¹çš„æ•°é‡
+     * @return è¾¹çš„æ•°é‡
      */
     inline int Get_Edge_Number() const {
         return static_cast<int>(points.size() / 2);
     }
 
     /**
-     * @brief »ñÈ¡±ß
-     * @param index Ë÷Òı
-     * @return ±ß
+     * @brief è·å–è¾¹
+     * @param index ç´¢å¼•
+     * @return è¾¹
      */
     F_Line Get_Edge(int index) const;
 };
@@ -321,88 +321,88 @@ public:
  * @class F_Rectangle
  * @ingroup Math
  *
- * @brief ¾ØĞÎÀà
+ * @brief çŸ©å½¢ç±»
  */
 class F_Rectangle : public F_Shape {
 public:
     float x, y, width, height;
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Rectangle();
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param rect F_Rectangle¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param rect F_Rectangleå¯¹è±¡
      */
     F_Rectangle(const F_Rectangle& rect);
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
-     * @param _width ¿í¶È
-     * @param _height ¸ß¶È
+     * @brief æ„é€ å‡½æ•°
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
+     * @param _width å®½åº¦
+     * @param _height é«˜åº¦
      */
     F_Rectangle(float _x, float _y, float _width, float _height);
 
     /**
-     * @brief ´ÓrlRectangle¹¹Ôì
-     * @param rect rlRectangle¶ÔÏó
+     * @brief ä»rlRectangleæ„é€ 
+     * @param rect rlRectangleå¯¹è±¡
      */
     F_Rectangle(const rlRectangle& rect);
 
     /**
-     * @brief ÀûÓÃ¾ØĞÎµÄ²ÎÊıÉèÖÃÍ¼ĞÎĞÅÏ¢
+     * @brief åˆ©ç”¨çŸ©å½¢çš„å‚æ•°è®¾ç½®å›¾å½¢ä¿¡æ¯
      */
     void Shape_Set();
 
     /**
-     * @brief ÉèÖÃ¾ØĞÎ²ÎÊı
-     * @param _rect rlRectangle¶ÔÏó
+     * @brief è®¾ç½®çŸ©å½¢å‚æ•°
+     * @param _rect rlRectangleå¯¹è±¡
      */
     void Set_Rectangle(const rlRectangle& _rect);
 
     /**
-     * @brief ÉèÖÃ¾ØĞÎ²ÎÊı
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
-     * @param _width ¿í¶È
-     * @param _height ¸ß¶È
+     * @brief è®¾ç½®çŸ©å½¢å‚æ•°
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
+     * @param _width å®½åº¦
+     * @param _height é«˜åº¦
      */
     void Set_Rectangle(float _x, float _y, float _width, float _height);
 
     /**
-     * @brief ÉèÖÃ×ø±ê
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
+     * @brief è®¾ç½®åæ ‡
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
      */
     void Set_Pos(float _x, float _y);
 
     /**
-     * @brief ÉèÖÃ´óĞ¡
-     * @param w ¿í¶È
-     * @param h ¸ß¶È
+     * @brief è®¾ç½®å¤§å°
+     * @param w å®½åº¦
+     * @param h é«˜åº¦
      */
     void Set_Size(float w, float h);
 
     /**
-     * @brief ÉèÖÃ×ø±ê
-     * @param pos ×ø±ê
+     * @brief è®¾ç½®åæ ‡
+     * @param pos åæ ‡
      */
     void Set_Pos(const Vector2& pos);
 
     /**
-     * @brief ÉèÖÃ´óĞ¡
-     * @param size ³ß´ç
+     * @brief è®¾ç½®å¤§å°
+     * @param size å°ºå¯¸
      */
     void Set_Size(const Size& size);
 
     /**
-     * @brief ×ª»»ÎªrlRectangle(angle½«ÎŞĞ§)
-     * @param no_origin ÊÇ·ñºöÂÔÔ­µã
-     * @return rlRectangle¶ÔÏó
+     * @brief è½¬æ¢ä¸ºrlRectangle(angleå°†æ— æ•ˆ)
+     * @param no_origin æ˜¯å¦å¿½ç•¥åŸç‚¹
+     * @return rlRectangleå¯¹è±¡
      */
     rlRectangle To_RlRect(int no_origin = false) const;
 };
@@ -411,7 +411,7 @@ public:
  * @class F_Circle
  * @ingroup Math
  *
- * @brief Ô²ĞÎÀà
+ * @brief åœ†å½¢ç±»
  */
 class F_Circle : public F_Shape {
     int numPoints;
@@ -419,78 +419,78 @@ public:
     float x, y, radius;
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Circle();
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
-     * @param _radius °ë¾¶
+     * @brief æ„é€ å‡½æ•°
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
+     * @param _radius åŠå¾„
      */
     F_Circle(float _x, float _y, float _radius);
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param circle F_Circle¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param circle F_Circleå¯¹è±¡
      */
     F_Circle(const F_Circle& circle);
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~F_Circle();
 
     /**
-     * @brief ÉèÖÃ×ø±ê
-     * @param pos ×ø±ê
+     * @brief è®¾ç½®åæ ‡
+     * @param pos åæ ‡
      */
     void Set_Pos(const Vector2& pos);
 
     /**
-     * @brief ÉèÖÃ×ø±ê
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
+     * @brief è®¾ç½®åæ ‡
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
      */
     void Set_Pos(float _x, float _y);
 
     /**
-     * @brief ÉèÖÃ°ë¾¶
-     * @param _radius °ë¾¶
+     * @brief è®¾ç½®åŠå¾„
+     * @param _radius åŠå¾„
      */
     void Set_Radius(float _radius);
 
     /**
-     * @brief ÉèÖÃÔ²
-     * @param pos ×ø±ê
-     * @param _radius °ë¾¶
+     * @brief è®¾ç½®åœ†
+     * @param pos åæ ‡
+     * @param _radius åŠå¾„
      */
     void Set_Circle(const Vector2& pos, float _radius);
 
     /**
-     * @brief ÉèÖÃÔ²
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
-     * @param _radius °ë¾¶
+     * @brief è®¾ç½®åœ†
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
+     * @param _radius åŠå¾„
      */
     void Set_Circle(float _x, float _y, float _radius);
 
     /**
-     * @brief ÉèÖÃ¾«¶È
-     * @param n ¾«¶È
+     * @brief è®¾ç½®ç²¾åº¦
+     * @param n ç²¾åº¦
      */
     void Set_NumPoints(int n);
 
     /**
-     * @brief ÀûÓÃÔ²µÄ²ÎÊıÉèÖÃÍ¼ĞÎĞÅÏ¢
+     * @brief åˆ©ç”¨åœ†çš„å‚æ•°è®¾ç½®å›¾å½¢ä¿¡æ¯
      */
     void Shape_Set();
 
     /**
-     * @brief Ö§³Öº¯Êı
-     * @param dir ·½Ïò
-     * @return Ö§³Öµã
+     * @brief æ”¯æŒå‡½æ•°
+     * @param dir æ–¹å‘
+     * @return æ”¯æŒç‚¹
      */
     Vector2 Support(const Vector2& dir) const;
 };
@@ -499,77 +499,77 @@ public:
  * @class F_Ellipse
  * @ingroup Math
  *
- * @brief ÍÖÔ²Àà
+ * @brief æ¤­åœ†ç±»
  */
 class F_Ellipse : public F_Shape {
 private:
     int numPoints;
 public:
-    float x, y;  ///< ÍÖÔ²µÄÖĞĞÄ
-    float radiusX;   ///< Ë®Æ½°ë¾¶
-    float radiusY;   ///< ´¹Ö±°ë¾¶
+    float x, y;  ///< æ¤­åœ†çš„ä¸­å¿ƒ
+    float radiusX;   ///< æ°´å¹³åŠå¾„
+    float radiusY;   ///< å‚ç›´åŠå¾„
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Ellipse();
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param c ÖĞĞÄ×ø±ê
-     * @param rx Ë®Æ½°ë¾¶
-     * @param ry ´¹Ö±°ë¾¶
+     * @brief æ„é€ å‡½æ•°
+     * @param c ä¸­å¿ƒåæ ‡
+     * @param rx æ°´å¹³åŠå¾„
+     * @param ry å‚ç›´åŠå¾„
      */
     F_Ellipse(const Vector2& c, float rx, float ry);
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param ellipse F_Ellipse¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param ellipse F_Ellipseå¯¹è±¡
      */
     F_Ellipse(const F_Ellipse& ellipse);
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~F_Ellipse();
 
     /**
-     * @brief ÉèÖÃÍÖÔ²
-     * @param c ÖĞĞÄ×ø±ê
-     * @param rx Ë®Æ½°ë¾¶
-     * @param ry ´¹Ö±°ë¾¶
+     * @brief è®¾ç½®æ¤­åœ†
+     * @param c ä¸­å¿ƒåæ ‡
+     * @param rx æ°´å¹³åŠå¾„
+     * @param ry å‚ç›´åŠå¾„
      */
     void Set_Ellipse(const Vector2& c, float rx, float ry);
 
     /**
-     * @brief ÉèÖÃÖĞĞÄ
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
+     * @brief è®¾ç½®ä¸­å¿ƒ
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
      */
     void Set_Center(float _x, float _y);
 
     /**
-     * @brief ÉèÖÃ°ë¾¶
-     * @param rx Ë®Æ½°ë¾¶
-     * @param ry ´¹Ö±°ë¾¶
+     * @brief è®¾ç½®åŠå¾„
+     * @param rx æ°´å¹³åŠå¾„
+     * @param ry å‚ç›´åŠå¾„
      */
     void Set_Radius(float rx, float ry);
 
     /**
-     * @brief ÉèÖÃ¾«¶È
-     * @param n ¾«¶È
+     * @brief è®¾ç½®ç²¾åº¦
+     * @param n ç²¾åº¦
      */
     void Set_NumPoints(int n);
 
     /**
-     * @brief ÀûÓÃÍÖÔ²µÄ²ÎÊıÉèÖÃÍ¼ĞÎĞÅÏ¢
+     * @brief åˆ©ç”¨æ¤­åœ†çš„å‚æ•°è®¾ç½®å›¾å½¢ä¿¡æ¯
      */
     void Shape_Set();
 
     /**
-     * @brief Ö§³Öº¯Êı
-     * @param dir ·½Ïò
-     * @return Ö§³Öµã
+     * @brief æ”¯æŒå‡½æ•°
+     * @param dir æ–¹å‘
+     * @return æ”¯æŒç‚¹
      */
     Vector2 Support(const Vector2& dir) const;
 };
@@ -578,247 +578,247 @@ public:
  * @class F_Triangle
  * @ingroup Math
  *
- * @brief Èı½ÇĞÎÀà
+ * @brief ä¸‰è§’å½¢ç±»
  */
 class F_Triangle : public F_Shape {
 public:
     FVec2 a, b, c;
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Triangle();
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param triangle F_Triangle¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param triangle F_Triangleå¯¹è±¡
      */
     F_Triangle(const F_Triangle& triangle);
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param _a ¶¥µãa
-     * @param _b ¶¥µãb
-     * @param _c ¶¥µãc
+     * @brief æ„é€ å‡½æ•°
+     * @param _a é¡¶ç‚¹a
+     * @param _b é¡¶ç‚¹b
+     * @param _c é¡¶ç‚¹c
      */
     F_Triangle(FVec2 _a, FVec2 _b, FVec2 _c);
 
     /**
-     * @brief ÀûÓÃÈı½ÇĞÎµÄ²ÎÊıÉèÖÃÍ¼ĞÎĞÅÏ¢
+     * @brief åˆ©ç”¨ä¸‰è§’å½¢çš„å‚æ•°è®¾ç½®å›¾å½¢ä¿¡æ¯
      */
     void Shape_Set();
 
     /**
-     * @brief ÉèÖÃÈı½ÇĞÎ
-     * @param _a ¶¥µãa
-     * @param _b ¶¥µãb
-     * @param _c ¶¥µãc
+     * @brief è®¾ç½®ä¸‰è§’å½¢
+     * @param _a é¡¶ç‚¹a
+     * @param _b é¡¶ç‚¹b
+     * @param _c é¡¶ç‚¹c
      */
     void Set_Triangle(FVec2 _a, FVec2 _b, FVec2 _c);
 
     /**
-     * @brief ÉèÖÃ½Ç¶È
-     * @param _angle ½Ç¶È
+     * @brief è®¾ç½®è§’åº¦
+     * @param _angle è§’åº¦
      */
     void Set_Angle(float _angle);
 
     /**
-     * @brief ÉèÖÃ¶¥µãa
-     * @param _a ¶¥µãa
+     * @brief è®¾ç½®é¡¶ç‚¹a
+     * @param _a é¡¶ç‚¹a
      */
     void Set_A(FVec2 _a);
 
     /**
-     * @brief ÉèÖÃ¶¥µãb
-     * @param _b ¶¥µãb
+     * @brief è®¾ç½®é¡¶ç‚¹b
+     * @param _b é¡¶ç‚¹b
      */
     void Set_B(FVec2 _b);
 
     /**
-     * @brief ÉèÖÃ¶¥µãc
-     * @param _c ¶¥µãc
+     * @brief è®¾ç½®é¡¶ç‚¹c
+     * @param _c é¡¶ç‚¹c
      */
     void Set_C(FVec2 _c);
 
     /**
-     * @brief ÉèÖÃĞı×ªÔ­µã
-     * @param origin Ğı×ªÔ­µã
+     * @brief è®¾ç½®æ—‹è½¬åŸç‚¹
+     * @param origin æ—‹è½¬åŸç‚¹
      */
     void Set_Origin(FVec2 origin);
 };
 
 namespace floatapi_math {
     /**
-     * @brief ·µ»ØÊı×ÖÕı¸º
-     * @param _x Êı×Ö
-     * @return Èç¹ûÎªÕı·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief è¿”å›æ•°å­—æ­£è´Ÿ
+     * @param _x æ•°å­—
+     * @return å¦‚æœä¸ºæ­£è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Sign(float _x);
 
     /**
-     * @brief ÅĞ¶¨µãÔÚ¾ØĞÎÄÚ
-     * @param p µã
-     * @param r ¾ØĞÎ
-     * @return Èç¹ûÔÚÄÚ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤å®šç‚¹åœ¨çŸ©å½¢å†…
+     * @param p ç‚¹
+     * @param r çŸ©å½¢
+     * @return å¦‚æœåœ¨å†…è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Point_In_Rectangle(FVec2 p, F_Rectangle r);
 
     /**
-     * @brief ·µ»Øµ¥Î»ÏòÁ¿
-     * @param v ÏòÁ¿
-     * @return µ¥Î»ÏòÁ¿
+     * @brief è¿”å›å•ä½å‘é‡
+     * @param v å‘é‡
+     * @return å•ä½å‘é‡
      */
     FVec2 FVec2Unit(FVec2 v);
 
     /**
-     * @brief ÅĞ¶¨Á½Ïß¶ÎÊÇ·ñÏà½»
-     * @param a Ïß¶ÎaµÄÆğµã
-     * @param b Ïß¶ÎaµÄÖÕµã
-     * @param c Ïß¶ÎbµÄÆğµã
-     * @param d Ïß¶ÎbµÄÖÕµã
-     * @return Èç¹ûÏà½»·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤å®šä¸¤çº¿æ®µæ˜¯å¦ç›¸äº¤
+     * @param a çº¿æ®µaçš„èµ·ç‚¹
+     * @param b çº¿æ®µaçš„ç»ˆç‚¹
+     * @param c çº¿æ®µbçš„èµ·ç‚¹
+     * @param d çº¿æ®µbçš„ç»ˆç‚¹
+     * @return å¦‚æœç›¸äº¤è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Line_Segment_Collision(FVec2 a, FVec2 b, FVec2 c, FVec2 d);
     /**
- * @brief Ğı×ªµã
- * @param point ÒªĞı×ªµÄµã
- * @param origin Ğı×ªµÄÔ­µã
- * @param rot Ğı×ª½Ç¶È£¨»¡¶È£©
- * @return Ğı×ªºóµÄµã
+ * @brief æ—‹è½¬ç‚¹
+ * @param point è¦æ—‹è½¬çš„ç‚¹
+ * @param origin æ—‹è½¬çš„åŸç‚¹
+ * @param rot æ—‹è½¬è§’åº¦ï¼ˆå¼§åº¦ï¼‰
+ * @return æ—‹è½¬åçš„ç‚¹
  */
     FVec2 Rotate_Point(FVec2 point, FVec2 origin, float rot);
 
     /**
-     * @brief Ê¹ÓÃAABBÅĞ¶¨¾ØĞÎÅö×²£¨¶ÔF_Shape::angleÎŞĞ§£©
-     * @param a ¾ØĞÎa
-     * @param b ¾ØĞÎb
-     * @return Èç¹ûÅö×²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief ä½¿ç”¨AABBåˆ¤å®šçŸ©å½¢ç¢°æ’ï¼ˆå¯¹F_Shape::angleæ— æ•ˆï¼‰
+     * @param a çŸ©å½¢a
+     * @param b çŸ©å½¢b
+     * @return å¦‚æœç¢°æ’è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Rectangle_Collision_AABB(const F_Rectangle& a, const F_Rectangle& b);
 
     /**
-     * @brief »ñÈ¡Á½¸ö¾ØĞÎµÄAABB
-     * @param a ¾ØĞÎa
-     * @param b ¾ØĞÎb
-     * @return °üº¬Á½¸ö¾ØĞÎµÄAABB
+     * @brief è·å–ä¸¤ä¸ªçŸ©å½¢çš„AABB
+     * @param a çŸ©å½¢a
+     * @param b çŸ©å½¢b
+     * @return åŒ…å«ä¸¤ä¸ªçŸ©å½¢çš„AABB
      */
     F_Rectangle Get_Rectangle_AABB(const F_Rectangle& a, const F_Rectangle& b);
 
     /**
-     * @brief ÅĞ¶¨Á½¸öÔ²ÊÇ·ñÅö×²
-     * @param a Ô²a
-     * @param b Ô²b
-     * @return Èç¹ûÅö×²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤å®šä¸¤ä¸ªåœ†æ˜¯å¦ç¢°æ’
+     * @param a åœ†a
+     * @param b åœ†b
+     * @return å¦‚æœç¢°æ’è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Circle_Collision(const F_Circle& a, const F_Circle& b);
 
     /**
-     * @brief ÅĞ¶¨Ô²ºÍ¾ØĞÎÊÇ·ñÅö×²£¨¶ÔF_Shape::angleÎŞĞ§£©
-     * @param a Ô²
-     * @param b ¾ØĞÎ
-     * @return Èç¹ûÅö×²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤å®šåœ†å’ŒçŸ©å½¢æ˜¯å¦ç¢°æ’ï¼ˆå¯¹F_Shape::angleæ— æ•ˆï¼‰
+     * @param a åœ†
+     * @param b çŸ©å½¢
+     * @return å¦‚æœç¢°æ’è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Circle_Collision_Rectangle(const F_Circle& a, const F_Rectangle& b);
 
     /**
-     * @brief ÅĞ¶¨Ô²ºÍ¾ØĞÎÊÇ·ñÅö×²£¨´ø½Ç¶È£©
-     * @param a Ô²
-     * @param b ¾ØĞÎ
-     * @return Èç¹ûÅö×²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤å®šåœ†å’ŒçŸ©å½¢æ˜¯å¦ç¢°æ’ï¼ˆå¸¦è§’åº¦ï¼‰
+     * @param a åœ†
+     * @param b çŸ©å½¢
+     * @return å¦‚æœç¢°æ’è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Circle_Collision_RectangleEx(const F_Circle& a, const F_Rectangle& b);
 
     /**
-     * @brief ¼ÆËãÈıÖØ»ı
-     * @param a ÏòÁ¿a
-     * @param b ÏòÁ¿b
-     * @param c ÏòÁ¿c
-     * @return ÈıÖØ»ı½á¹û
+     * @brief è®¡ç®—ä¸‰é‡ç§¯
+     * @param a å‘é‡a
+     * @param b å‘é‡b
+     * @param c å‘é‡c
+     * @return ä¸‰é‡ç§¯ç»“æœ
      */
     FVec2 TripleProduct(const FVec2& a, const FVec2& b, const FVec2& c);
 
     /**
-     * @brief ¼ÆËãÏòÁ¿µã»ı
-     * @param a ÏòÁ¿a
-     * @param b ÏòÁ¿b
-     * @return µã»ı½á¹û
+     * @brief è®¡ç®—å‘é‡ç‚¹ç§¯
+     * @param a å‘é‡a
+     * @param b å‘é‡b
+     * @return ç‚¹ç§¯ç»“æœ
      */
     float Vector2Dot(const FVec2& a, const FVec2& b);
 
     /**
-     * @brief ¼ÆËãÏòÁ¿µÄ´¹Ö±ÏòÁ¿
-     * @param v ÏòÁ¿
-     * @return ´¹Ö±ÏòÁ¿
+     * @brief è®¡ç®—å‘é‡çš„å‚ç›´å‘é‡
+     * @param v å‘é‡
+     * @return å‚ç›´å‘é‡
      */
     FVec2 Vector2Perpendicular(const FVec2& v);
 
     /**
-     * @brief ¼ÆËãMinkowski²î¼¯µÄÖ§³Öµã
-     * @param shape1 ĞÎ×´1
-     * @param shape2 ĞÎ×´2
-     * @param direction ·½Ïò
-     * @return Ö§³Öµã
+     * @brief è®¡ç®—Minkowskiå·®é›†çš„æ”¯æŒç‚¹
+     * @param shape1 å½¢çŠ¶1
+     * @param shape2 å½¢çŠ¶2
+     * @param direction æ–¹å‘
+     * @return æ”¯æŒç‚¹
      */
     FVec2 MinkowskiSupport(const F_Shape& shape1, const F_Shape& shape2, const FVec2& direction);
 
     /**
-     * @brief ÅĞ¶Ïµ¥´¿ĞÎÊÇ·ñ°üº¬Ô­µã
-     * @param simplex µ¥´¿ĞÎ
-     * @param direction ·½Ïò
-     * @return Èç¹û°üº¬Ô­µã·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤æ–­å•çº¯å½¢æ˜¯å¦åŒ…å«åŸç‚¹
+     * @param simplex å•çº¯å½¢
+     * @param direction æ–¹å‘
+     * @return å¦‚æœåŒ…å«åŸç‚¹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool ContainsOrigin(std::vector<FVec2>& simplex, FVec2& direction);
 
     /**
-     * @brief Ê¹ÓÃGJKËã·¨ÅĞ¶¨ĞÎ×´Åö×²
-     * @param shape1 ĞÎ×´1
-     * @param shape2 ĞÎ×´2
-     * @return Èç¹ûÅö×²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief ä½¿ç”¨GJKç®—æ³•åˆ¤å®šå½¢çŠ¶ç¢°æ’
+     * @param shape1 å½¢çŠ¶1
+     * @param shape2 å½¢çŠ¶2
+     * @return å¦‚æœç¢°æ’è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool GJK_Collision(const F_Shape& shape1, const F_Shape& shape2);
 
     /**
-     * @brief ¼ÆËã¶à±ßĞÎÃæ»ı
-     * @param points ¶à±ßĞÎ¶¥µã
-     * @return ¶à±ßĞÎÃæ»ı
+     * @brief è®¡ç®—å¤šè¾¹å½¢é¢ç§¯
+     * @param points å¤šè¾¹å½¢é¡¶ç‚¹
+     * @return å¤šè¾¹å½¢é¢ç§¯
      */
     float PolygonArea(const std::vector<FVec2>& points);
 
     /**
-     * @brief ÅĞ¶ÏµãÊÇ·ñÔÚ¶à±ßĞÎÄÚ
-     * @param p µã
-     * @param points ¶à±ßĞÎ¶¥µã
-     * @return Èç¹ûÔÚÄÚ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤æ–­ç‚¹æ˜¯å¦åœ¨å¤šè¾¹å½¢å†…
+     * @param p ç‚¹
+     * @param points å¤šè¾¹å½¢é¡¶ç‚¹
+     * @return å¦‚æœåœ¨å†…è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool PointInPolygon(const FVec2& p, const std::vector<FVec2>& points);
 
     /**
-     * @brief ÅĞ¶Ï¶à±ßĞÎÊÇ·ñÎªÍ¹¶à±ßĞÎ
-     * @param points ¶à±ßĞÎ¶¥µã
-     * @return Èç¹ûÊÇÍ¹¶à±ßĞÎ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤æ–­å¤šè¾¹å½¢æ˜¯å¦ä¸ºå‡¸å¤šè¾¹å½¢
+     * @param points å¤šè¾¹å½¢é¡¶ç‚¹
+     * @return å¦‚æœæ˜¯å‡¸å¤šè¾¹å½¢è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool IsConvexPolygon(const std::vector<FVec2>& points);
 
     /**
-     * @brief ·Ö½â°¼ĞÎ¶à±ßĞÎÎªÈı½ÇĞÎ
-     * @param concavePolygon °¼ĞÎ¶à±ßĞÎ
-     * @return ·Ö½âºóµÄÈı½ÇĞÎÊı×é
+     * @brief åˆ†è§£å‡¹å½¢å¤šè¾¹å½¢ä¸ºä¸‰è§’å½¢
+     * @param concavePolygon å‡¹å½¢å¤šè¾¹å½¢
+     * @return åˆ†è§£åçš„ä¸‰è§’å½¢æ•°ç»„
      */
     std::vector<F_Shape> DecomposeConcavePolygon(const F_Shape& concavePolygon);
 
     /**
-     * @brief Ê¹ÓÃ¸Ä½øµÄGJKËã·¨ÅĞ¶¨ĞÎ×´Åö×²
-     * @param shape1 ĞÎ×´1
-     * @param shape2 ĞÎ×´2
-     * @return Èç¹ûÅö×²·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief ä½¿ç”¨æ”¹è¿›çš„GJKç®—æ³•åˆ¤å®šå½¢çŠ¶ç¢°æ’
+     * @param shape1 å½¢çŠ¶1
+     * @param shape2 å½¢çŠ¶2
+     * @return å¦‚æœç¢°æ’è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool GJK_Collision_Plus(const F_Shape& shape1, const F_Shape& shape2);
 
     /**
-     * @brief ¼ÆËãµãµ½¾ØĞÎËÄÌõ±ßÉÏ×î½üµÄÄÇ¸öµã
-     * @param rect ¾ØĞÎ
-     * @param point µã
-     * @return ×î½üµÄµã
+     * @brief è®¡ç®—ç‚¹åˆ°çŸ©å½¢å››æ¡è¾¹ä¸Šæœ€è¿‘çš„é‚£ä¸ªç‚¹
+     * @param rect çŸ©å½¢
+     * @param point ç‚¹
+     * @return æœ€è¿‘çš„ç‚¹
      */
     Vector2 Get_Closest_Point_On_Rectangle(const F_Rectangle& rect, Vector2 point);
 }

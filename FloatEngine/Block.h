@@ -3,21 +3,21 @@
 
 /**
  * @file Block.h
- * @brief ·½¿éÀà
- * @defgroup Block ·½¿éÄ£¿é
+ * @brief æ–¹å—ç±»
+ * @defgroup Block æ–¹å—æ¨¡å—
  *
- * Ìá¹©·½¿éµÄ»ù±¾ÊôĞÔºÍĞĞÎª£º
- * - ·½¿éµÄÊÂ¼ş´¦Àí
- * - ×¢:ÔİÊ±»¹Î´Íê³É
+ * æä¾›æ–¹å—çš„åŸºæœ¬å±æ€§å’Œè¡Œä¸ºï¼š
+ * - æ–¹å—çš„äº‹ä»¶å¤„ç†
+ * - æ³¨:æš‚æ—¶è¿˜æœªå®Œæˆ
  */
 
  /**
   * @class Block
   * @ingroup Block
   *
-  * @brief Ìá¹©·½¿éµÄ»ù±¾ÊôĞÔºÍĞĞÎª
+  * @brief æä¾›æ–¹å—çš„åŸºæœ¬å±æ€§å’Œè¡Œä¸º
   *
-  * @note Ê¹ÓÃÊ¾Àı£º
+  * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
   * @code
   * Block block;
   * block.onEvent_User(0);
@@ -27,18 +27,18 @@ class Block : public Object
 {
 public:
     /**
-     * @brief ¹¹Ôìº¯Êı
+     * @brief æ„é€ å‡½æ•°
      */
     Block();
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~Block();
 
     /**
-     * @brief ÓÃ»§ÊÂ¼ş´¦Àí
-     * @param index ÊÂ¼şË÷Òı
+     * @brief ç”¨æˆ·äº‹ä»¶å¤„ç†
+     * @param index äº‹ä»¶ç´¢å¼•
      */
     virtual void onEvent_User(int index) override;
 };

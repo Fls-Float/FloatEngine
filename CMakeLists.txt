@@ -13,7 +13,7 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 if(MSVC)
     add_compile_options(
-        /execution-charset:utf-8
+        /utf-8
         $<$<OR:$<CXX_COMPILER_ID:MSVC>,$<C_COMPILER_ID:MSVC>>:/wd4005>
 
     )
@@ -30,6 +30,9 @@ find_package(minizip-ng CONFIG REQUIRED)
 find_package(Lua REQUIRED)
 find_package(curl REQUIRED)
 find_package(SLikeNet CONFIG REQUIRED)
+find_package(nlohmann_json REQUIRED)
+find_package(nfd CONFIG REQUIRED)
+
 set(CUSTOM_RAYLIB_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/FloatEngine/raylib")
 
 find_path(SOL2_INCLUDE_DIRS "sol/abort.hpp")
@@ -85,6 +88,8 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     MINIZIP::minizip-ng
     slikenet
     CURL::libcurl
+    nlohmann_json::nlohmann_json
+    nfd::nfd 
     ${LUA_LIBRARIES}
     "${CUSTOM_RAYLIB_ROOT}/lib/raylib.lib"
 )

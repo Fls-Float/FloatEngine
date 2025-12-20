@@ -3,29 +3,29 @@
 #include <raylib.h>
 /**
  * @file F_Text.h
- * @brief нд╠╬╢╕юМюЮ
- * @defgroup Text нд╠╬дё©И
+ * @brief Ф√┤Ф°╛Е╓└Г░├Г╠╩
+ * @defgroup Text Ф√┤Ф°╛Ф╗║Е²≈
  *
- * лА╧╘╩Ы╠╬╣днд╠╬╡ывВ╧╕дэё╨
- * - нд╠╬╦Ёж╣
- * - нд╠╬╠х╫о
- * - нд╠╬в╙╩╩
- * - нд╠╬ф╢╫с
- * - ╩Ях║нд╠╬Ё╓╤х
+ * Ф▐░Д╬⌡Е÷╨Ф°╛Г └Ф√┤Ф°╛Ф⌠█Д╫°Е┼÷Х┐╫О╪ 
+ * - Ф√┤Ф°╛Х╣▀Е─╪
+ * - Ф√┤Ф°╛Ф╞■Х╬┐
+ * - Ф√┤Ф°╛Х╫╛Ф█╒
+ * - Ф√┤Ф°╛Ф▀╪Ф▌╔
+ * - Х▌╥Е▐√Ф√┤Ф°╛И∙©Е╨╕
  */
 
  /**
   * @class F_Text
   * @ingroup Text
   *
-  * @brief лА╧╘╩Ы╠╬╣днд╠╬╡ывВ╧╕дэ
+  * @brief Ф▐░Д╬⌡Е÷╨Ф°╛Г └Ф√┤Ф°╛Ф⌠█Д╫°Е┼÷Х┐╫
   *
-  * @note й╧сцй╬юЩё╨
+  * @note Д╫©Г■╗Г╓╨Д╬▀О╪ 
   * @code
   * F_Text text1("Hello");
   * F_Text text2("World");
   * text1 += text2;
-  * std::cout << text1.cstr(); // йДЁЖ "HelloWorld"
+  * std::cout << text1.cstr(); // Х╬⌠Е┤╨ "HelloWorld"
   * @endcode
   */
 class F_Text
@@ -33,98 +33,98 @@ class F_Text
     char* m_text;
 public:
     /**
-     * @brief ╦Ёж╣╡ывВ╥Шжьть
-     * @param text р╙╦Ёж╣╣днд╠╬
-     * @return ╥╣╩ь╦Ёж╣╨С╣днд╠╬╤тоС
+     * @brief Х╣▀Е─╪Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Х╣▀Е─╪Г └Ф√┤Ф°╛
+     * @return Х©■Е⌡·Х╣▀Е─╪Е░▌Г └Ф√┤Ф°╛Е╞╧Х╠║
      */
     F_Text operator=(const char* text);
 
     /**
-     * @brief ╦Ёж╣╡ывВ╥Шжьть
-     * @param text р╙╦Ёж╣╣днд╠╬╤тоС
-     * @return ╥╣╩ь╦Ёж╣╨С╣днд╠╬╤тоС
+     * @brief Х╣▀Е─╪Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Х╣▀Е─╪Г └Ф√┤Ф°╛Е╞╧Х╠║
+     * @return Х©■Е⌡·Х╣▀Е─╪Е░▌Г └Ф√┤Ф°╛Е╞╧Х╠║
      */
     F_Text operator=(const F_Text& text);
 
     /**
-     * @brief ╠х╫о╡ывВ╥Шжьть
-     * @param text р╙╠х╫о╣днд╠╬
-     * @return хГ╧ШоЮ╣х╥╣╩ьtrueё╛╥ЯтР╥╣╩ьfalse
+     * @brief Ф╞■Х╬┐Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Ф╞■Х╬┐Г └Ф√┤Ф°╛
+     * @return Е╕┌Ф·°Г⌡╦Г╜┴Х©■Е⌡·trueО╪▄Е░╕Е┬≥Х©■Е⌡·false
      */
     bool operator==(const char* text);
 
     /**
-     * @brief ╠х╫о╡ывВ╥Шжьть
-     * @param text р╙╠х╫о╣днд╠╬╤тоС
-     * @return хГ╧ШоЮ╣х╥╣╩ьtrueё╛╥ЯтР╥╣╩ьfalse
+     * @brief Ф╞■Х╬┐Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Ф╞■Х╬┐Г └Ф√┤Ф°╛Е╞╧Х╠║
+     * @return Е╕┌Ф·°Г⌡╦Г╜┴Х©■Е⌡·trueО╪▄Е░╕Е┬≥Х©■Е⌡·false
      */
     bool operator==(const F_Text& text);
 
     /**
-     * @brief юЮпмв╙╩╩╡ывВ╥Шжьть
-     * @return ╥╣╩ьнд╠╬╣дCвж╥Ш╢╝
+     * @brief Г╠╩Е·▀Х╫╛Ф█╒Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @return Х©■Е⌡·Ф√┤Ф°╛Г └CЕ╜≈Г╛╕Д╦╡
      */
     operator const char* ();
 
     /**
-     * @brief ╩Ях║нд╠╬╣дCвж╥Ш╢╝
-     * @return ╥╣╩ьнд╠╬╣дCвж╥Ш╢╝
+     * @brief Х▌╥Е▐√Ф√┤Ф°╛Г └CЕ╜≈Г╛╕Д╦╡
+     * @return Х©■Е⌡·Ф√┤Ф°╛Г └CЕ╜≈Г╛╕Д╦╡
      */
     const char* cstr();
 
     /**
-     * @brief ╫╚нд╠╬в╙╩╩н╙std::string
-     * @return ╥╣╩ьнд╠╬╣дstd::string╠Мй╬
+     * @brief Е╟├Ф√┤Ф°╛Х╫╛Ф█╒Д╦╨std::string
+     * @return Х©■Е⌡·Ф√┤Ф°╛Г └std::stringХ║╗Г╓╨
      */
     std::string tostr();
 
     /**
-     * @brief ф╢╫с╡ывВ╥Шжьть
-     * @param text р╙ф╢╫с╣днд╠╬╤тоС
-     * @return ╥╣╩ьф╢╫с╨С╣днд╠╬╤тоС
+     * @brief Ф▀╪Ф▌╔Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Ф▀╪Ф▌╔Г └Ф√┤Ф°╛Е╞╧Х╠║
+     * @return Х©■Е⌡·Ф▀╪Ф▌╔Е░▌Г └Ф√┤Ф°╛Е╞╧Х╠║
      */
     F_Text operator+(const F_Text& text);
 
     /**
-     * @brief ф╢╫с╡ывВ╥Шжьть
-     * @param text р╙ф╢╫с╣днд╠╬
-     * @return ╥╣╩ьф╢╫с╨С╣днд╠╬╤тоС
+     * @brief Ф▀╪Ф▌╔Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Ф▀╪Ф▌╔Г └Ф√┤Ф°╛
+     * @return Х©■Е⌡·Ф▀╪Ф▌╔Е░▌Г └Ф√┤Ф°╛Е╞╧Х╠║
      */
     F_Text operator+(const char* text);
 
     /**
-     * @brief ф╢╫с╡╒╦Ёж╣╡ывВ╥Шжьть
-     * @param text р╙ф╢╫с╣днд╠╬
+     * @brief Ф▀╪Ф▌╔Е╧╤Х╣▀Е─╪Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Ф▀╪Ф▌╔Г └Ф√┤Ф°╛
      */
     void operator+=(const char* text);
 
     /**
-     * @brief ф╢╫с╡╒╦Ёж╣╡ывВ╥Шжьть
-     * @param text р╙ф╢╫с╣днд╠╬╤тоС
+     * @brief Ф▀╪Ф▌╔Е╧╤Х╣▀Е─╪Ф⌠█Д╫°Г╛╕И┤█Х╫╫
+     * @param text Х╕│Ф▀╪Ф▌╔Г └Ф√┤Ф°╛Е╞╧Х╠║
      */
     void operator+=(const F_Text& text);
 
     /**
-     * @brief ╩Ях║нд╠╬Ё╓╤х
-     * @return ╥╣╩ьнд╠╬╣дЁ╓╤х
+     * @brief Х▌╥Е▐√Ф√┤Ф°╛И∙©Е╨╕
+     * @return Х©■Е⌡·Ф√┤Ф°╛Г └И∙©Е╨╕
      */
     int Length();
 
     /**
-     * @brief д╛хо╧╧тЛ╨╞йЩ
+     * @brief И╩≤Х╝╓Ф·└И─═Е┤╫Ф∙╟
      */
     F_Text() {
         m_text = new char[1];
     }
 
     /**
-     * @brief ╧╧тЛ╨╞йЩ
-     * @param text р╙ЁУй╪╩╞╣днд╠╬
+     * @brief Ф·└И─═Е┤╫Ф∙╟
+     * @param text Х╕│Е┬²Е╖▀Е▄√Г └Ф√┤Ф°╛
      */
     F_Text(const char* text);
 
     /**
-     * @brief нЖ╧╧╨╞йЩ
+     * @brief Ф·░Ф·└Е┤╫Ф∙╟
      */
     ~F_Text() {
         delete m_text;

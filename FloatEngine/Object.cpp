@@ -82,7 +82,7 @@ Object::Object(Object&& other) noexcept
 	image_yscale(other.image_yscale),
 	depth(other.depth),
 	image_index(other.image_index),
-	sprite_index(std::move(other.sprite_index)),  // Ê¹ÓÃÒÆ¶¯¹¹Ôìº¯Êý
+	sprite_index(std::move(other.sprite_index)),  // ä½¿ç”¨ç§»åŠ¨æž„é€ å‡½æ•°
 	_ins_id(other._ins_id) {
 	for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
 		alarm_time_node[i] = other.alarm_time_node[i];
@@ -90,7 +90,7 @@ Object::Object(Object&& other) noexcept
 	__object_alarm_clock_timer_ = other.__object_alarm_clock_timer_;
 	alarmEvents = std::move(other.alarmEvents);
 
-	// ÖØÖÃÔ­¶ÔÏó×´Ì¬
+	// é‡ç½®åŽŸå¯¹è±¡çŠ¶æ€
 	other._ins_id = -1;
 	other.x = other.y = 0.0f;
 	other.m_block = { 0, 0 };
@@ -114,7 +114,7 @@ Object::Object(const Object& other)
 	image_yscale(other.image_yscale),
 	depth(other.depth),
 	image_index(other.image_index),
-	sprite_index(other.sprite_index),  // Ê¹ÓÃ¿½±´¹¹Ôìº¯Êý
+	sprite_index(other.sprite_index),  // ä½¿ç”¨æ‹·è´æž„é€ å‡½æ•°
 	_ins_id(other._ins_id) {
 	for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
 		alarm_time_node[i] = other.alarm_time_node[i];
@@ -138,7 +138,7 @@ Object& Object::operator=(const Object& other) {
 		image_yscale = other.image_yscale;
 		depth = other.depth;
 		image_index = other.image_index;
-		sprite_index = other.sprite_index;  // Ê¹ÓÃ¿½±´¸³ÖµÔËËã·û
+		sprite_index = other.sprite_index;  // ä½¿ç”¨æ‹·è´èµ‹å€¼è¿ç®—ç¬¦
 		_ins_id = other._ins_id;
 
 		for (int i = 0; i < ALARM_EVENT_COUNT; i++) {
@@ -238,17 +238,17 @@ void Object::onAlarmEvent10() {}
 void Object::onDestroy(){}
 
 
-// Lua ´´½¨ÊµÀýµÄ°ü×°º¯Êý
+// Lua åˆ›å»ºå®žä¾‹çš„åŒ…è£…å‡½æ•°
 sol::object luaCreateInstance(const std::string& name, sol::variadic_args args, sol::this_state L) {
 	try {
 		auto& manager = ObjectManager::getInstance();
 		auto instance = manager.createInstance(name, args);
 
 		if (instance) {
-			// µ÷ÓÃ³õÊ¼»¯·½·¨
+			// è°ƒç”¨åˆå§‹åŒ–æ–¹æ³•
 			instance->onEnter();
 
-			// ·µ»Ø¸ø Lua
+			// è¿”å›žç»™ Lua
 			sol::state_view lua(L);
 			return sol::make_object(lua, instance);
 		}
@@ -260,12 +260,12 @@ sol::object luaCreateInstance(const std::string& name, sol::variadic_args args, 
 	return sol::lua_nil;
 }
 
-// Lua ¼ì²éÀàÐÍÊÇ·ñ×¢²áµÄ°ü×°º¯Êý
+// Lua æ£€æŸ¥ç±»åž‹æ˜¯å¦æ³¨å†Œçš„åŒ…è£…å‡½æ•°
 bool luaIsTypeRegistered(const std::string& name) {
 	return ObjectManager::getInstance().isTypeRegistered(name);
 }
 
-// Lua »ñÈ¡ÒÑ×¢²áÀàÐÍÃû³ÆÁÐ±íµÄ°ü×°º¯Êý
+// Lua èŽ·å–å·²æ³¨å†Œç±»åž‹åç§°åˆ—è¡¨çš„åŒ…è£…å‡½æ•°
 sol::table luaGetRegisteredTypeNames(sol::this_state L) {
 	auto& manager = ObjectManager::getInstance();
 	auto names = manager.getRegisteredTypeNames();
@@ -335,12 +335,12 @@ void ObjectManager::registerGlobalFunctions() {
 		throw std::runtime_error("Lua state not set");
 	}
 
-	// ×¢²áÈ«¾Öº¯Êýµ½ Lua
+	// æ³¨å†Œå…¨å±€å‡½æ•°åˆ° Lua
 	(*lua_state_)["Create_Instance"] = luaCreateInstance;
 	(*lua_state_)["Is_ObjectType_Registered"] = luaIsTypeRegistered;
 	(*lua_state_)["Get_Registered_ObjectTypes"] = luaGetRegisteredTypeNames;
 
-	// ×¢²á ObjectManager µ¥Àý·ÃÎÊ
+	// æ³¨å†Œ ObjectManager å•ä¾‹è®¿é—®
 	(*lua_state_)["ObjectManager"] = (*lua_state_).create_table_with(
 		"getInstance", []() -> ObjectManager& { return ObjectManager::getInstance(); },
 		"isTypeRegistered", [](const std::string& name) { return ObjectManager::getInstance().isTypeRegistered(name); },

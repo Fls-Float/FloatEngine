@@ -1,13 +1,13 @@
 /**
  * @file Object.h
- * @brief ÓÎÏ·¶ÔÏó»ùÀà
- * @defgroup Object ¶ÔÏóÄ£¿é
+ * @brief æ¸¸æˆå¯¹è±¡åŸºç±»
+ * @defgroup Object å¯¹è±¡æ¨¡å—
  *
- * Ìá¹©ÓÎÏ·¶ÔÏóµÄ´´½¨¡¢¹ÜÀíºÍÊÂ¼ş´¦Àí¹¦ÄÜ£º
- * - ¶ÔÏóÊôĞÔ¹ÜÀí
- * - ÊÂ¼ş´¦Àí£¨ÓÃ»§ÊÂ¼ş¡¢½øÈëÊÂ¼ş¡¢¸üĞÂÊÂ¼ş¡¢äÖÈ¾ÊÂ¼şµÈ£©
- * - ¼ÆÊ±Æ÷¹¦ÄÜ
- * - ÉúÃüÖÜÆÚ¹ÜÀí
+ * æä¾›æ¸¸æˆå¯¹è±¡çš„åˆ›å»ºã€ç®¡ç†å’Œäº‹ä»¶å¤„ç†åŠŸèƒ½ï¼š
+ * - å¯¹è±¡å±æ€§ç®¡ç†
+ * - äº‹ä»¶å¤„ç†ï¼ˆç”¨æˆ·äº‹ä»¶ã€è¿›å…¥äº‹ä»¶ã€æ›´æ–°äº‹ä»¶ã€æ¸²æŸ“äº‹ä»¶ç­‰ï¼‰
+ * - è®¡æ—¶å™¨åŠŸèƒ½
+ * - ç”Ÿå‘½å‘¨æœŸç®¡ç†
  */
 
 #pragma once
@@ -22,21 +22,21 @@ namespace F_ObjPro {
    * @struct OBJPRO
    * @ingroup Enum
    *
-   * @brief ¶ÔÏóÊôĞÔ³£Á¿
+   * @brief å¯¹è±¡å±æ€§å¸¸é‡
    */
     enum OBJPRO {
-        Normal=0, ///< ÆÕÍ¨¶ÔÏó
-        Actor=1, ///< ½ÇÉ«¶ÔÏó
-        Block=2  ///< ·½¿é¶ÔÏó
+        Normal=0, ///< æ™®é€šå¯¹è±¡
+        Actor=1, ///< è§’è‰²å¯¹è±¡
+        Block=2  ///< æ–¹å—å¯¹è±¡
     } ;
 }
 /**
  * @class Object
  * @ingroup Object
  *
- * @brief Ìá¹©ÓÎÏ·¶ÔÏóµÄ´´½¨¡¢¹ÜÀíºÍÊÂ¼ş´¦Àí¹¦ÄÜ
+ * @brief æä¾›æ¸¸æˆå¯¹è±¡çš„åˆ›å»ºã€ç®¡ç†å’Œäº‹ä»¶å¤„ç†åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * Object obj("Player", 1);
  * obj.onUpdate();
@@ -44,273 +44,273 @@ namespace F_ObjPro {
  * @endcode
  */
 class Object {
-    int _m_obj_pro; ///< ¶ÔÏóÊôĞÔ
-    std::string _m_obj_name; ///< ¶ÔÏóÃû³Æ
-    int __object_alarm_clock_timer_; ///< ¼ÆÊ±Æ÷
+    int _m_obj_pro; ///< å¯¹è±¡å±æ€§
+    std::string _m_obj_name; ///< å¯¹è±¡åç§°
+    int __object_alarm_clock_timer_; ///< è®¡æ—¶å™¨
 
 protected:
     bool object_mode_no_destroy_sprite;
 
-    static const int ALARM_EVENT_COUNT = 11; ///< ¼ÆÊ±Æ÷ÊÂ¼şÊıÁ¿
+    static const int ALARM_EVENT_COUNT = 11; ///< è®¡æ—¶å™¨äº‹ä»¶æ•°é‡
 
     /**
-     * @brief ÖØÖÃ¼ÆÊ±Æ÷
+     * @brief é‡ç½®è®¡æ—¶å™¨
      */
     void reset_alarm_clock();
 
-    std::array<void (Object::*)(), ALARM_EVENT_COUNT> alarmEvents; ///< ¼ÆÊ±Æ÷ÊÂ¼şÊı×é
+    std::array<void (Object::*)(), ALARM_EVENT_COUNT> alarmEvents; ///< è®¡æ—¶å™¨äº‹ä»¶æ•°ç»„
 
     /**
-     * @brief ÏÔÊ¾¶ÔÏó¼ÆÊ±Æ÷
-     * @param font ×ÖÌå
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param col ÑÕÉ«
+     * @brief æ˜¾ç¤ºå¯¹è±¡è®¡æ—¶å™¨
+     * @param font å­—ä½“
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param col é¢œè‰²
      */
     void show_object_alarm_clock_timer(Font font, float x, float y, Color col);
 
-    int alarm_time_node[ALARM_EVENT_COUNT]; ///< ¼ÆÊ±Æ÷½ÚµãÊı×é
+    int alarm_time_node[ALARM_EVENT_COUNT]; ///< è®¡æ—¶å™¨èŠ‚ç‚¹æ•°ç»„
 
     /**
-     * @brief ¸Ä±ä¶ÔÏóÃû³Æ
-     * @param name ĞÂÃû³Æ
+     * @brief æ”¹å˜å¯¹è±¡åç§°
+     * @param name æ–°åç§°
      */
     void change_name(const char* name) {
         _m_obj_name = name;
     }
 
     /**
-     * @brief ¸Ä±ä¶ÔÏóÊôĞÔ
-     * @param pro ĞÂÊôĞÔ
+     * @brief æ”¹å˜å¯¹è±¡å±æ€§
+     * @param pro æ–°å±æ€§
      */
     void change_pro(int pro) {
         _m_obj_pro = pro;
     }
 
     /**
-     * @brief »æÖÆ¶ÔÏó¿é
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶å¯¹è±¡å—
+     * @param col é¢œè‰²
      */
     void Draw_Block(Color col);
 
     /**
-     * @brief ÅĞ¶Ï¶ÔÏóÊÇ·ñÏàÓö
-     * @param _x x×ø±ê
-     * @param _y y×ø±ê
-     * @param other ÁíÒ»¸ö¶ÔÏó
-     * @return Èç¹ûÏàÓö·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤æ–­å¯¹è±¡æ˜¯å¦ç›¸é‡
+     * @param _x xåæ ‡
+     * @param _y yåæ ‡
+     * @param other å¦ä¸€ä¸ªå¯¹è±¡
+     * @return å¦‚æœç›¸é‡è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Is_Meeting(float _x, float _y, const Object* other);
 
     /**
-	* @brief »æÖÆ×ÔÉí
+	* @brief ç»˜åˆ¶è‡ªèº«
     */
     void Draw_Self();
 public:
-    int _ins_id; ///< ÊµÀıID
+    int _ins_id; ///< å®ä¾‹ID
     FOBJECT_BODY()
 
     /**
-        * @brief ¹¹Ôìº¯Êı
+        * @brief æ„é€ å‡½æ•°
     */
     Object();
 
     /**
-     * @brief ¹¹Ôìº¯Êı
-     * @param name ¶ÔÏóÃû³Æ
-     * @param ins_id ÊµÀıID
-     * @param pro ¶ÔÏóÊôĞÔ
+     * @brief æ„é€ å‡½æ•°
+     * @param name å¯¹è±¡åç§°
+     * @param ins_id å®ä¾‹ID
+     * @param pro å¯¹è±¡å±æ€§
      */
     Object(const char* name, int ins_id, int pro = 0);
   
     /**
-      * @brief ÒÆ¶¯¹¹Ôìº¯Êı
-      * @param other ÒªÒÆ¶¯µÄ¶ÔÏó
+      * @brief ç§»åŠ¨æ„é€ å‡½æ•°
+      * @param other è¦ç§»åŠ¨çš„å¯¹è±¡
      */
     Object(Object&& other) noexcept;
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param other Òª¿½±´µÄ¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param other è¦æ‹·è´çš„å¯¹è±¡
      */
     Object(const Object& other) ;
 
     /**
-     * @brief ¿½±´¸³ÖµÔËËã·û
-     * @param other Òª¿½±´µÄ¶ÔÏó
-     * @return ¿½±´ºóµÄ¶ÔÏóÒıÓÃ
+     * @brief æ‹·è´èµ‹å€¼è¿ç®—ç¬¦
+     * @param other è¦æ‹·è´çš„å¯¹è±¡
+     * @return æ‹·è´åçš„å¯¹è±¡å¼•ç”¨
      */
     Object& operator=(const Object& other);
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     virtual ~Object();
 
     /**
-     * @brief ÉèÖÃ¶ÔÏóÃû³Æ
-     * @param name ¶ÔÏóÃû³Æ
+     * @brief è®¾ç½®å¯¹è±¡åç§°
+     * @param name å¯¹è±¡åç§°
      */
     inline void setObjName(const std::string& name) { _m_obj_name = name; }
 
     /**
-     * @brief ÉèÖÃ¶ÔÏóÊôĞÔ
-     * @param pro ¶ÔÏóÊôĞÔ
+     * @brief è®¾ç½®å¯¹è±¡å±æ€§
+     * @param pro å¯¹è±¡å±æ€§
      */
     inline void setObjPro(const int& pro) { _m_obj_pro = pro; }
 
     /**
-     * @brief »ñÈ¡¶ÔÏóÃû³Æ
-     * @return ¶ÔÏóÃû³Æ
+     * @brief è·å–å¯¹è±¡åç§°
+     * @return å¯¹è±¡åç§°
      */
     inline const char* getObjName() const { return _m_obj_name.c_str(); }
 
     /**
-     * @brief »ñÈ¡¶ÔÏóÊôĞÔ
-     * @return ¶ÔÏóÊôĞÔ
+     * @brief è·å–å¯¹è±¡å±æ€§
+     * @return å¯¹è±¡å±æ€§
      */
     inline const int& getObjPro() const { return _m_obj_pro; }
 
     /**
-     * @brief ÓÃ»§ÊÂ¼ş´¦Àí
-     * @param index ÊÂ¼şË÷Òı
+     * @brief ç”¨æˆ·äº‹ä»¶å¤„ç†
+     * @param index äº‹ä»¶ç´¢å¼•
      */
     virtual void onEvent_User(int index);
 
     /**
-     * @brief ½øÈëÊÂ¼ş´¦Àí
+     * @brief è¿›å…¥äº‹ä»¶å¤„ç†
      */
     virtual void onEnter();
 
     /**
-     * @brief ¸üĞÂÊÂ¼ş´¦Àí
+     * @brief æ›´æ–°äº‹ä»¶å¤„ç†
      */
     virtual void onUpdate();
 
     /**
-     * @brief äÖÈ¾Ç°ÊÂ¼ş´¦Àí
+     * @brief æ¸²æŸ“å‰äº‹ä»¶å¤„ç†
      */
     virtual void onRenderBefore();
 
     /**
-     * @brief äÖÈ¾ÊÂ¼ş´¦Àí
+     * @brief æ¸²æŸ“äº‹ä»¶å¤„ç†
      */
     virtual void onRender();
 
     /**
-     * @brief äÖÈ¾ºóÊÂ¼ş´¦Àí
+     * @brief æ¸²æŸ“åäº‹ä»¶å¤„ç†
      */
     virtual void onRenderNext();
 
     /**
-     * @brief ÉãÏñ»ú¿ªÊ¼ÊÂ¼ş´¦Àí
+     * @brief æ‘„åƒæœºå¼€å§‹äº‹ä»¶å¤„ç†
      */
     virtual void onBeginCamera();
 
     /**
-     * @brief ÉãÏñ»ú½áÊøÊÂ¼ş´¦Àí
+     * @brief æ‘„åƒæœºç»“æŸäº‹ä»¶å¤„ç†
      */
     virtual void onEndCamera();
 
     /**
-     * @brief »ñÈ¡¼ÆÊ±Æ÷ÊÂ¼şÊıÁ¿
-     * @return ¼ÆÊ±Æ÷ÊÂ¼şÊıÁ¿
+     * @brief è·å–è®¡æ—¶å™¨äº‹ä»¶æ•°é‡
+     * @return è®¡æ—¶å™¨äº‹ä»¶æ•°é‡
      */
     int getAlarmCount() const {
         return ALARM_EVENT_COUNT;
     }
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶å¤„ç†
      */
     void onAlarmEvent();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş0´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶0å¤„ç†
      */
     virtual void onAlarmEvent0();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş1´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶1å¤„ç†
      */
     virtual void onAlarmEvent1();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş2´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶2å¤„ç†
      */
     virtual void onAlarmEvent2();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş3´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶3å¤„ç†
      */
     virtual void onAlarmEvent3();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş4´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶4å¤„ç†
      */
     virtual void onAlarmEvent4();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş5´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶5å¤„ç†
      */
     virtual void onAlarmEvent5();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş6´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶6å¤„ç†
      */
     virtual void onAlarmEvent6();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş7´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶7å¤„ç†
      */
     virtual void onAlarmEvent7();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş8´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶8å¤„ç†
      */
     virtual void onAlarmEvent8();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş9´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶9å¤„ç†
      */
     virtual void onAlarmEvent9();
 
     /**
-     * @brief ¼ÆÊ±Æ÷ÊÂ¼ş10´¦Àí
+     * @brief è®¡æ—¶å™¨äº‹ä»¶10å¤„ç†
      */
     virtual void onAlarmEvent10();
 
     /**
-     * @brief Ïú»ÙÊÂ¼ş´¦Àí
+     * @brief é”€æ¯äº‹ä»¶å¤„ç†
      */
     virtual void onDestroy();
 };
 /**
- * @brief ¶ÔÏó´´½¨Æ÷½Ó¿Ú
+ * @brief å¯¹è±¡åˆ›å»ºå™¨æ¥å£
  */
 class IObjectCreator {
 public:
     virtual ~IObjectCreator() = default;
 
     /**
-     * @brief ´´½¨¶ÔÏóÊµÀı
-     * @param args ´´½¨²ÎÊı
+     * @brief åˆ›å»ºå¯¹è±¡å®ä¾‹
+     * @param args åˆ›å»ºå‚æ•°
      */
     virtual std::shared_ptr<Object> create(sol::variadic_args args) = 0;
 
     /**
-     * @brief »ñÈ¡¶ÔÏóÀàĞÍĞÅÏ¢
+     * @brief è·å–å¯¹è±¡ç±»å‹ä¿¡æ¯
      */
     virtual const std::type_info& getTypeInfo() const = 0;
 
     /**
-     * @brief ×¢²áµ½ Lua
+     * @brief æ³¨å†Œåˆ° Lua
      */
     virtual void registerToLua(sol::state& lua, const std::string& name) = 0;
 };
 
 /**
- * @brief Ä£°å¶ÔÏó´´½¨Æ÷
+ * @brief æ¨¡æ¿å¯¹è±¡åˆ›å»ºå™¨
  */
 template<typename T>
 class ObjectCreator : public IObjectCreator {
@@ -331,7 +331,7 @@ public:
 
 private:
     /**
-     * @brief ¾ßÌåµÄ´´½¨ÊµÏÖ£¬Ö§³Ö²»Í¬ÊıÁ¿µÄ²ÎÊı
+     * @brief å…·ä½“çš„åˆ›å»ºå®ç°ï¼Œæ”¯æŒä¸åŒæ•°é‡çš„å‚æ•°
      */
     template<typename... Args>
     std::shared_ptr<Object> createWithArgs(Args&&... args) {
@@ -341,7 +341,7 @@ private:
     std::shared_ptr<Object> createImpl(sol::variadic_args args) {
         const size_t argCount = args.size();
 
-        // ¸ù¾İ²ÎÊıÊıÁ¿·ÖÅÉµ½²»Í¬µÄ´´½¨º¯Êı
+        // æ ¹æ®å‚æ•°æ•°é‡åˆ†æ´¾åˆ°ä¸åŒçš„åˆ›å»ºå‡½æ•°
         switch (argCount) {
         case 0:
             return createWithArgs();
@@ -380,7 +380,7 @@ private:
     }
 
     void registerToLuaImpl(sol::state& lua, const std::string& name) {
-        // ×¢²á Object Ààµ½ Lua£¬Ö§³ÖĞéº¯ÊıÖØÔØ
+        // æ³¨å†Œ Object ç±»åˆ° Luaï¼Œæ”¯æŒè™šå‡½æ•°é‡è½½
         lua.new_usertype<Object>(
             name,
             sol::base_classes, sol::bases<Object>(),
@@ -391,19 +391,19 @@ private:
             Object(const Object&)
             >(),
 
-            // ÊôĞÔ
+            // å±æ€§
             "_ins_id", &Object::_ins_id,
             "_m_obj_pro", &Object::_m_obj_pro,
             "_m_obj_name", &Object::_m_obj_name,
 
-            // ¹«¹²·½·¨
+            // å…¬å…±æ–¹æ³•
             "setObjName", &Object::setObjName,
             "setObjPro", &Object::setObjPro,
             "getObjName", &Object::getObjName,
             "getObjPro", &Object::getObjPro,
             "getAlarmCount", &Object::getAlarmCount,
 
-            // Ğéº¯Êı - Ê¹ÓÃ override Ö§³Ö Lua ÖØÔØ
+            // è™šå‡½æ•° - ä½¿ç”¨ override æ”¯æŒ Lua é‡è½½
             "onEvent_User", (&Object::onEvent_User),
             "onEnter", (&Object::onEnter),
             "onUpdate", (&Object::onUpdate),
@@ -414,7 +414,7 @@ private:
             "onEndCamera", (&Object::onEndCamera),
             "onDestroy", (&Object::onDestroy),
 
-            // ¼ÆÊ±Æ÷Ğéº¯Êı
+            // è®¡æ—¶å™¨è™šå‡½æ•°
             "onAlarmEvent0", (&Object::onAlarmEvent0),
             "onAlarmEvent1", (&Object::onAlarmEvent1),
             "onAlarmEvent2", (&Object::onAlarmEvent2),
@@ -427,25 +427,25 @@ private:
             "onAlarmEvent9", (&Object::onAlarmEvent9),
             "onAlarmEvent10", (&Object::onAlarmEvent10),
 
-            // ÆäËû·½·¨
+            // å…¶ä»–æ–¹æ³•
             "onAlarmEvent", &Object::onAlarmEvent,
             "change_name", &Object::change_name,
             "change_pro", &Object::change_pro
         );
 
-        // Èç¹û×¢²áµÄÊÇÅÉÉúÀà£¬Ò²ĞèÒª×¢²áÆäÌØ¶¨·½·¨
+        // å¦‚æœæ³¨å†Œçš„æ˜¯æ´¾ç”Ÿç±»ï¼Œä¹Ÿéœ€è¦æ³¨å†Œå…¶ç‰¹å®šæ–¹æ³•
         if constexpr (!std::is_same_v<T, Object>) {
             registerDerivedClassToLua(lua, name);
         }
     }
 
     /**
-     * @brief ÎªÅÉÉúÀà×¢²á¶îÍâµÄ·½·¨
+     * @brief ä¸ºæ´¾ç”Ÿç±»æ³¨å†Œé¢å¤–çš„æ–¹æ³•
      */
     template<typename U = T>
     typename std::enable_if<!std::is_same_v<U, Object>>::type
         registerDerivedClassToLua(sol::state& lua, const std::string& name) {
-        // ÎªÅÉÉúÀà´´½¨ĞÂµÄ usertype£¬¼Ì³Ğ×Ô Object
+        // ä¸ºæ´¾ç”Ÿç±»åˆ›å»ºæ–°çš„ usertypeï¼Œç»§æ‰¿è‡ª Object
         auto derived_usertype = lua.new_usertype<U>(
             name,
             sol::base_classes, sol::bases<Object>(),
@@ -457,10 +457,10 @@ private:
             >()
         );
 
-        // ×Ô¶¯¼ì²â²¢×¢²áÅÉÉúÀàµÄ¹«¹²·½·¨
+        // è‡ªåŠ¨æ£€æµ‹å¹¶æ³¨å†Œæ´¾ç”Ÿç±»çš„å…¬å…±æ–¹æ³•
       //  registerDerivedMethods<U>(derived_usertype);
 
-        // ×Ô¶¯¼ì²â²¢×¢²áÅÉÉúÀàµÄ¶îÍâĞéº¯ÊıÖØÔØ
+        // è‡ªåŠ¨æ£€æµ‹å¹¶æ³¨å†Œæ´¾ç”Ÿç±»çš„é¢å¤–è™šå‡½æ•°é‡è½½
       //  registerDerivedVirtualMethods<U>(derived_usertype);
 
         std::cout << "Registered derived class: " << name << " with additional methods" << std::endl;
@@ -468,7 +468,7 @@ private:
 };
 
 /**
- * @brief Lua ¶ÔÏó´´½¨Æ÷£¨ÓÃÓÚÔÚ Lua ÖĞ¶¨ÒåµÄ¶ÔÏóÀàĞÍ£©
+ * @brief Lua å¯¹è±¡åˆ›å»ºå™¨ï¼ˆç”¨äºåœ¨ Lua ä¸­å®šä¹‰çš„å¯¹è±¡ç±»å‹ï¼‰
  */
 class LuaObjectCreator : public IObjectCreator {
 public:
@@ -485,11 +485,11 @@ public:
     }
 
     const std::type_info& getTypeInfo() const override {
-        return typeid(Object); // Lua ¶ÔÏó¶¼ÊÓÎª Object ÀàĞÍ
+        return typeid(Object); // Lua å¯¹è±¡éƒ½è§†ä¸º Object ç±»å‹
     }
 
     void registerToLua(sol::state& lua, const std::string& name) override {
-        // Lua ÀàĞÍÒÑ¾­ÔÚ Lua ÖĞ¶¨Òå£¬²»ĞèÒª¶îÍâ×¢²á
+        // Lua ç±»å‹å·²ç»åœ¨ Lua ä¸­å®šä¹‰ï¼Œä¸éœ€è¦é¢å¤–æ³¨å†Œ
     }
 
 private:
@@ -497,7 +497,7 @@ private:
 };
 
 /**
- * @brief ¶ÔÏó¹ÜÀíÆ÷Àà
+ * @brief å¯¹è±¡ç®¡ç†å™¨ç±»
  */
 class ObjectManager {
 private:
@@ -508,14 +508,14 @@ private:
     ObjectManager() = default;
 
 public:
-    // ½ûÓÃ¿½±´ºÍÒÆ¶¯
+    // ç¦ç”¨æ‹·è´å’Œç§»åŠ¨
     ObjectManager(const ObjectManager&) = delete;
     ObjectManager& operator=(const ObjectManager&) = delete;
     ObjectManager(ObjectManager&&) = delete;
     ObjectManager& operator=(ObjectManager&&) = delete;
 
     /**
-     * @brief »ñÈ¡µ¥ÀıÊµÀı
+     * @brief è·å–å•ä¾‹å®ä¾‹
      */
     static ObjectManager& getInstance() {
         static ObjectManager instance;
@@ -523,14 +523,14 @@ public:
     }
 
     /**
-     * @brief ÉèÖÃ Lua ×´Ì¬
+     * @brief è®¾ç½® Lua çŠ¶æ€
      */
     void setLuaState(sol::state& lua) {
         lua_state_ = &lua;
     }
 
     /**
-     * @brief ×¢²á C++ ¶ÔÏóÀàĞÍ
+     * @brief æ³¨å†Œ C++ å¯¹è±¡ç±»å‹
      */
     template<typename T>
     void registerObjectType(const std::string& name) {
@@ -543,7 +543,7 @@ public:
         object_creators_[name] = std::make_unique<ObjectCreator<T>>();
         type_to_name_[typeid(T).name()] = name;
 
-        // Èç¹û Lua ×´Ì¬ÒÑÉèÖÃ£¬×Ô¶¯×¢²áµ½ Lua
+        // å¦‚æœ Lua çŠ¶æ€å·²è®¾ç½®ï¼Œè‡ªåŠ¨æ³¨å†Œåˆ° Lua
         if (lua_state_) {
             object_creators_[name]->registerToLua(*lua_state_, name);
         }
@@ -552,42 +552,42 @@ public:
     }
 
     /**
-     * @brief ×¢²á Lua ¶ÔÏóÀàĞÍ
+     * @brief æ³¨å†Œ Lua å¯¹è±¡ç±»å‹
      */
     void registerLuaObjectType(const std::string& name, sol::function constructor);
 
     /**
-     * @brief ´´½¨¶ÔÏóÊµÀı
+     * @brief åˆ›å»ºå¯¹è±¡å®ä¾‹
      */
     std::shared_ptr<Object> createInstance(const std::string& name, sol::variadic_args args);
 
     /**
-     * @brief ¼ì²é¶ÔÏóÀàĞÍÊÇ·ñÒÑ×¢²á
+     * @brief æ£€æŸ¥å¯¹è±¡ç±»å‹æ˜¯å¦å·²æ³¨å†Œ
      */
     bool isTypeRegistered(const std::string& name) const;
 
     /**
-     * @brief »ñÈ¡ÒÑ×¢²áµÄÀàĞÍÃû³ÆÁĞ±í
+     * @brief è·å–å·²æ³¨å†Œçš„ç±»å‹åç§°åˆ—è¡¨
      */
     std::vector<std::string> getRegisteredTypeNames() const;
 
     /**
-     * @brief ¸ù¾İÀàĞÍĞÅÏ¢»ñÈ¡ÀàĞÍÃû³Æ
+     * @brief æ ¹æ®ç±»å‹ä¿¡æ¯è·å–ç±»å‹åç§°
      */
     std::string getTypeName(const std::type_info& type) const;
 
     /**
-     * @brief »ñÈ¡¶ÔÏó´´½¨Æ÷
+     * @brief è·å–å¯¹è±¡åˆ›å»ºå™¨
      */
     IObjectCreator* getCreator(const std::string& name) const;
 
     /**
-     * @brief Çå¿ÕËùÓĞ×¢²áµÄÀàĞÍ
+     * @brief æ¸…ç©ºæ‰€æœ‰æ³¨å†Œçš„ç±»å‹
      */
     void clear();
 
     /**
-     * @brief ×¢²áÈ«¾Öº¯Êıµ½ Lua
+     * @brief æ³¨å†Œå…¨å±€å‡½æ•°åˆ° Lua
      */
     void registerGlobalFunctions();
 };

@@ -3,22 +3,22 @@
 #include "raymath.h"
 /**
  * @file Actor.h
- * @brief ½ÇÉ«Àà
- * @defgroup Actor ½ÇÉ«Ä£¿é
+ * @brief è§’è‰²ç±»
+ * @defgroup Actor è§’è‰²æ¨¡å—
  *
- * Ìá¹©½ÇÉ«µÄ»ù±¾ÊôĞÔºÍĞĞÎª£º
- * - ½ÇÉ«µÄÒÆ¶¯¡¢ÌøÔ¾µÈÊôĞÔ
- * - ½ÇÉ«µÄÖØÁ¦ÉèÖÃ
- * - ×¢:ÔİÊ±»¹Î´Íê³É
+ * æä¾›è§’è‰²çš„åŸºæœ¬å±æ€§å’Œè¡Œä¸ºï¼š
+ * - è§’è‰²çš„ç§»åŠ¨ã€è·³è·ƒç­‰å±æ€§
+ * - è§’è‰²çš„é‡åŠ›è®¾ç½®
+ * - æ³¨:æš‚æ—¶è¿˜æœªå®Œæˆ
  */
 
  /**
   * @class Actor
   * @ingroup Actor
   *
-  * @brief Ìá¹©½ÇÉ«µÄ»ù±¾ÊôĞÔºÍĞĞÎª
+  * @brief æä¾›è§’è‰²çš„åŸºæœ¬å±æ€§å’Œè¡Œä¸º
   *
-  * @note Ê¹ÓÃÊ¾Àı£º
+  * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
   * @code
   * Actor actor;
   * actor.active = true;
@@ -28,28 +28,28 @@
 class Actor : public Object
 {
 protected:
-	float _timer; ///< ¼ÆÊ±Æ÷
-	float _time_scale; ///< Ê±¼äËõ·Å
+	float _timer; ///< è®¡æ—¶å™¨
+	float _time_scale; ///< æ—¶é—´ç¼©æ”¾
 public:
     /**
-     * @brief ¹¹Ôìº¯Êı
+     * @brief æ„é€ å‡½æ•°
      */
     Actor();
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~Actor();
 
-    bool active; ///< ½ÇÉ«ÊÇ·ñ¼¤»î
-    bool moveable; ///< ½ÇÉ«ÊÇ·ñ¿ÉÒÆ¶¯
-    bool jumpable; ///< ½ÇÉ«ÊÇ·ñ¿ÉÌøÔ¾
-    bool isJump; ///< ½ÇÉ«ÊÇ·ñÔÚÌøÔ¾ÖĞ
-    float moveVelocity; ///< ½ÇÉ«ËÙ¶È
-    float moveDirection; ///< ½ÇÉ«·½Ïò 
+    bool active; ///< è§’è‰²æ˜¯å¦æ¿€æ´»
+    bool moveable; ///< è§’è‰²æ˜¯å¦å¯ç§»åŠ¨
+    bool jumpable; ///< è§’è‰²æ˜¯å¦å¯è·³è·ƒ
+    bool isJump; ///< è§’è‰²æ˜¯å¦åœ¨è·³è·ƒä¸­
+    float moveVelocity; ///< è§’è‰²é€Ÿåº¦
+    float moveDirection; ///< è§’è‰²æ–¹å‘ 
 
-    FVec2 gravity; ///< ½ÇÉ«µÄÖØÁ¦
-    bool enableGravity; ///< ÊÇ·ñÆôÓÃÖØÁ¦
+    FVec2 gravity; ///< è§’è‰²çš„é‡åŠ›
+    bool enableGravity; ///< æ˜¯å¦å¯ç”¨é‡åŠ›
     
     void onUpdate() override; 
 };

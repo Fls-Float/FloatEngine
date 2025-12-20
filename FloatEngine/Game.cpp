@@ -60,7 +60,7 @@ void ApplyGuiStyle() {
 	colors[ImGuiCol_TabHovered] = ImVec4(0.26f, 0.59f, 0.98f, 0.80f);
 	colors[ImGuiCol_TabActive] = ImVec4(0.20f, 0.22f, 0.24f, 1.00f);
 	colors[ImGuiCol_DockingPreview] = ImVec4(0.26f, 0.59f, 0.98f, 0.70f);
-	// ÑùÊ½²ÎÊıµ÷Õû
+	// æ ·å¼å‚æ•°è°ƒæ•´
 	style.WindowPadding = ImVec2(8, 8);
 	style.FramePadding = ImVec2(5, 3);
 	style.CellPadding = ImVec2(6, 4);
@@ -90,7 +90,7 @@ void LoadGuiFont(float dpi_scale = 1.0f) {
 	font_cfg.OversampleH = 3;
 	font_cfg.OversampleV = 2;
 	font_cfg.RasterizerMultiply = 1.2f;
-	// ¼ÓÔØÖ÷×ÖÌå
+	// åŠ è½½ä¸»å­—ä½“
 	io.FontDefault = io.Fonts->AddFontFromFileTTF("C://windows//fonts//msyh.ttc",
 		base_font_size, &font_cfg,
 		io.Fonts->GetGlyphRangesChineseFull());
@@ -120,7 +120,7 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, 
 	}
 	if (_load_icon_pre) {
 		if (_icon_path.paths == nullptr) {
-			DEBUG_LOG(LOG_WARNING, "_icon_pathÎª¿Õ!", 0);
+			DEBUG_LOG(LOG_WARNING, "_icon_pathä¸ºç©º!", 0);
 		}
 		else if (_icon_path.count > 1) {
 			Image* icons = new Image[_icon_path.count + 1];
@@ -147,7 +147,7 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, 
 			SetWindowTitle(title);
 		}
 	}
-	//³õÊ¼»¯
+	//åˆå§‹åŒ–
 	InitAudioDevice();
 		
 	_w = w; _h = h;
@@ -156,8 +156,8 @@ void Game::CreateWindow(int w, int h, const char* title, bool debug, int flags, 
 	BeginDrawing();EndDrawing();
 	if (debug)
 		F_Debug::InitCommand();
-	DEBUG_LOG(LOG_INFO, "Game_Create_Window:´°¿Ú´´½¨³É¹¦£¬µ±Ç°×´Ì¬:Î´¼¤»î(Ê¹ÓÃShowWindowÀ´ÊÖ¶¯¼¤»î)",0);
-	DEBUG_LOG(LOG_INFO, TextFormat("FloatEngine³õÊ¼»¯³É¹¦£¬°æ±¾ºÅ:%s", FLOAT_API_VERSION),0);
+	DEBUG_LOG(LOG_INFO, "Game_Create_Window:çª—å£åˆ›å»ºæˆåŠŸï¼Œå½“å‰çŠ¶æ€:æœªæ¿€æ´»(ä½¿ç”¨ShowWindowæ¥æ‰‹åŠ¨æ¿€æ´»)",0);
+	DEBUG_LOG(LOG_INFO, TextFormat("FloatEngineåˆå§‹åŒ–æˆåŠŸï¼Œç‰ˆæœ¬å·:%s", FLOAT_API_VERSION),0);
 }
 void LoadOneMod(int modFlag)
 {
@@ -205,27 +205,6 @@ void Game::Play(int fps)
 	start_time = std::chrono::high_resolution_clock::now();
 	double last_time = 0;
 	while (!m_gameExit) {
-		if (WindowShouldClose() || IsKeyPressed(KEY_ESCAPE)) {
-			if (!m_isAttemptingToClose) {
-				m_isAttemptingToClose = true;
-			}
-		}
-		while(m_isAttemptingToClose) {
-			m_attemptToCloseCallback->OnAttemptToCloseWindow(m_gameExit,m_isAttemptingToClose);
-			if (m_AttemptCallbackHasRender) {
-				BeginDrawing(); {
-					m_attemptToCloseCallback->OnAttemptToCloseWindowRender();
-				}EndDrawing();
-			}
-			else PollInputEvents();
-			if (m_gameExit) {
-				WinFuns::ShowWindow(GetWindowHandle(), 0);
-			}
-		}
-		if (m_gameExit) {
-			Room_Run_Now("onDestroy");
-			break;
-		}
 		auto end_time = std::chrono::high_resolution_clock::now();
 		now_time = std::chrono::duration<double, std::milli>(end_time - start_time).count();
 		frame_time = now_time - last_time;
@@ -250,6 +229,26 @@ void Game::Play(int fps)
 			rlImGuiEnd();
 		}EndDrawing();
 		Room_Run_Now("onRenderNext");
+		if (WindowShouldClose() || IsKeyPressed(KEY_ESCAPE)) {
+			if (!m_isAttemptingToClose) {
+				m_isAttemptingToClose = true;
+			}
+		}
+		while (m_isAttemptingToClose) {
+			m_attemptToCloseCallback->OnAttemptToCloseWindow(m_gameExit, m_isAttemptingToClose);
+			if (m_AttemptCallbackHasRender) {
+				BeginDrawing(); {
+					m_attemptToCloseCallback->OnAttemptToCloseWindowRender();
+				}EndDrawing();
+			}
+			else PollInputEvents();
+			if (m_gameExit) {
+				WinFuns::ShowWindow(GetWindowHandle(), 0);
+			}
+		}
+		if (m_gameExit) {
+			break;
+		}
 	}
 }
 
@@ -257,6 +256,7 @@ void Game::Destroy()
 {
 	if (m_attemptToCloseCallback)delete m_attemptToCloseCallback;
 	Room* t = Room_Get_Now();
+	t->DeleteAll();
 	delete t;
 	delete _title;
 	F_Gui::Shutdown();
@@ -273,16 +273,16 @@ void Game::Set_Background_Color(Color bk_col)
 void Game::Set_Console_Icon(int id)
 {
 	using namespace WinFuns;
-	// »ñÈ¡µ±Ç°¿ØÖÆÌ¨´°¿ÚµÄ¾ä±ú
+	// è·å–å½“å‰æ§åˆ¶å°çª—å£çš„å¥æŸ„
 	HWND hwnd =(HWND)GetConsoleWindow();
 
-	// ´Ó×ÊÔ´ÎÄ¼şÖĞ¼ÓÔØÍ¼±ê£¨Ê¹ÓÃ×ÊÔ´±êÊ¶·û IDI_MY_ICON£©
+	// ä»èµ„æºæ–‡ä»¶ä¸­åŠ è½½å›¾æ ‡ï¼ˆä½¿ç”¨èµ„æºæ ‡è¯†ç¬¦ IDI_MY_ICONï¼‰
 	void* hIcon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(id));
 
 	if (hIcon) {
-		// ·¢ËÍÏûÏ¢ÉèÖÃÍ¼±ê
-		SendMessage(hwnd, 0x0080,1, (LPARAM)hIcon); // ÉèÖÃĞ¡Í¼±ê
-		SendMessage(hwnd, 0x0080, 0, (LPARAM)hIcon);   // ÉèÖÃ´óÍ¼±ê
+		// å‘é€æ¶ˆæ¯è®¾ç½®å›¾æ ‡
+		SendMessage(hwnd, 0x0080,1, (LPARAM)hIcon); // è®¾ç½®å°å›¾æ ‡
+		SendMessage(hwnd, 0x0080, 0, (LPARAM)hIcon);   // è®¾ç½®å¤§å›¾æ ‡
 	}
 }
 
@@ -308,17 +308,17 @@ void Game::Set_Icon(Image icon)
 	_icons[0] = icon;
 }
 char** ConvertStringVectorToCharArray(const std::vector<std::string>& strings) {
-	// ´´½¨ char** Êı×é
-	char** result = new char* [strings.size() + 1]; // ¶îÍâ·ÖÅäÒ»¸ö¿ÕÖ¸ÕëÓÃÓÚ±ê¼Ç½áÊø
+	// åˆ›å»º char** æ•°ç»„
+	char** result = new char* [strings.size() + 1]; // é¢å¤–åˆ†é…ä¸€ä¸ªç©ºæŒ‡é’ˆç”¨äºæ ‡è®°ç»“æŸ
 
 	for (size_t i = 0; i < strings.size(); ++i) {
-		// ·ÖÅä¿Õ¼ä²¢¿½±´×Ö·û´®
+		// åˆ†é…ç©ºé—´å¹¶æ‹·è´å­—ç¬¦ä¸²
 		result[i] = new char[strings[i].size() + 1];
 		std::copy(strings[i].begin(), strings[i].end(), result[i]);
-		result[i][strings[i].size()] = '\0'; // Ìí¼Ó null ÖÕÖ¹·û
+		result[i][strings[i].size()] = '\0'; // æ·»åŠ  null ç»ˆæ­¢ç¬¦
 	}
 
-	// ÉèÖÃ×îºóÒ»¸öÖ¸ÕëÎª¿ÕÖ¸Õë
+	// è®¾ç½®æœ€åä¸€ä¸ªæŒ‡é’ˆä¸ºç©ºæŒ‡é’ˆ
 	result[strings.size()] = nullptr;
 
 	return result;
@@ -357,9 +357,9 @@ void Game::Set_Icon_Pre(const char* filePath) {
 }
 
 void Game::Set_Icons_Pre(FilePathList filePathList) {
-	// È·±£´«ÈëµÄÎÄ¼şÂ·¾¶ÁĞ±íÓĞĞ§
+	// ç¡®ä¿ä¼ å…¥çš„æ–‡ä»¶è·¯å¾„åˆ—è¡¨æœ‰æ•ˆ
 	if (filePathList.paths == nullptr || filePathList.count == 0) {
-		DEBUG_LOG(LOG_ERROR,"Set_Icons_Pre: ÎÄ¼şÂ·¾¶ÁĞ±íÎª¿Õ¡£",0);
+		DEBUG_LOG(LOG_ERROR,"Set_Icons_Pre: æ–‡ä»¶è·¯å¾„åˆ—è¡¨ä¸ºç©ºã€‚",0);
 		return;
 	}
 	for (unsigned int i = 0; i < filePathList.count; i++) {

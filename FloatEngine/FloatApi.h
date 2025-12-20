@@ -1,19 +1,19 @@
 /**
  * @file FloatApi.h
- * @brief ¸¡¶¯ÒıÇæAPI
- * @defgroup FloatApi ¸¡¶¯ÒıÇæÄ£¿é
+ * @brief æµ®åŠ¨å¼•æ“API
+ * @defgroup FloatApi æµ®åŠ¨å¼•æ“æ¨¡å—
  *
- * Ìá¹©¸¡¶¯ÒıÇæµÄ¸÷ÖÖ¹¦ÄÜ£º
- * - µ÷ÊÔ¹¦ÄÜ
- * - ÊäÈë´¦Àí
- * - ÑÕÉ«´¦Àí
- * - äÖÈ¾¹¦ÄÜ
- * - ÉãÏñ»ú¹ÜÀí
- * - ÒôÆµ²¥·Å
- * - ÎÄ¼ş´¦Àí
- * - INI/JSONÎÄ¼ş´¦Àí(1.4.2)
- * - LuaÖ§³Ö(1.4.3)
- * - F_Resource Ö§³Ö¼ÓÃÜËã·¨,ÏîÄ¿Ê¹ÓÃvcpkg½øĞĞ°ü¹ÜÀí(1.5.0)
+ * æä¾›æµ®åŠ¨å¼•æ“çš„å„ç§åŠŸèƒ½ï¼š
+ * - è°ƒè¯•åŠŸèƒ½
+ * - è¾“å…¥å¤„ç†
+ * - é¢œè‰²å¤„ç†
+ * - æ¸²æŸ“åŠŸèƒ½
+ * - æ‘„åƒæœºç®¡ç†
+ * - éŸ³é¢‘æ’­æ”¾
+ * - æ–‡ä»¶å¤„ç†
+ * - INI/JSONæ–‡ä»¶å¤„ç†(1.4.2)
+ * - Luaæ”¯æŒ(1.4.3)
+ * - F_Resource æ”¯æŒåŠ å¯†ç®—æ³•,é¡¹ç›®ä½¿ç”¨vcpkgè¿›è¡ŒåŒ…ç®¡ç†(1.5.0)
  */
 
 #pragma once
@@ -44,6 +44,7 @@
 #define SOL_PRINT_ERRORS 1
 #include "sol/sol.hpp"
 #include "raylib.h"
+#include "nlohmann/json.hpp"
 
 
 #include "F_Resource.h"
@@ -55,16 +56,16 @@
 #include "F_Anim.h"
 #include "Enum.h"
 #include "Sprite.h"
-#include "F_Html.h"
-#include "F_WindowController.h"
+#include "F_Http.h"
+#include "F_Network.h"
 struct ImGuiInputTextCallbackData;
  /**
   * @class F_Debug
   * @ingroup FloatApi
   *
-  * @brief Ìá¹©µ÷ÊÔ¹¦ÄÜ
+  * @brief æä¾›è°ƒè¯•åŠŸèƒ½
   *
-  * @note Ê¹ÓÃÊ¾Àı£º
+  * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
   * @code
   * F_Debug::Init(true);
   * F_Debug::Start();
@@ -78,30 +79,30 @@ class F_Debug {
         std::string log;
         int lv;
     };
-    // ¿ØÖÆÌ¨×´Ì¬
+    // æ§åˆ¶å°çŠ¶æ€
     static std::vector<Log_Info> m_logs;
     static std::vector<std::string> m_commandHistory;
     static char m_inputBuffer[256];
     static int m_historyPos;
     static bool m_scrollToBottom;
     
-    // ÃüÁîÏµÍ³
+    // å‘½ä»¤ç³»ç»Ÿ
     struct DebugCommand {
         std::string name;
         std::string description;
         std::function<void(const std::vector<std::string>&)> action;
     };
     static std::vector<DebugCommand> m_commands;
-    static std::unordered_map<std::string, std::string> m_commandAliases; // ÃüÁî±ğÃû
+    static std::unordered_map<std::string, std::string> m_commandAliases; // å‘½ä»¤åˆ«å
 public:
-    // ÈÕÖ¾¹ıÂËÏµÍ³
+    // æ—¥å¿—è¿‡æ»¤ç³»ç»Ÿ
     static std::unordered_set<std::string> m_logFilters;
     static bool m_showFilteredLogsOnly;
 
-    // ±äÁ¿¼à¿ØÏµÍ³
+    // å˜é‡ç›‘æ§ç³»ç»Ÿ
     struct WatchedVariable {
         std::string name;
-        std::string expression; // Ô­Ê¼±í´ïÊ½
+        std::string expression; // åŸå§‹è¡¨è¾¾å¼
         std::function<std::string()> getter;
         bool showInConsole;
         std::string lastValue;
@@ -111,158 +112,158 @@ public:
 
 public:
     /**
-     * @brief ³õÊ¼»¯µ÷ÊÔ¹¦ÄÜ
-     * @param debug ÊÇ·ñ¿ªÆôµ÷ÊÔ
+     * @brief åˆå§‹åŒ–è°ƒè¯•åŠŸèƒ½
+     * @param debug æ˜¯å¦å¼€å¯è°ƒè¯•
      */
     static void Init(bool debug = true);
 
     /**
-     * @brief ¿ªÆôµ÷ÊÔ
+     * @brief å¼€å¯è°ƒè¯•
      */
     static void Start();
 
     /**
-     * @brief ¹Ø±Õµ÷ÊÔ
+     * @brief å…³é—­è°ƒè¯•
      */
     static void Close();
 
     /**
-     * @brief ÅĞ¶Ïµ÷ÊÔÊÇ·ñ¿ªÆô
-     * @return Èç¹û¿ªÆô·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief åˆ¤æ–­è°ƒè¯•æ˜¯å¦å¼€å¯
+     * @return å¦‚æœå¼€å¯è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool IsOpen();
 
     /**
-     * @brief ÆôÓÃimguiµÄconsole´°¿Ú
+     * @brief å¯ç”¨imguiçš„consoleçª—å£
     */
     static void ShowDebugConsole();
 
     /**
-     * @brief Ìí¼ÓÈÕÖ¾ÏûÏ¢
-     * @param message ÈÕÖ¾ÄÚÈİ
-     * @param level ÈÕÖ¾¼¶±ğ (0=none,1=info, 2=warn, 3=error)
+     * @brief æ·»åŠ æ—¥å¿—æ¶ˆæ¯
+     * @param message æ—¥å¿—å†…å®¹
+     * @param level æ—¥å¿—çº§åˆ« (0=none,1=info, 2=warn, 3=error)
      */
     static void Log(const std::string& message, int level = 0);
     /**
-     * @brief Çå¿ÕÈÕÖ¾ÏûÏ¢
+     * @brief æ¸…ç©ºæ—¥å¿—æ¶ˆæ¯
      */
     static void ClearLog();
     /**
-     * @brief ×¢²áµ÷ÊÔÃüÁî
-     * @param name ÃüÁîÃû³Æ
-     * @param description ÃüÁîÃèÊö
-     * @param action ÃüÁîÖ´ĞĞº¯Êı
+     * @brief æ³¨å†Œè°ƒè¯•å‘½ä»¤
+     * @param name å‘½ä»¤åç§°
+     * @param description å‘½ä»¤æè¿°
+     * @param action å‘½ä»¤æ‰§è¡Œå‡½æ•°
      */
     static void RegisterCommand(const std::string& name, const std::string& description,
         std::function<void(const std::vector<std::string>&)> action);
     /**
-    * @brief »ñÈ¡ËùÓĞµ÷ÊÔÃüÁî
+    * @brief è·å–æ‰€æœ‰è°ƒè¯•å‘½ä»¤
     */
     static std::vector<DebugCommand> GetCommands();
 
     /**
-    * @brief »ñÈ¡Ö¸¶¨µ÷ÊÔÃüÁî
+    * @brief è·å–æŒ‡å®šè°ƒè¯•å‘½ä»¤
     */
     static DebugCommand GetCommand(const std::string& name);
     /**
-     * @brief Ö´ĞĞµ÷ÊÔÃüÁî
-     * @param command ÍêÕûÃüÁî×Ö·û´®
+     * @brief æ‰§è¡Œè°ƒè¯•å‘½ä»¤
+     * @param command å®Œæ•´å‘½ä»¤å­—ç¬¦ä¸²
      */
     static void ExecuteCommand(const std::string& command);
     
     /**
-    * @brief ³õÊ¼»¯ÃüÁî
+    * @brief åˆå§‹åŒ–å‘½ä»¤
     */
     static void InitCommand();
 
     /**
-    * @brief ÊäÈë¿ò»Øµ÷º¯Êı (´¦Àí×Ô¶¯²¹È«ºÍÀúÊ·¼ÇÂ¼)
-    * @param data ImGui»Øµ÷Êı¾İ
+    * @brief è¾“å…¥æ¡†å›è°ƒå‡½æ•° (å¤„ç†è‡ªåŠ¨è¡¥å…¨å’Œå†å²è®°å½•)
+    * @param data ImGuiå›è°ƒæ•°æ®
     */
     static int TextEditCallback(ImGuiInputTextCallbackData* data);
 
     /**
-    * @brief ÃüÁî·Ö´Ê
-    * @param input ÊäÈëÃüÁî
-    * @param tokens Êä³ö·Ö´Ê½á¹û
+    * @brief å‘½ä»¤åˆ†è¯
+    * @param input è¾“å…¥å‘½ä»¤
+    * @param tokens è¾“å‡ºåˆ†è¯ç»“æœ
     */
 
     static void TokenizeCommand(const std::string& input, std::vector<std::string>& tokens);
 
     /**
-     * @brief Ìí¼ÓÈÕÖ¾¹ıÂË¹Ø¼ü´Ê
-     * @param keyword ¹ıÂË¹Ø¼ü´Ê£¨´óĞ¡Ğ´Ãô¸Ğ£©
+     * @brief æ·»åŠ æ—¥å¿—è¿‡æ»¤å…³é”®è¯
+     * @param keyword è¿‡æ»¤å…³é”®è¯ï¼ˆå¤§å°å†™æ•æ„Ÿï¼‰
      */
     static void AddLogFilter(const std::string& keyword);
 
     /**
-     * @brief ÒÆ³ıÈÕÖ¾¹ıÂË¹Ø¼ü´Ê
-     * @param keyword ÒªÒÆ³ıµÄ¹Ø¼ü´Ê
+     * @brief ç§»é™¤æ—¥å¿—è¿‡æ»¤å…³é”®è¯
+     * @param keyword è¦ç§»é™¤çš„å…³é”®è¯
      */
     static void RemoveLogFilter(const std::string& keyword);
 
     /**
-     * @brief ÅĞ¶ÏÈÕÖ¾ÊÇ·ñÓ¦¸ÃÏÔÊ¾
-     * @param log ÈÕÖ¾ÄÚÈİ
-     * @return Èç¹ûÈÕÖ¾Æ¥ÅäÈÎºÎ¹ıÂË¹Ø¼ü´ÊÔò·µ»Øtrue
+     * @brief åˆ¤æ–­æ—¥å¿—æ˜¯å¦åº”è¯¥æ˜¾ç¤º
+     * @param log æ—¥å¿—å†…å®¹
+     * @return å¦‚æœæ—¥å¿—åŒ¹é…ä»»ä½•è¿‡æ»¤å…³é”®è¯åˆ™è¿”å›true
      */
     static bool ShouldShowLog(const std::string& log);
     
 
     /**
-     * @brief ±£´æÈÕÖ¾µ½ÎÄ¼ş
-     * @param filename ÎÄ¼şÃû
-     * @param filtered ÊÇ·ñÖ»±£´æ¹ıÂËºóµÄÈÕÖ¾
+     * @brief ä¿å­˜æ—¥å¿—åˆ°æ–‡ä»¶
+     * @param filename æ–‡ä»¶å
+     * @param filtered æ˜¯å¦åªä¿å­˜è¿‡æ»¤åçš„æ—¥å¿—
      */
     static void SaveLogsToFile(const std::string& filename, bool filtered = false);
 
     /**
-     * @brief ×¢²áÃüÁî±ğÃû
-     * @param alias ±ğÃû
-     * @param command Êµ¼ÊÖ´ĞĞµÄÃüÁî
+     * @brief æ³¨å†Œå‘½ä»¤åˆ«å
+     * @param alias åˆ«å
+     * @param command å®é™…æ‰§è¡Œçš„å‘½ä»¤
      */
     static void RegisterAlias(const std::string& alias, const std::string& command);
 
     /**
-     * @brief ×¢²á±äÁ¿¼à¿Ø
-     * @param name ±äÁ¿Ãû³Æ£¨ÏÔÊ¾ÓÃ£©
-     * @param getter »ñÈ¡±äÁ¿ÖµµÄº¯Êı
-     * @param showInConsole ÊÇ·ñÔÚ¿ØÖÆÌ¨ÏÔÊ¾
+     * @brief æ³¨å†Œå˜é‡ç›‘æ§
+     * @param name å˜é‡åç§°ï¼ˆæ˜¾ç¤ºç”¨ï¼‰
+     * @param getter è·å–å˜é‡å€¼çš„å‡½æ•°
+     * @param showInConsole æ˜¯å¦åœ¨æ§åˆ¶å°æ˜¾ç¤º
      */
     static void WatchVariable(const std::string& name,
         std::function<std::string()> getter,
         bool showInConsole = true);
     /**
-     * @brief ×¢²á±äÁ¿¼à¿Ø
-     * @param name ±äÁ¿Ãû³Æ£¨Î¨Ò»±êÊ¶£©
-     * @param expression ±í´ïÊ½»ò±äÁ¿Ãû
-     * @param showInConsole ÊÇ·ñÔÚ¿ØÖÆÌ¨ÏÔÊ¾
+     * @brief æ³¨å†Œå˜é‡ç›‘æ§
+     * @param name å˜é‡åç§°ï¼ˆå”¯ä¸€æ ‡è¯†ï¼‰
+     * @param expression è¡¨è¾¾å¼æˆ–å˜é‡å
+     * @param showInConsole æ˜¯å¦åœ¨æ§åˆ¶å°æ˜¾ç¤º
      */
     static void WatchVariable(const std::string& name,
         const std::string& expression,
         bool showInConsole = true);
     /**
-     * @brief ÒÆ³ı±äÁ¿¼à¿Ø
-     * @param name ±äÁ¿Ãû³Æ
+     * @brief ç§»é™¤å˜é‡ç›‘æ§
+     * @param name å˜é‡åç§°
      */
     static void UnwatchVariable(const std::string& name);
     /**
-    * @brief ÉèÖÃ±äÁ¿ÔÚ¿ØÖÆÌ¨µÄÏÔÊ¾×´Ì¬
-    * @param name ±äÁ¿Ãû³Æ
-    * @param show ÊÇ·ñÏÔÊ¾
+    * @brief è®¾ç½®å˜é‡åœ¨æ§åˆ¶å°çš„æ˜¾ç¤ºçŠ¶æ€
+    * @param name å˜é‡åç§°
+    * @param show æ˜¯å¦æ˜¾ç¤º
     */
     static void SetVariableVisibility(const std::string& name, bool show);
     /**
-     * @brief ¸üĞÂËùÓĞ¼à¿Ø±äÁ¿£¨Ó¦ÔÚÃ¿Ö¡µ÷ÓÃ£©
+     * @brief æ›´æ–°æ‰€æœ‰ç›‘æ§å˜é‡ï¼ˆåº”åœ¨æ¯å¸§è°ƒç”¨ï¼‰
      */
     static void UpdateWatchedVariables();
     /**
-    * @brief ×¢²á±í´ïÊ½´¦Àíº¯Êı
-    * @param prefix ±í´ïÊ½Ç°×º
-    * @param handler ´¦Àíº¯Êı
+    * @brief æ³¨å†Œè¡¨è¾¾å¼å¤„ç†å‡½æ•°
+    * @param prefix è¡¨è¾¾å¼å‰ç¼€
+    * @param handler å¤„ç†å‡½æ•°
     * @code
     *  RegisterExpressionHandler("player.", [](const std::vector<std::string>& tokens) {
-        // Ê¾Àı£ºplayer.health, player.position.x
+        // ç¤ºä¾‹ï¼šplayer.health, player.position.x
         if (tokens.empty()) return std::string("Invalid player expression");
         
         if (tokens[0] == "health") {
@@ -284,9 +285,9 @@ public:
         std::function<std::string(const std::vector<std::string>&)> handler);
 
     /**
-     * @brief ½âÎö²¢Ö´ĞĞ±í´ïÊ½
-     * @param expression ±í´ïÊ½×Ö·û´®
-     * @return ±í´ïÊ½½á¹û
+     * @brief è§£æå¹¶æ‰§è¡Œè¡¨è¾¾å¼
+     * @param expression è¡¨è¾¾å¼å­—ç¬¦ä¸²
+     * @return è¡¨è¾¾å¼ç»“æœ
      */
     static std::string EvaluateExpression(const std::string& expression);
 
@@ -294,11 +295,11 @@ public:
 
 
 /**
- * @brief ´òÓ¡µ÷ÊÔÈÕÖ¾
- * @param lv ÈÕÖ¾¼¶±ğ
- * @param text ÈÕÖ¾ÄÚÈİ
- * @param english ÊÇ·ñÊ¹ÓÃÓ¢ÎÄ
- * @param auto_enter ÊÇ·ñ×Ô¶¯»»ĞĞ
+ * @brief æ‰“å°è°ƒè¯•æ—¥å¿—
+ * @param lv æ—¥å¿—çº§åˆ«
+ * @param text æ—¥å¿—å†…å®¹
+ * @param english æ˜¯å¦ä½¿ç”¨è‹±æ–‡
+ * @param auto_enter æ˜¯å¦è‡ªåŠ¨æ¢è¡Œ
  */
 void DEBUG_LOG(int lv, const char* text, bool english = 1, bool auto_enter = 1,bool with_imgui_console = 1);
 
@@ -333,11 +334,11 @@ inline void DEBUG_LOGF(int lv, bool english, const char* fmt, Args&&... args) {
 typedef float Float;
 
 /**
- * @brief ÅĞ¶ÏÊı×éÖĞÊÇ·ñº¬ÓĞÄ³Êı¾İ
- * @tparam T Êı×éÀàĞÍ
- * @param a Êı×é
- * @param b Òª²éÕÒµÄÊı¾İ
- * @return Èç¹û°üº¬·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * @brief åˆ¤æ–­æ•°ç»„ä¸­æ˜¯å¦å«æœ‰æŸæ•°æ®
+ * @tparam T æ•°ç»„ç±»å‹
+ * @param a æ•°ç»„
+ * @param b è¦æŸ¥æ‰¾çš„æ•°æ®
+ * @return å¦‚æœåŒ…å«è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
 template<class T>
 inline bool Array_Has(T a[], T b) {
@@ -352,20 +353,20 @@ inline bool Array_Has(T a[], T b) {
 #define ARR_SIZE(a) ( sizeof( (a) ) / sizeof( (a[0]) ) )
 
 /**
- * @brief ´ÓÎÄ¼ş¼ÓÔØ×ÖÌå
- * @param filePath ÎÄ¼şÂ·¾¶
- * @param size ×ÖÌå´óĞ¡
- * @param m_CodePoint Âëµã
- * @return ¼ÓÔØµÄ×ÖÌå
+ * @brief ä»æ–‡ä»¶åŠ è½½å­—ä½“
+ * @param filePath æ–‡ä»¶è·¯å¾„
+ * @param size å­—ä½“å¤§å°
+ * @param m_CodePoint ç ç‚¹
+ * @return åŠ è½½çš„å­—ä½“
  */
 Font Load_Font(const char* filePath, int size, const char* m_CodePoint);
 
 /**
- * @brief ´ÓÎÄ¼ş¼ÓÔØ×ÖÌå£¨Ê¹ÓÃÂëµãÎÄ¼ş£©
- * @param filePath ÎÄ¼şÂ·¾¶
- * @param size ×ÖÌå´óĞ¡
- * @param codePoints_File ÂëµãÎÄ¼ş
- * @return ¼ÓÔØµÄ×ÖÌå
+ * @brief ä»æ–‡ä»¶åŠ è½½å­—ä½“ï¼ˆä½¿ç”¨ç ç‚¹æ–‡ä»¶ï¼‰
+ * @param filePath æ–‡ä»¶è·¯å¾„
+ * @param size å­—ä½“å¤§å°
+ * @param codePoints_File ç ç‚¹æ–‡ä»¶
+ * @return åŠ è½½çš„å­—ä½“
  */
 Font Load_Font_File_Codepoints(const char* filePath, int size, const char* codePoints_File);
 
@@ -373,85 +374,85 @@ Font Load_Font_File_Codepoints(const char* filePath, int size, const char* codeP
  * @class F_Input
  * @ingroup FloatApi
  *
- * @brief Ìá¹©ÊäÈë´¦Àí¹¦ÄÜ
+ * @brief æä¾›è¾“å…¥å¤„ç†åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * if (F_Input::keyboard_pressed(F_Input::key_a)) {
- *     // ´¦Àí°´¼üÊÂ¼ş
+ *     // å¤„ç†æŒ‰é”®äº‹ä»¶
  * }
  * @endcode
  */
 class F_Input {
 public:
     /**
- * @brief ¼ì²éÊó±ê°´Å¥ÊÇ·ñ°´ÏÂ
- * @param mb Êó±ê°´Å¥
- * @return Èç¹û°´ÏÂ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+ * @brief æ£€æŸ¥é¼ æ ‡æŒ‰é’®æ˜¯å¦æŒ‰ä¸‹
+ * @param mb é¼ æ ‡æŒ‰é’®
+ * @return å¦‚æœæŒ‰ä¸‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
  */
     static bool mb_down(int mb);
 
     /**
-     * @brief ¼ì²éÊó±ê°´Å¥ÊÇ·ñ¸Õ¸Õ°´ÏÂ
-     * @param mb Êó±ê°´Å¥
-     * @return Èç¹û¸Õ¸Õ°´ÏÂ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é¼ æ ‡æŒ‰é’®æ˜¯å¦åˆšåˆšæŒ‰ä¸‹
+     * @param mb é¼ æ ‡æŒ‰é’®
+     * @return å¦‚æœåˆšåˆšæŒ‰ä¸‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool mb_pressed(int mb);
 
     /**
-     * @brief ¼ì²éÊó±ê°´Å¥ÊÇ·ñ¸Õ¸ÕÊÍ·Å
-     * @param mb Êó±ê°´Å¥
-     * @return Èç¹û¸Õ¸ÕÊÍ·Å·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é¼ æ ‡æŒ‰é’®æ˜¯å¦åˆšåˆšé‡Šæ”¾
+     * @param mb é¼ æ ‡æŒ‰é’®
+     * @return å¦‚æœåˆšåˆšé‡Šæ”¾è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool mb_released(int mb);
 
     /**
-     * @brief ¼ì²éÊó±ê°´Å¥ÊÇ·ñÎ´°´ÏÂ
-     * @param mb Êó±ê°´Å¥
-     * @return Èç¹ûÎ´°´ÏÂ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é¼ æ ‡æŒ‰é’®æ˜¯å¦æœªæŒ‰ä¸‹
+     * @param mb é¼ æ ‡æŒ‰é’®
+     * @return å¦‚æœæœªæŒ‰ä¸‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool mb_up(int mb);
 
     /**
-     * @brief ¼ì²é¼üÅÌ°´¼üÊÇ·ñ¸Õ¸Õ°´ÏÂ
-     * @param key ¼üÅÌ°´¼ü
-     * @return Èç¹û¸Õ¸Õ°´ÏÂ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é”®ç›˜æŒ‰é”®æ˜¯å¦åˆšåˆšæŒ‰ä¸‹
+     * @param key é”®ç›˜æŒ‰é”®
+     * @return å¦‚æœåˆšåˆšæŒ‰ä¸‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool keyboard_pressed(int key);
 
     /**
-     * @brief ¼ì²é¼üÅÌ°´¼üÊÇ·ñ°´ÏÂ
-     * @param key ¼üÅÌ°´¼ü
-     * @return Èç¹û°´ÏÂ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é”®ç›˜æŒ‰é”®æ˜¯å¦æŒ‰ä¸‹
+     * @param key é”®ç›˜æŒ‰é”®
+     * @return å¦‚æœæŒ‰ä¸‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool keyboard_down(int key);
 
     /**
-     * @brief ¼ì²é¼üÅÌ°´¼üÊÇ·ñ¸Õ¸ÕÊÍ·Å
-     * @param key ¼üÅÌ°´¼ü
-     * @return Èç¹û¸Õ¸ÕÊÍ·Å·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é”®ç›˜æŒ‰é”®æ˜¯å¦åˆšåˆšé‡Šæ”¾
+     * @param key é”®ç›˜æŒ‰é”®
+     * @return å¦‚æœåˆšåˆšé‡Šæ”¾è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool keyboard_released(int key);
 
     /**
-     * @brief ¼ì²é¼üÅÌ°´¼üÊÇ·ñÖØ¸´°´ÏÂ
-     * @param key ¼üÅÌ°´¼ü
-     * @return Èç¹ûÖØ¸´°´ÏÂ·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief æ£€æŸ¥é”®ç›˜æŒ‰é”®æ˜¯å¦é‡å¤æŒ‰ä¸‹
+     * @param key é”®ç›˜æŒ‰é”®
+     * @return å¦‚æœé‡å¤æŒ‰ä¸‹è¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     static bool keyboard_pressed_repeat(int key);
 
 
     /**
-     * @brief ×ÖÄ¸×ª»»Îª¼üÖµ
-     * @param letter ×ÖÄ¸
-     * @return ¼üÖµ
+     * @brief å­—æ¯è½¬æ¢ä¸ºé”®å€¼
+     * @param letter å­—æ¯
+     * @return é”®å€¼
      */
     static int to_value(char letter);
 
     /**
-     * @brief Êı×Ö×ª»»Îª¼üÖµ
-     * @param number Êı×Ö
-     * @return ¼üÖµ
+     * @brief æ•°å­—è½¬æ¢ä¸ºé”®å€¼
+     * @param number æ•°å­—
+     * @return é”®å€¼
      */
     static int number_to_value(int number);
 
@@ -566,7 +567,7 @@ public:
     static const int key_volume_up;
     static const int key_volume_down;
 
-    // Êó±ê°´Å¥
+    // é¼ æ ‡æŒ‰é’®
     static const int mouse_button_left;
     static const int mouse_button_right;
     static const int mouse_button_middle;
@@ -577,16 +578,16 @@ public:
 };
 
 /**
- * @brief ×ÖÄ¸×ª»»Îª¼üÖµ
- * @param letter ×ÖÄ¸
- * @return ¼üÖµ
+ * @brief å­—æ¯è½¬æ¢ä¸ºé”®å€¼
+ * @param letter å­—æ¯
+ * @return é”®å€¼
  */
 int letter_to_kv(char letter);
 
 /**
- * @brief Êı×Ö×ª»»Îª¼üÖµ
- * @param number Êı×Ö
- * @return ¼üÖµ
+ * @brief æ•°å­—è½¬æ¢ä¸ºé”®å€¼
+ * @param number æ•°å­—
+ * @return é”®å€¼
  */
 int number_to_kv(int number);
 
@@ -594,9 +595,9 @@ int number_to_kv(int number);
  * @class F_Color
  * @ingroup FloatApi
  *
- * @brief Ìá¹©ÑÕÉ«´¦Àí¹¦ÄÜ
+ * @brief æä¾›é¢œè‰²å¤„ç†åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * F_Color color = Make_FColor_RGB(255, 0, 0, 1.0f);
  * @endcode
@@ -607,14 +608,14 @@ public:
     float A;
 
     /**
-     * @brief ×ª»»ÎªraylibµÄColor¶ÔÏó
-     * @return Color¶ÔÏó
+     * @brief è½¬æ¢ä¸ºraylibçš„Colorå¯¹è±¡
+     * @return Colorå¯¹è±¡
      */
     struct Color To_RlCol();
 
     /**
-     * @brief ÀàĞÍ×ª»»²Ù×÷·ûÖØÔØ
-     * @return Color¶ÔÏó
+     * @brief ç±»å‹è½¬æ¢æ“ä½œç¬¦é‡è½½
+     * @return Colorå¯¹è±¡
      */
     operator struct Color();
 
@@ -648,22 +649,22 @@ public:
 };
 
 /**
- * @brief ´´½¨RGBÑÕÉ«
- * @param r ºìÉ«·ÖÁ¿
- * @param g ÂÌÉ«·ÖÁ¿
- * @param b À¶É«·ÖÁ¿
- * @param a Í¸Ã÷¶È
- * @return ÑÕÉ«¶ÔÏó
+ * @brief åˆ›å»ºRGBé¢œè‰²
+ * @param r çº¢è‰²åˆ†é‡
+ * @param g ç»¿è‰²åˆ†é‡
+ * @param b è“è‰²åˆ†é‡
+ * @param a é€æ˜åº¦
+ * @return é¢œè‰²å¯¹è±¡
  */
 Color Make_Color_RGB(int r, int g, int b, float a = 1.0f);
 
 /**
- * @brief ´´½¨FColor¶ÔÏó
- * @param r ºìÉ«·ÖÁ¿
- * @param g ÂÌÉ«·ÖÁ¿
- * @param b À¶É«·ÖÁ¿
- * @param a Í¸Ã÷¶È
- * @return FColor¶ÔÏó
+ * @brief åˆ›å»ºFColorå¯¹è±¡
+ * @param r çº¢è‰²åˆ†é‡
+ * @param g ç»¿è‰²åˆ†é‡
+ * @param b è“è‰²åˆ†é‡
+ * @param a é€æ˜åº¦
+ * @return FColorå¯¹è±¡
  */
 F_Color Make_FColor_RGB(int r, int g, int b, float a = 1.0f);
 
@@ -671,9 +672,9 @@ F_Color Make_FColor_RGB(int r, int g, int b, float a = 1.0f);
  * @class F_Render
  * @ingroup FloatApi
  *
- * @brief Ìá¹©äÖÈ¾¹¦ÄÜ
+ * @brief æä¾›æ¸²æŸ“åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * F_Render::Draw_Sprite_Ex(&texture, 0, 100, 100, 1.0f, 1.0f, 0.5f, 0.5f, 0.0f, 1.0f, RED);
  * @endcode
@@ -682,319 +683,319 @@ class F_Render {
     static float _draw_line_thick;
 public:
     /**
-     * @brief ÉèÖÃÏßÌõ´ÖÏ¸
-     * @param thick ´ÖÏ¸Öµ
+     * @brief è®¾ç½®çº¿æ¡ç²—ç»†
+     * @param thick ç²—ç»†å€¼
      */
     static void Draw_Set_Line_Thick(float thick);
     /**
-     * @brief »æÖÆ¾«Áé
-     * @param img Í¼Æ¬ÎÆÀí
-     * @param ind Ö¡Ë÷Òı
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param x_scale xÖáËõ·Å
-     * @param y_scale yÖáËõ·Å
-     * @param x_origin xÖáÔ­µã
-     * @param y_origin yÖáÔ­µã
-     * @param angle Ğı×ª½Ç¶È
-     * @param alpha Í¸Ã÷¶È
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶ç²¾çµ
+     * @param img å›¾ç‰‡çº¹ç†
+     * @param ind å¸§ç´¢å¼•
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param x_scale xè½´ç¼©æ”¾
+     * @param y_scale yè½´ç¼©æ”¾
+     * @param x_origin xè½´åŸç‚¹
+     * @param y_origin yè½´åŸç‚¹
+     * @param angle æ—‹è½¬è§’åº¦
+     * @param alpha é€æ˜åº¦
+     * @param col é¢œè‰²
      */
     static void Draw_Sprite_Ex(struct Texture* img, int ind, float x, float y, float x_scale, float y_scale, float x_origin, float y_origin, float angle, float alpha, struct Color col);
     /**
-    * @brief »æÖÆ¾«Áé
-    * @param spr ¾«Áé¶ÔÏó
-    * @param x x×ø±ê
-    * @param y y×ø±ê
-    * @param x_scale xÖáËõ·Å
-    * @param y_scale yÖáËõ·Å
-    * @param x_origin xÖáÔ­µã
-    * @param y_origin yÖáÔ­µã
-    * @param angle Ğı×ª½Ç¶È
-    * @param alpha Í¸Ã÷¶È
-    * @param col ÑÕÉ«
+    * @brief ç»˜åˆ¶ç²¾çµ
+    * @param spr ç²¾çµå¯¹è±¡
+    * @param x xåæ ‡
+    * @param y yåæ ‡
+    * @param x_scale xè½´ç¼©æ”¾
+    * @param y_scale yè½´ç¼©æ”¾
+    * @param x_origin xè½´åŸç‚¹
+    * @param y_origin yè½´åŸç‚¹
+    * @param angle æ—‹è½¬è§’åº¦
+    * @param alpha é€æ˜åº¦
+    * @param col é¢œè‰²
     */
     static void Draw_Sprite(Sprite spr, float x, float y, float x_scale, float y_scale, float x_origin, float y_origin, float angle, float alpha, struct Color col);
     /**
-     * @brief »æÖÆÎÄ±¾
-     * @param font ×ÖÌå
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param spacing ×Ö·û¼ä¾à
-     * @param size ×ÖÌå´óĞ¡
-     * @param col ÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
+     * @brief ç»˜åˆ¶æ–‡æœ¬
+     * @param font å­—ä½“
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param spacing å­—ç¬¦é—´è·
+     * @param size å­—ä½“å¤§å°
+     * @param col é¢œè‰²
+     * @param alpha é€æ˜åº¦
      */
     static void Draw_Text_Ex(struct Font font, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float size, struct Color col, float alpha = 1.0f);
 
     /**
-     * @brief »æÖÆĞÎ×´
-     * @param shape ĞÎ×´¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶å½¢çŠ¶
+     * @param shape å½¢çŠ¶å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Shape(F_Shape shape, struct Color col);
 
     /**
-     * @brief »æÖÆ¾ØĞÎ
-     * @param rect ¾ØĞÎ¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶çŸ©å½¢
+     * @param rect çŸ©å½¢å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Rectangle(F_Rectangle rect, struct Color col);
 
     /**
-     * @brief »æÖÆÔ²ĞÎ
-     * @param circle Ô²ĞÎ¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶åœ†å½¢
+     * @param circle åœ†å½¢å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Circle(F_Circle circle, struct Color col);
 
     /**
-     * @brief »æÖÆÍÖÔ²
-     * @param ellipse ÍÖÔ²¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶æ¤­åœ†
+     * @param ellipse æ¤­åœ†å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Ellipse(F_Ellipse ellipse, struct Color col);
 
     /**
-     * @brief Ìî³äĞÎ×´
-     * @param shape ĞÎ×´¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief å¡«å……å½¢çŠ¶
+     * @param shape å½¢çŠ¶å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Shape_Fill(F_Shape shape, struct Color col);
 
     /**
-     * @brief »æÖÆ¶à±ßĞÎ
-     * @param polygon ¶à±ßĞÎ¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶å¤šè¾¹å½¢
+     * @param polygon å¤šè¾¹å½¢å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Polygon(F_Polygon polygon, struct Color col);
 
     /**
-     * @brief »æÖÆ¶à±ßĞÎ
-     * @param points ¶à±ßĞÎ¶¥µã
-     * @param color ÑÕÉ«
+     * @brief ç»˜åˆ¶å¤šè¾¹å½¢
+     * @param points å¤šè¾¹å½¢é¡¶ç‚¹
+     * @param color é¢œè‰²
      */
     static void Draw_Polygon(std::vector<FVec2> points, Color color);
 
     /**
-     * @brief »æÖÆÈı½ÇĞÎ
-     * @param triangle Èı½ÇĞÎ¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶ä¸‰è§’å½¢
+     * @param triangle ä¸‰è§’å½¢å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Triangle(F_Triangle triangle, struct Color col);
 
     /**
-     * @brief »æÖÆÏßÌõ
-     * @param line ÏßÌõ¶ÔÏó
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶çº¿æ¡
+     * @param line çº¿æ¡å¯¹è±¡
+     * @param col é¢œè‰²
      */
     static void Draw_Line(F_Line line, Color col);
 
     /**
-     * @brief »æÖÆ´øÂÖÀªµÄÎÄ±¾
-     * @param fnt ×ÖÌå
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param spacing ×Ö·û¼ä¾à
-     * @param font_size ×ÖÌå´óĞ¡
-     * @param thick ÂÖÀªºñ¶È
-     * @param col ÑÕÉ«
-     * @param outline_color ÂÖÀªÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
-     * @param fill_all ÊÇ·ñÌî³äËùÓĞ×Ö·û
+     * @brief ç»˜åˆ¶å¸¦è½®å»“çš„æ–‡æœ¬
+     * @param fnt å­—ä½“
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param spacing å­—ç¬¦é—´è·
+     * @param font_size å­—ä½“å¤§å°
+     * @param thick è½®å»“åšåº¦
+     * @param col é¢œè‰²
+     * @param outline_color è½®å»“é¢œè‰²
+     * @param alpha é€æ˜åº¦
+     * @param fill_all æ˜¯å¦å¡«å……æ‰€æœ‰å­—ç¬¦
      */
     static void Draw_Text_Outline(struct Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color outline_color, float alpha = 1.0f, bool fill_all = false);
 
     /**
-     * @brief »æÖÆ´øÒõÓ°µÄÎÄ±¾
-     * @param fnt ×ÖÌå
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param spacing ×Ö·û¼ä¾à
-     * @param font_size ×ÖÌå´óĞ¡
-     * @param thick ÒõÓ°ºñ¶È
-     * @param col ÑÕÉ«
-     * @param shadow_color ÒõÓ°ÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
-     * @param fill_all ÊÇ·ñÌî³äËùÓĞ×Ö·û
+     * @brief ç»˜åˆ¶å¸¦é˜´å½±çš„æ–‡æœ¬
+     * @param fnt å­—ä½“
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param spacing å­—ç¬¦é—´è·
+     * @param font_size å­—ä½“å¤§å°
+     * @param thick é˜´å½±åšåº¦
+     * @param col é¢œè‰²
+     * @param shadow_color é˜´å½±é¢œè‰²
+     * @param alpha é€æ˜åº¦
+     * @param fill_all æ˜¯å¦å¡«å……æ‰€æœ‰å­—ç¬¦
      */
     static void Draw_Text_Shadow(struct Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color shadow_color, float alpha = 1.0f, bool fill_all = false);
 
     /**
-     * @brief »æÖÆ´øÂÖÀªµÄÎÄ±¾
-     * @param fnt ×ÖÌå
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param spacing ×Ö·û¼ä¾à
-     * @param font_size ×ÖÌå´óĞ¡
-     * @param thick ÂÖÀªºñ¶È
-     * @param col ÑÕÉ«
-     * @param outline_color ÂÖÀªÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
-     * @param fill_all ÊÇ·ñÌî³äËùÓĞ×Ö·û
+     * @brief ç»˜åˆ¶å¸¦è½®å»“çš„æ–‡æœ¬
+     * @param fnt å­—ä½“
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param spacing å­—ç¬¦é—´è·
+     * @param font_size å­—ä½“å¤§å°
+     * @param thick è½®å»“åšåº¦
+     * @param col é¢œè‰²
+     * @param outline_color è½®å»“é¢œè‰²
+     * @param alpha é€æ˜åº¦
+     * @param fill_all æ˜¯å¦å¡«å……æ‰€æœ‰å­—ç¬¦
      */
     static void Draw_Text_Outline(F_Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color outline_color, float alpha = 1.0f, bool fill_all = false);
 
     /**
-     * @brief »æÖÆ´øÒõÓ°µÄÎÄ±¾
-     * @param fnt ×ÖÌå
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param spacing ×Ö·û¼ä¾à
-     * @param font_size ×ÖÌå´óĞ¡
-     * @param thick ÒõÓ°ºñ¶È
-     * @param col ÑÕÉ«
-     * @param shadow_color ÒõÓ°ÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
-     * @param fill_all ÊÇ·ñÌî³äËùÓĞ×Ö·û
+     * @brief ç»˜åˆ¶å¸¦é˜´å½±çš„æ–‡æœ¬
+     * @param fnt å­—ä½“
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param spacing å­—ç¬¦é—´è·
+     * @param font_size å­—ä½“å¤§å°
+     * @param thick é˜´å½±åšåº¦
+     * @param col é¢œè‰²
+     * @param shadow_color é˜´å½±é¢œè‰²
+     * @param alpha é€æ˜åº¦
+     * @param fill_all æ˜¯å¦å¡«å……æ‰€æœ‰å­—ç¬¦
      */
     static void Draw_Text_Shadow(F_Font fnt, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float font_size, float thick, Color col, Color shadow_color, float alpha = 1.0f, bool fill_all = false);
 
     /**
-     * @brief »æÖÆÎÄ±¾
-     * @param font ×ÖÌå
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param spacing ×Ö·û¼ä¾à
-     * @param size ×ÖÌå´óĞ¡
-     * @param col ÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
+     * @brief ç»˜åˆ¶æ–‡æœ¬
+     * @param font å­—ä½“
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param spacing å­—ç¬¦é—´è·
+     * @param size å­—ä½“å¤§å°
+     * @param col é¢œè‰²
+     * @param alpha é€æ˜åº¦
      */
     static void Draw_Text_Ex(F_Font font, const char* text, float x, float y, float o_x, float o_y, float rot, float spacing, float size, struct Color col, float alpha = 1.0f);
 
     /**
-     * @brief »æÖÆÎÄ±¾
-     * @param text ÎÄ±¾ÄÚÈİ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param o_x xÖáÔ­µã
-     * @param o_y yÖáÔ­µã
-     * @param rot Ğı×ª½Ç¶È
-     * @param size ×ÖÌå´óĞ¡
-     * @param col ÑÕÉ«
-     * @param alpha Í¸Ã÷¶È
+     * @brief ç»˜åˆ¶æ–‡æœ¬
+     * @param text æ–‡æœ¬å†…å®¹
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param o_x xè½´åŸç‚¹
+     * @param o_y yè½´åŸç‚¹
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param size å­—ä½“å¤§å°
+     * @param col é¢œè‰²
+     * @param alpha é€æ˜åº¦
      */
     static void Draw_Text(const char* text, float x, float y, float o_x, float o_y, float rot, float size, struct Color col, float alpha = 1.0f);
     /**
-     * @brief ÉèÖÃÄ¬ÈÏ×ÖÌå
+     * @brief è®¾ç½®é»˜è®¤å­—ä½“
      */
     static void Set_Default_Font(Font font);
 
     /**
-     * @brief »æÖÆÏßÌõ
-     * @param x1 Æğµãx×ø±ê
-     * @param y1 Æğµãy×ø±ê
-     * @param x2 ÖÕµãx×ø±ê
-     * @param y2 ÖÕµãy×ø±ê
-     * @param col ÑÕÉ«
+     * @brief ç»˜åˆ¶çº¿æ¡
+     * @param x1 èµ·ç‚¹xåæ ‡
+     * @param y1 èµ·ç‚¹yåæ ‡
+     * @param x2 ç»ˆç‚¹xåæ ‡
+     * @param y2 ç»ˆç‚¹yåæ ‡
+     * @param col é¢œè‰²
      */
     static void Draw_Line(float x1, float y1, float x2, float y2, Color col);
 
     /**
-     * @brief »æÖÆ¾ØĞÎ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param w ¿í¶È
-     * @param h ¸ß¶È
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶çŸ©å½¢
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param w å®½åº¦
+     * @param h é«˜åº¦
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Rectangle(float x, float y, float w, float h, Color col, bool line_mode = false);
 
     /**
-     * @brief »æÖÆĞı×ª¾ØĞÎ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param w ¿í¶È
-     * @param h ¸ß¶È
-     * @param rot Ğı×ª½Ç¶È
-     * @param origin Ğı×ªÔ­µã
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶æ—‹è½¬çŸ©å½¢
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param w å®½åº¦
+     * @param h é«˜åº¦
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param origin æ—‹è½¬åŸç‚¹
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Rectangle(float x, float y, float w, float h, float rot, FVec2 origin, Color col, bool line_mode = false);
 
     /**
-     * @brief »æÖÆÔ²ĞÎ
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param radius °ë¾¶
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶åœ†å½¢
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param radius åŠå¾„
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Circle(float x, float y, float radius, Color col, bool line_mode = false);
 
     /**
-     * @brief »æÖÆÔ²»¡
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param radius °ë¾¶
-     * @param startAngle ÆğÊ¼½Ç¶È
-     * @param angle ½Ç¶È
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶åœ†å¼§
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param radius åŠå¾„
+     * @param startAngle èµ·å§‹è§’åº¦
+     * @param angle è§’åº¦
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Circle(float x, float y, float radius, float startAngle, float angle, Color col, bool line_mode = false);
 
     /**
-     * @brief »æÖÆÍÖÔ²
-     * @param x x×ø±ê
-     * @param y y×ø±ê
-     * @param a ³¤Öá
-     * @param b ¶ÌÖá
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶æ¤­åœ†
+     * @param x xåæ ‡
+     * @param y yåæ ‡
+     * @param a é•¿è½´
+     * @param b çŸ­è½´
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Ellipse(float x, float y, float a, float b, Color col, bool line_mode = false);
 
     /**
-     * @brief »æÖÆÈı½ÇĞÎ
-     * @param x1 ¶¥µã1 x×ø±ê
-     * @param y1 ¶¥µã1 y×ø±ê
-     * @param x2 ¶¥µã2 x×ø±ê
-     * @param y2 ¶¥µã2 y×ø±ê
-     * @param x3 ¶¥µã3 x×ø±ê
-     * @param y3 ¶¥µã3 y×ø±ê
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶ä¸‰è§’å½¢
+     * @param x1 é¡¶ç‚¹1 xåæ ‡
+     * @param y1 é¡¶ç‚¹1 yåæ ‡
+     * @param x2 é¡¶ç‚¹2 xåæ ‡
+     * @param y2 é¡¶ç‚¹2 yåæ ‡
+     * @param x3 é¡¶ç‚¹3 xåæ ‡
+     * @param y3 é¡¶ç‚¹3 yåæ ‡
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Triangle(float x1, float y1, float x2, float y2, float x3, float y3, Color col, bool line_mode = false);
 
     /**
-     * @brief »æÖÆĞı×ªÈı½ÇĞÎ
-     * @param x1 ¶¥µã1 x×ø±ê
-     * @param y1 ¶¥µã1 y×ø±ê
-     * @param x2 ¶¥µã2 x×ø±ê
-     * @param y2 ¶¥µã2 y×ø±ê
-     * @param x3 ¶¥µã3 x×ø±ê
-     * @param y3 ¶¥µã3 y×ø±ê
-     * @param rot Ğı×ª½Ç¶È
-     * @param col ÑÕÉ«
-     * @param line_mode ÊÇ·ñÎªÏß¿òÄ£Ê½
+     * @brief ç»˜åˆ¶æ—‹è½¬ä¸‰è§’å½¢
+     * @param x1 é¡¶ç‚¹1 xåæ ‡
+     * @param y1 é¡¶ç‚¹1 yåæ ‡
+     * @param x2 é¡¶ç‚¹2 xåæ ‡
+     * @param y2 é¡¶ç‚¹2 yåæ ‡
+     * @param x3 é¡¶ç‚¹3 xåæ ‡
+     * @param y3 é¡¶ç‚¹3 yåæ ‡
+     * @param rot æ—‹è½¬è§’åº¦
+     * @param col é¢œè‰²
+     * @param line_mode æ˜¯å¦ä¸ºçº¿æ¡†æ¨¡å¼
      */
     static void Draw_Triangle(float x1, float y1, float x2, float y2, float x3, float y3, float rot, Color col, bool line_mode = false);
 };
@@ -1003,14 +1004,14 @@ public:
  * @class F_Camera
  * @ingroup FloatApi
  *
- * @brief Ìá¹©ÉãÏñ»ú¹ÜÀí¹¦ÄÜ
+ * @brief æä¾›æ‘„åƒæœºç®¡ç†åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * F_Camera camera;
  * camera.Load(800, 600);
  * Begin_Mode_FCamera(camera, BLACK);
- * // äÖÈ¾ÄÚÈİ
+ * // æ¸²æŸ“å†…å®¹
  * End_Mode_FCamera(camera, BLACK);
  * @endcode
  */
@@ -1029,122 +1030,104 @@ public:
     Vector2 origin;
 
     /**
-     * @brief Ä¬ÈÏ¹¹Ôìº¯Êı
+     * @brief é»˜è®¤æ„é€ å‡½æ•°
      */
     F_Camera();
 
     /**
-     * @brief ¿½±´¹¹Ôìº¯Êı
-     * @param c F_Camera¶ÔÏó
+     * @brief æ‹·è´æ„é€ å‡½æ•°
+     * @param c F_Cameraå¯¹è±¡
      */
     F_Camera(const F_Camera* c);
 
     /**
-     * @brief ¼ÓÔØÉãÏñ»ú
-     * @param w ¿í¶È
-     * @param h ¸ß¶È
-     * @param _auto_free ÊÇ·ñ×Ô¶¯ÊÍ·Å
+     * @brief åŠ è½½æ‘„åƒæœº
+     * @param w å®½åº¦
+     * @param h é«˜åº¦
+     * @param _auto_free æ˜¯å¦è‡ªåŠ¨é‡Šæ”¾
      */
     void Load(float w, float h, bool _auto_free = true);
 
     /**
-     * @brief Ğ¶ÔØÉãÏñ»ú
+     * @brief å¸è½½æ‘„åƒæœº
      */
     void Unload();
 
     /**
-     * @brief »ñÈ¡ÉãÏñ»ú¿í¶È
-     * @return ¿í¶È
+     * @brief è·å–æ‘„åƒæœºå®½åº¦
+     * @return å®½åº¦
      */
     float Get_Width() const;
 
     /**
-     * @brief »ñÈ¡ÉãÏñ»ú¸ß¶È
-     * @return ¸ß¶È
+     * @brief è·å–æ‘„åƒæœºé«˜åº¦
+     * @return é«˜åº¦
      */
     float Get_Height() const;
 
     /**
-     * @brief »ñÈ¡ÉãÏñ»úäÖÈ¾ÎÆÀí
-     * @return äÖÈ¾ÎÆÀí
+     * @brief è·å–æ‘„åƒæœºæ¸²æŸ“çº¹ç†
+     * @return æ¸²æŸ“çº¹ç†
      */
     RenderTexture Get();
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~F_Camera();
 };
 
 /**
- * @brief ¼ÓÔØÉãÏñ»ú
- * @param w ¿í¶È
- * @param h ¸ß¶È
- * @param camera ÉãÏñ»ú¶ÔÏó
+ * @brief åŠ è½½æ‘„åƒæœº
+ * @param w å®½åº¦
+ * @param h é«˜åº¦
+ * @param camera æ‘„åƒæœºå¯¹è±¡
  */
 void Load_FCamera(float w, float h, F_Camera* camera);
 
 /**
- * @brief Ğ¶ÔØÉãÏñ»ú
- * @param camera ÉãÏñ»ú¶ÔÏó
+ * @brief å¸è½½æ‘„åƒæœº
+ * @param camera æ‘„åƒæœºå¯¹è±¡
  */
 void Unload_FCamera(F_Camera* camera);
 
 /**
- * @brief ¿ªÊ¼ÉãÏñ»úÄ£Ê½
- * @param _camera ÉãÏñ»ú¶ÔÏó
- * @param Background_Color ±³¾°ÑÕÉ«
+ * @brief å¼€å§‹æ‘„åƒæœºæ¨¡å¼
+ * @param _camera æ‘„åƒæœºå¯¹è±¡
+ * @param Background_Color èƒŒæ™¯é¢œè‰²
  */
 void Begin_Mode_FCamera(F_Camera& _camera, Color Background_Color);
 
 /**
- * @brief ½áÊøÉãÏñ»úÄ£Ê½
- * @param _camera ÉãÏñ»ú¶ÔÏó
- * @param Background_Color ±³¾°ÑÕÉ«
- * @param reverse ÊÇ·ñ·´×ª
+ * @brief ç»“æŸæ‘„åƒæœºæ¨¡å¼
+ * @param _camera æ‘„åƒæœºå¯¹è±¡
+ * @param Background_Color èƒŒæ™¯é¢œè‰²
+ * @param reverse æ˜¯å¦åè½¬
  */
 void End_Mode_FCamera(F_Camera& _camera, Color Background_Color, int reverse = 0);
 
 /**
- * @brief ¿ªÊ¼ÉãÏñ»úÄ£Ê½
- * @param _camera ÉãÏñ»ú¶ÔÏó
- * @param Background_Color ±³¾°ÑÕÉ«
+ * @brief å¼€å§‹æ‘„åƒæœºæ¨¡å¼
+ * @param _camera æ‘„åƒæœºå¯¹è±¡
+ * @param Background_Color èƒŒæ™¯é¢œè‰²
  */
 void Begin_Mode_FCamera(F_Camera* _camera, Color Background_Color);
 
 /**
- * @brief ½áÊøÉãÏñ»úÄ£Ê½
- * @param _camera ÉãÏñ»ú¶ÔÏó
- * @param Background_Color ±³¾°ÑÕÉ«
- * @param reverse ÊÇ·ñ·´×ª
+ * @brief ç»“æŸæ‘„åƒæœºæ¨¡å¼
+ * @param _camera æ‘„åƒæœºå¯¹è±¡
+ * @param Background_Color èƒŒæ™¯é¢œè‰²
+ * @param reverse æ˜¯å¦åè½¬
  */
 void End_Mode_FCamera(F_Camera* _camera, Color Background_Color, int reverse = 0);
-
-/**
- * @brief ²¥·ÅÒôÆµ
- * @param audio ÒôÆµ¶ÔÏó
- */
-void Audio_Play(F_Audio audio);
-
-/**
- * @brief Í£Ö¹ÒôÆµ
- * @param audio ÒôÆµ¶ÔÏó
- */
-void Audio_Stop(F_Audio audio);
-
-/**
- * @brief ¸üĞÂÒôÀÖ
- * @param audio ÒôÆµ¶ÔÏó
- */
-void Audio_Music_Update(F_Audio audio);
 
 /**
  * @class F_File
  * @ingroup FloatApi
  *
- * @brief Ìá¹©ÎÄ¼ş´¦Àí¹¦ÄÜ
+ * @brief æä¾›æ–‡ä»¶å¤„ç†åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * std::string filename = F_File::Get_Open_File_Name("*.txt");
  * //filter = Text Files (*.txt)\0*.txt\0   
@@ -1155,83 +1138,39 @@ class F_File {
     static bool loaded;
 public:
     /**
-     * @brief Ñ¡Ôñ´ò¿ªÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
+     * @brief é€‰æ‹©æ‰“å¼€æ–‡ä»¶
+     * @param strFilter æ–‡ä»¶è¿‡æ»¤å™¨
+     * @return æ–‡ä»¶åï¼ˆå¤±è´¥è¿”å›ç©ºå­—ç¬¦ä¸²ï¼‰
      */
     static std::string Get_Open_File_Name(const char* strFilter);
 
     /**
-     * @brief Ñ¡Ôñ´ò¿ªÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @param flag ±êÖ¾
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
-     */
-    static std::string Get_Open_File_Name(const char* strFilter, unsigned int flag);
-    /**
-     * @brief Ñ¡Ôñ´ò¿ªÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @param flag ±êÖ¾
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
-     */
-    static std::wstring Get_Open_File_NameW(const wchar_t* strFilter);
-
-    /**
-     * @brief Ñ¡Ôñ´ò¿ªÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @param flag ±êÖ¾
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
-     */
-    static std::wstring Get_Open_File_NameW(const wchar_t* strFilter, unsigned int flag);
-    /**
-    * @brief ±£´æÎÄ¼ş
-    * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-    * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
+    * @brief ä¿å­˜æ–‡ä»¶
+    * @param strFilter æ–‡ä»¶è¿‡æ»¤å™¨
+	* @param d_name é»˜è®¤æ–‡ä»¶å
+    * @return æ–‡ä»¶åï¼ˆå¤±è´¥è¿”å›ç©ºå­—ç¬¦ä¸²ï¼‰
     */
-    static std::string Get_Save_File_Name(const char* strFilter);
+    std::string Get_Save_File_Name(const char* strFilter,const char*d_name=nullptr);
 
-    /**
-     * @brief Ñ¡Ôñ±£´æÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @param flag ±êÖ¾
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
-     */
-    static std::string Get_Save_File_Name(const char*strFilter, unsigned int flag);
-    /**
-     * @brief Ñ¡Ôñ±£´æÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @param flag ±êÖ¾
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
-     */
-    static std::wstring Get_Save_File_NameW(const wchar_t* strFilter);
-
-    /**
-     * @brief Ñ¡Ôñ±£´æÎÄ¼ş
-     * @param strFilter ÎÄ¼ş¹ıÂËÆ÷
-     * @param flag ±êÖ¾
-     * @return ÎÄ¼şÃû£¨Ê§°Ü·µ»Ø¿Õ×Ö·û´®£©
-     */
-    static std::wstring Get_Save_File_NameW(const wchar_t* strFilter, unsigned int flag);
-
-    /**
-     * @brief Ë¢ĞÂÍÏ·ÅÎÄ¼şÁĞ±í
+   /**
+     * @brief åˆ·æ–°æ‹–æ”¾æ–‡ä»¶åˆ—è¡¨
      */
     static void Flush_Drop_Files();
 
     /**
-     * @brief »ñÈ¡ÍÏ·ÅÎÄ¼ş
-     * @param index Ë÷Òı
-     * @return ÎÄ¼şÃû
+     * @brief è·å–æ‹–æ”¾æ–‡ä»¶
+     * @param index ç´¢å¼•
+     * @return æ–‡ä»¶å
      */
     static const char* Get_Drop_File(int index);
 
     /**
-     * @brief ¹¹Ôìº¯Êı
+     * @brief æ„é€ å‡½æ•°
      */
     F_File();
 
     /**
-     * @brief Îö¹¹º¯Êı
+     * @brief ææ„å‡½æ•°
      */
     ~F_File();
 };
@@ -1240,9 +1179,9 @@ public:
  * @class F_Ini
  * @ingroup FloatApi
  *
- * @brief Ìá¹©INIÎÄ¼ş´¦Àí¹¦ÄÜ
+ * @brief æä¾›INIæ–‡ä»¶å¤„ç†åŠŸèƒ½
  *
- * @note Ê¹ÓÃÊ¾Àı£º
+ * @note ä½¿ç”¨ç¤ºä¾‹ï¼š
  * @code
  * F_Ini ini;
  * int value = ini.Get_Int_Value_From_Name("Settings", "Volume");
@@ -1260,560 +1199,177 @@ public:
     bool Load(const std::string& filename);
     bool Save(const std::string& filename = "");
     /**
-     * @brief »ñÈ¡ÕûÊıÖµ
-     * @param Class ÀàÃû
-     * @param name Ãû³Æ
-     * @return ÕûÊıÖµ
+     * @brief è·å–æ•´æ•°å€¼
+     * @param Class ç±»å
+     * @param name åç§°
+     * @return æ•´æ•°å€¼
      */
     int Get_Int_Value_From_Name(const std::string& Class,const std::string& name);
 
     /**
-     * @brief »ñÈ¡×Ö·û´®Öµ
-     * @param Class ÀàÃû
-     * @param name Ãû³Æ
-     * @return ×Ö·û´®Öµ
+     * @brief è·å–å­—ç¬¦ä¸²å€¼
+     * @param Class ç±»å
+     * @param name åç§°
+     * @return å­—ç¬¦ä¸²å€¼
      */
     std::string Get_String_Value_From_Name(const std::string& Class, const std::string& name);
 
     /**
-     * @brief »ñÈ¡Ë«¾«¶ÈÖµ
-     * @param Class ÀàÃû
-     * @param name Ãû³Æ
-     * @return Ë«¾«¶ÈÖµ
+     * @brief è·å–åŒç²¾åº¦å€¼
+     * @param Class ç±»å
+     * @param name åç§°
+     * @return åŒç²¾åº¦å€¼
      */
     double Get_Double_Value_From_Name(const std::string& Class,const std::string& name);
 
     /**
-     * @brief Ğ´ÈëÕûÊıÖµ
-     * @param Class ÀàÃû
-     * @param name Ãû³Æ
-     * @param value ÕûÊıÖµ
-     * @return ³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief å†™å…¥æ•´æ•°å€¼
+     * @param Class ç±»å
+     * @param name åç§°
+     * @param value æ•´æ•°å€¼
+     * @return æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Write_Int_Value(const std::string& Class,const std::string& name, int value);
 
     /**
-     * @brief Ğ´Èë×Ö·û´®Öµ
-     * @param Class ÀàÃû
-     * @param name Ãû³Æ
-     * @param value ×Ö·û´®Öµ
-     * @return ³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+     * @brief å†™å…¥å­—ç¬¦ä¸²å€¼
+     * @param Class ç±»å
+     * @param name åç§°
+     * @param value å­—ç¬¦ä¸²å€¼
+     * @return æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
      */
     bool Write_String_Value(const std::string& Class,const std::string& name,const std::string& value);
     /**
-    * @brief Ğ´ÈëË«¾«¶È¸¡µãÊıÖµ
-    * @param Class ÀàÃû
-    * @param name Ãû³Æ
-    * @param value ×Ö·û´®Öµ
-    * @return ³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+    * @brief å†™å…¥åŒç²¾åº¦æµ®ç‚¹æ•°å€¼
+    * @param Class ç±»å
+    * @param name åç§°
+    * @param value å­—ç¬¦ä¸²å€¼
+    * @return æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
     */
     bool Write_Double_Value(const std::string& Class, const std::string& name,double value);
 };
 /**
  * @namespace F_Json
- * @brief ÓÃÓÚ´¦ÀíJSONÊı¾İµÄÃüÃû¿Õ¼ä£¬Ìá¹©JSONÖµµÄ±íÊ¾¡¢ĞòÁĞ»¯¡¢½âÎöºÍ²Ù×÷¹¦ÄÜ
+ * @brief ç”¨äºå¤„ç†JSONæ•°æ®çš„å‘½åç©ºé—´ï¼Œæä¾›JSONå€¼çš„è¡¨ç¤ºã€åºåˆ—åŒ–ã€è§£æå’Œæ“ä½œåŠŸèƒ½
  */
 namespace F_Json {
-    /**
-     * @enum JsonType
-     * @brief ±íÊ¾JSONÖµµÄÀàĞÍÃ¶¾Ù
-     */
+    using nlohmann::json;
     enum class JsonType {
-        Null,    ///< ¿ÕÖµÀàĞÍ
-        Boolean, ///< ²¼¶ûÀàĞÍ
-        Number,  ///< ÊıÖµÀàĞÍ£¨Ë«¾«¶È¸¡µã£©
-        String,  ///< ×Ö·û´®ÀàĞÍ
-        Array,   ///< Êı×éÀàĞÍ
-        Object   ///< ¶ÔÏóÀàĞÍ£¨¼üÖµ¶Ô¼¯ºÏ£©
+        Null, Boolean, Number, String, Array, Object
     };
 
-    /**
-     * @class JsonValue
-     * @brief JSONÖµµÄ³éÏó»ùÀà£¬¶¨ÒåÍ¨ÓÃ½Ó¿Ú
-     */
-    class JsonValue {
-    public:
-        virtual ~JsonValue() = default;
-
-        /**
-         * @brief »ñÈ¡µ±Ç°ÖµµÄJSONÀàĞÍ
-         * @return ¶ÔÓ¦µÄJsonTypeÃ¶¾ÙÖµ
-         */
-        virtual JsonType type() const = 0;
-
-        /**
-         * @brief ½«JSONÖµĞòÁĞ»¯Îª×Ö·û´®
-         * @return ·ûºÏJSON¹æ·¶µÄ×Ö·û´®±íÊ¾
-         */
-        virtual std::string serialize(bool no_name = 0) const = 0;
+    
+    struct JsonValueImpl {
+        json data;
+        explicit JsonValueImpl(const json& j) : data(j) {}
+        explicit JsonValueImpl(json&& j) noexcept : data(std::move(j)) {}
+        JsonValueImpl() = default;
     };
+    class Json {
+    private:
+        std::shared_ptr<JsonValueImpl> val;
+        bool no_name = false; 
 
-    /**
-     * @class JsonNull
-     * @brief ±íÊ¾JSON¿ÕÖµµÄ¾ßÌåÀà
-     */
-    class JsonNull : public JsonValue {
-    public:
-        /**
-         * @brief »ñÈ¡ÀàĞÍ£¨Ê¼ÖÕ·µ»ØJsonType::Null£©
-         */
-        JsonType type() const override;
-
-        /**
-         * @brief ĞòÁĞ»¯Îª"null"×Ö·û´®
-         */
-        std::string serialize(bool no_name = 0) const override;
-    };
-
-    /**
-     * @class JsonBoolean
-     * @brief ±íÊ¾JSON²¼¶ûÖµµÄ¾ßÌåÀà
-     */
-    class JsonBoolean : public JsonValue {
-        bool val;
-    public:
-        /**
-         * @brief ¹¹Ôìº¯Êı
-         * @param v Òª´æ´¢µÄ²¼¶ûÖµ
-         */
-        explicit JsonBoolean(bool v);
-
-        JsonType type() const override;
-        std::string serialize(bool no_name = 0) const override;
-
-        /**
-         * @brief »ñÈ¡´æ´¢µÄ²¼¶ûÖµ
-         * @return µ±Ç°²¼¶ûÖµ
-         */
-        bool value() const;
-    };
-    /**
-     * @class JsonNumber
-     * @brief ±íÊ¾JSONÊıÖµµÄ¾ßÌåÀà
-     *
-     * ¸ÃÀàÓÃÓÚ´æ´¢ºÍĞòÁĞ»¯·ûºÏJSON¹æ·¶µÄÊıÖµÀàĞÍ£¬Ê¹ÓÃË«¾«¶È¸¡µãÊı½øĞĞÄÚ²¿´æ´¢¡£
-     * Ö§³Ö±ê×¼¸¡µãÊı·¶Î§ºÍ¾«¶È£¬Ö±½ÓÓ³ÉäJSONÊıÖµÀàĞÍ¡£
-     */
-    class JsonNumber : public JsonValue {
-        double val;  ///< ´æ´¢µÄÔ­Ê¼ÊıÖµ£¨×ñÑ­IEEE-754Ë«¾«¶È±ê×¼£©
+        explicit Json(std::shared_ptr<JsonValueImpl> v);
 
     public:
-        /**
-         * @brief ¹¹Ôìº¯Êı£¬´´½¨JSONÊıÖµ¶ÔÏó
-         * @param v Òª´æ´¢µÄÊıÖµ£¨Ö§³Ö³£¹æÊıÖµ¡¢¿ÆÑ§¼ÆÊı·¨±íÊ¾µÈ£©
-         *
-         * @note ÌØÊâÖµ´¦Àí£º
-         * - NaNºÍÎŞÇî´óÖµ¿ÉÄÜ²úÉú²»·ûºÏJSON¹æ·¶µÄĞòÁĞ»¯½á¹û
-         * - Ê¾Àı£º
-         *   - ÊäÈë£º3.1415926
-         *   - ´æ´¢Öµ£º3.1415926
-         *   - ĞòÁĞ»¯½á¹û£º"3.1415926"
-         */
-        explicit JsonNumber(double v);
+        Json(); // é»˜è®¤æ„é€ ä¸º Null
+        Json(std::initializer_list<Json> list);
+        Json(std::initializer_list<std::pair<const std::string, Json>> list);
 
-        /**
-         * @brief »ñÈ¡µ±Ç°ÖµµÄJSONÀàĞÍ
-         * @return Ê¼ÖÕ·µ»ØJsonType::Number
-         */
-        JsonType type() const override;
+        template<typename T>
+        Json& operator=(const std::vector<T>& vec) {
+            val->data = json(vec);
+            return *this;
+        }
 
-        /**
-         * @brief ½«ÊıÖµĞòÁĞ»¯Îª·ûºÏJSON±ê×¼µÄ×Ö·û´®±íÊ¾
-         * @return ÊıÖµµÄ×Ö·û´®±íÊ¾£¬¿ÉÄÜµÄĞÎÊ½°üÀ¨£º
-         *         - ÕûÊıĞÎÊ½£¨Èç"42"£©
-         *         - Ğ¡ÊıĞÎÊ½£¨Èç"3.1415"£©
-         *         - ¿ÆÑ§¼ÆÊı·¨£¨Èç"1.23e+7"£©
-         *
-         * @note ÌØÕ÷£º
-         * - ²»°üº¬¶àÓàµÄĞ¡Êıµã£¨Èç5.0ĞòÁĞ»¯Îª"5.0"£©
-         * - ×Ô¶¯Ñ¡Ôñ×î½ô´ÕµÄ±íÊ¾ĞÎÊ½
-         * - ²»Ìí¼ÓÈÎºÎÊı×Ö·Ö¸ô·û
-         */
-        std::string serialize(bool no_name = 0) const override;
+        template<typename K, typename V>
+        Json& operator=(const std::map<K, V>& map) {
+            val->data = json::object();
 
-        /**
-         * @brief »ñÈ¡´æ´¢µÄÔ­Ê¼ÊıÖµ
-         * @return ´æ´¢µÄË«¾«¶ÈÊıÖµ¸±±¾£¬±£ÁôÍêÕû¾«¶È
-         *
-         * @note Ê¾Àı£º
-         * - ĞòÁĞ»¯×Ö·û´®£º"-12.5"
-         * - ·µ»ØÖµ£º-12.5
-         */
-        double value() const;
-    };
-    /**
- * @class JsonString
- * @brief ±íÊ¾JSON×Ö·û´®ÖµµÄ¾ßÌåÀà
- *
- * ¸ÃÀàÓÃÓÚ´æ´¢ºÍ²Ù×÷·ûºÏJSON¹æ·¶µÄ×Ö·û´®Öµ£¬×Ô¶¯´¦Àí×ªÒå×Ö·ûºÍÒıºÅ·â×°
- */
-    class JsonString : public JsonValue {
-        std::string val;  ///< ´æ´¢Ô­Ê¼×Ö·û´®Öµ£¨Î´×ªÒåµÄÄÚ²¿±íÊ¾£©
+            // éå†ä¼ å…¥çš„ map
+            for (const auto& pair : map) {
+                std::string key = pair.first;
 
-    public:
-        /**
-         * @brief ¹¹Ôìº¯Êı£¬´´½¨JSON×Ö·û´®Öµ
-         * @param v Òª´æ´¢µÄÔ­Ê¼×Ö·û´®Öµ£¨½«×Ô¶¯½øĞĞ×ªÒå´¦Àí£©
-         *
-         * @note Ê¾Àı£º
-         * - ÊäÈë£ºHello\nWorld
-         * - ´æ´¢Öµ£ºHello\nWorld
-         * - ĞòÁĞ»¯½á¹û£º"Hello\\nWorld"
-         */
-        explicit JsonString(std::string v);
+                if constexpr (std::is_same_v<V, Json>) {
+                    val->data[key] = pair.second.val->data;
+                }
+                else {
+                    val->data[key] = pair.second;
+                }
+            }
+            return *this;
+        }
+        class iterator;
+        class const_iterator;
 
-        /**
-         * @brief »ñÈ¡µ±Ç°ÖµµÄJSONÀàĞÍ
-         * @return Ê¼ÖÕ·µ»ØJsonType::String
-         */
-        JsonType type() const override;
+        iterator begin();
+        iterator end();
+        const_iterator cbegin() const;
+        const_iterator cend() const;
 
-        /**
-         * @brief ½«×Ö·û´®ÖµĞòÁĞ»¯Îª·ûºÏJSON±ê×¼µÄ¸ñÊ½
-         * @return ´øË«ÒıºÅµÄ×Ö·û´®£¬ÒÑÕıÈ·´¦ÀíÒÔÏÂ×ªÒå×Ö·û£º
-         *         " \\ \/ \b \f \n \r \t ºÍUnicode×ªÒå£¨\uXXXX£©
-         *
-         * @note Ê¾Àı£º
-         * - ´æ´¢Öµ£ºHello "World"
-         * - ĞòÁĞ»¯½á¹û£º"Hello \"World\""
-         */
-        std::string serialize(bool no_name = 0) const override;
+        static Json Null();
+        static Json Boolean(bool b);
+        static Json Number(double d);
+        static Json String(const std::string& s);
+        static Json Array();
+        static Json Object();
 
-        /**
-         * @brief »ñÈ¡Ô­Ê¼×Ö·û´®Öµ£¨Î´×ªÒåµÄÄÚ²¿±íÊ¾£©
-         * @return ´æ´¢µÄÔ­Ê¼×Ö·û´®¸±±¾£¬²»°üº¬JSON×ªÒå×Ö·û
-         *
-         * @note Ê¾Àı£º
-         * - ĞòÁĞ»¯×Ö·û´®£º"Hello\\nWorld"
-         * - ·µ»ØÖµ£ºHello\nWorld
-         */
-        std::string value() const;
-    };
+        Json& operator=(double n);
+        Json& operator=(const char* str);
+        Json& operator=(const std::string& s);
+        Json& operator=(bool b);
+        Json& operator=(const Json& j);
 
-    /**
-     * @class JsonArray
-     * @brief ±íÊ¾JSONÊı×éµÄ¾ßÌåÀà
-     */
-    class JsonArray : public JsonValue {
-        std::vector<std::shared_ptr<JsonValue>> vals;
-    public:
-        JsonType type() const override;
-        std::string serialize(bool no_name = 0) const override;
-
-        /**
-         * @brief ÏòÊı×éÌí¼ÓÔªËØ
-         * @param v ÒªÌí¼ÓµÄJSONÖµ£¨ËùÓĞÈ¨×ªÒÆ¸øÊı×é£©
-         */
-        void add(std::shared_ptr<JsonValue> v);
-
-        /**
-         * @brief »ñÈ¡Êı×éÔªËØ¸öÊı
-         * @return µ±Ç°Êı×é´óĞ¡
-         */
+        // ----------------------------------------------------------------------
+        // çŠ¶æ€/ç±»å‹/è½¬æ¢
+        // ----------------------------------------------------------------------
+        JsonType type() const;
+        bool isNull() const;
+        bool has(const std::string& key) const;
         size_t size() const;
 
-        /**
-         * @brief »ñÈ¡Ö¸¶¨Ë÷ÒıµÄÔªËØ
-         * @param i ÔªËØË÷Òı£¨´Ó0¿ªÊ¼£©
-         * @return ¹²ÏíÖ¸ÕëÖ¸Ïò¶ÔÓ¦ÔªËØ£¬Ë÷ÒıÎŞĞ§Ê±·µ»Ø¿ÕÖ¸Õë
-         */
-        std::shared_ptr<JsonValue> get(size_t i) const;
-    };
-    /**
-     * @class JsonObject
-     * @brief ±íÊ¾JSON¶ÔÏóµÄ¾ßÌåÀà£¬´æ´¢¼üÖµ¶Ô¼¯ºÏ
-     *
-     * ¸ÃÀàÊµÏÖJSON¶ÔÏóµÄ´´½¨¡¢·ÃÎÊºÍĞòÁĞ»¯¹¦ÄÜ£¬¼üÎª×Ö·û´®ÀàĞÍ£¬
-     * Öµ¿ÉÒÔÊÇÈÎÒâJsonValueÅÉÉúÀàĞÍ£¬×Ô¶¯Î¬»¤¼üµÄ×ÖµäĞòÅÅÁĞ¡£
-     */
-    class JsonObject : public JsonValue {
-        std::map<std::string, std::shared_ptr<JsonValue>> vals;  ///< ´æ´¢ÓĞĞò¼üÖµ¶ÔÈİÆ÷
-
-    public:
-        /**
-         * @brief »ñÈ¡µ±Ç°ÖµµÄJSONÀàĞÍ
-         * @return Ê¼ÖÕ·µ»ØJsonType::Object
-         */
-        JsonType type() const override;
-
-        /**
-         * @brief ĞòÁĞ»¯Îª·ûºÏJSON¹æ·¶µÄ¶ÔÏó×Ö·û´®
-         * @return ¸ñÊ½»¯Îª { "key1":value1, "key2":value2 } µÄ×Ö·û´®
-         *
-         * @note ÌØÕ÷£º
-         * - ¼ü°´×ÖÄ¸Ë³ĞòÅÅÁĞ
-         * - ×Ö·û´®¼ü×Ô¶¯Ìí¼ÓÒıºÅºÍ×ªÒå
-         * - ÖµÊ¹ÓÃ¸÷×ÔµÄserialize()·½·¨
-         * - ¿Õ¶ÔÏóĞòÁĞ»¯Îª"{}"
-         */
-        std::string serialize(bool no_name = 0) const override;
-
-        /**
-         * @brief ÉèÖÃ/¸üĞÂ¼üÖµ¶Ô
-         * @param k ¼ü×Ö·û´®£¨Ğè·ûºÏJSON¼ü¹æ·¶£©
-         * @param v Öµ¶ÔÏóµÄ¹²ÏíÖ¸Õë£¨ËùÓĞÈ¨×ªÒÆ¸øJsonObject£©
-         *
-         * @warning µ±¼üÒÑ´æÔÚÊ±»á¸²¸ÇÔ­ÓĞÖµ
-         * @note ¿ÕÖµ´¦Àí£º
-         * - ½ÓÊÜvÎª¿ÕÖ¸Õë£¬´ËÊ±µÈ¼ÛÓÚ´æ´¢JsonNullÖµ
-         */
-        void set(const std::string& k, std::shared_ptr<JsonValue> v);
-
-        /**
-         * @brief ¼ì²é¼üÊÇ·ñ´æÔÚ
-         * @param k Òª²éÕÒµÄ¼ü
-         * @return true±íÊ¾´æÔÚ¶ÔÓ¦¼ü£¬false±íÊ¾²»´æÔÚ
-         *
-         * @note Ö´ĞĞ¾«È·Æ¥Åä²éÕÒ£¬´óĞ¡Ğ´Ãô¸Ğ
-         */
-        bool has(const std::string& k) const;
-
-        /**
-         * @brief »ñÈ¡Ö¸¶¨¼ü¶ÔÓ¦µÄÖµ
-         * @param k Òª²éÕÒµÄ¼ü
-         * @return ÕÒµ½Ôò·µ»Ø¶ÔÓ¦ÖµµÄ¹²ÏíÖ¸Õë£¬·ñÔò·µ»Ønullptr
-         *
-         * @warning ·µ»ØÖ¸ÕëµÄÉúÃüÖÜÆÚÓÉJsonObject¹ÜÀí
-         * @note ½¨ÒéÊ¹ÓÃÇ°ÅäºÏhas()·½·¨½øĞĞ´æÔÚĞÔ¼ì²é
-         */
-        std::shared_ptr<JsonValue> get(const std::string& k) const;
-        /**
-         * @brief »ñÈ¡¶ÔÏóÔªËØ¸öÊı
-         * @return µ±Ç°¶ÔÏó´óĞ¡
-         */
-		size_t size() const;
-    };
-    /**
-     * @class Json
-     * @brief JSONÖµµÄ¸ß¼¶·â×°Àà£¬Ìá¹©ÀàĞÍ°²È«µÄ²Ù×÷½Ó¿Ú
-     *
-     * Í¨¹ı¹¤³§·½·¨´´½¨£¬Ö§³ÖÁ´Ê½µ÷ÓÃºÍÀàĞÍ×ª»»²Ù×÷
-     */
-    class Json {
-        std::shared_ptr<JsonValue> val;
-        explicit Json(std::shared_ptr<JsonValue> v);
-        bool no_name = 0;
-    public:
-        /**
-         * @brief Ä¬ÈÏ¹¹ÔìÎªNullÀàĞÍ
-         */
-        Json();
-
-        /// @name ¹¤³§·½·¨
-        /// @{
-        static Json Null();      ///< ´´½¨NullÀàĞÍJSON
-        static Json Boolean(bool b);  ///< ´´½¨BooleanÀàĞÍJSON
-        static Json Number(double d); ///< ´´½¨NumberÀàĞÍJSON
-        static Json String(const std::string& s); ///< ´´½¨StringÀàĞÍJSON
-        static Json Array();     ///< ´´½¨¿ÕÊı×é
-        static Json Object();    ///< ´´½¨¿Õ¶ÔÏó
-        /// @}
-
-        /**
-         * @brief »ñÈ¡µ±Ç°ÖµµÄÀàĞÍ
-         * @throw Èç¹ûÖµÎª¿ÕÅ×³öÂß¼­´íÎó
-         */
-        JsonType type() const;
-
-        /// @name ÀàĞÍ×ª»»·½·¨
-        /// @{
-        /**
-         * @brief ×ª»»Îª²¼¶ûÖµ
-         * @throw std::logic_error µ±Ç°ÀàĞÍ²»ÊÇBooleanÊ±Å×³ö
-         */
         bool asBoolean() const;
-        /**
-         * @brief ½«µ±Ç°JSONÖµ×ª»»ÎªË«¾«¶ÈÊıÖµ
-         * @return µ±ÇÒ½öµ±ÖµÎªJsonNumberÀàĞÍÊ±·µ»Ø´æ´¢µÄÊıÖµ
-         * @throw std::logic_error µ±ÖµÀàĞÍ²»ÊÇJsonType::NumberÊ±Å×³ö
-         *
-         * @note Ê¹ÓÃÊ¾Àı£º
-         * \code
-         * Json num = Json::Number(3.14);
-         * double d = num.asNumber(); // ·µ»Ø3.14
-         * \endcode
-         *
-         * @warning ²»Ö§³Ö´ÓÆäËûÀàĞÍ£¨°üÀ¨Êı×Ö×Ö·û´®£©µÄÒşÊ½×ª»»£¬
-         *          ĞèÒªÏÈÈ·ÈÏÀàĞÍÕıÈ·ÔÙµ÷ÓÃ
-         */
         double asNumber() const;
-        /**
-         * @brief ±ê¼ÇÎªÃ»ÓĞÃû×Ö 
-        */
-        void setNoName();
-        /**
-         * @brief ±ê¼ÇÎªÓĞÃû×Ö
-        */
-        void setHasName();
-
-        /**
-         * @brief ½«µ±Ç°JSONÖµ×ª»»Îª×Ö·û´®
-         * @return µ±ÇÒ½öµ±ÖµÎªJsonStringÀàĞÍÊ±·µ»Ø´æ´¢µÄ×Ö·û´®¸±±¾
-         * @throw std::logic_error µ±ÖµÀàĞÍ²»ÊÇJsonType::StringÊ±Å×³ö
-         *
-         * @note ÌØĞÔËµÃ÷£º
-         * - ·µ»ØµÄ×Ö·û´®ÎªÎ´×ªÒåµÄÔ­Ê¼Öµ
-         * - ·µ»ØÖµÊÇÉî¿½±´¸±±¾£¬ĞŞ¸Ä²»Ó°ÏìÔ­Êı¾İ
-         *
-         * @example
-         * Json str = Json::String("text");
-         * std::string s = str.asString(); // ·µ»Ø"text"
-         */
         std::string asString() const;
-        /// @}
 
-        /**
-         * @brief ÏòÊı×éÌí¼ÓÔªËØ£¨½öµ±µ±Ç°ÎªÊı×éÀàĞÍÊ±ÓĞĞ§£©
-         * @param item ÒªÌí¼ÓµÄJSONÔªËØ
-         * @return ×ÔÉíÒıÓÃÒÔÖ§³ÖÁ´Ê½µ÷ÓÃ
-         * @throw std::logic_error µ±Ç°ÀàĞÍ²»ÊÇArrayÊ±Å×³ö
-         */
+        // ----------------------------------------------------------------------
+        // å®¹å™¨/æ“ä½œ
+        // ----------------------------------------------------------------------
         Json& add(const Json& item);
-
-        /**
-         * @brief »ñÈ¡Êı×éÔªËØ£¨½öµ±µ±Ç°ÎªÊı×éÀàĞÍÊ±ÓĞĞ§£©
-         * @param index ÔªËØË÷Òı
-         * @return ¶ÔÓ¦Î»ÖÃµÄJSONÔªËØ£¬ÎŞĞ§Ë÷Òı·µ»ØNullÀàĞÍ
-         * @throw std::logic_error µ±Ç°ÀàĞÍ²»ÊÇArrayÊ±Å×³ö
-         */
         Json get(size_t index) const;
-        /**
-         * @brief »ñÈ¡Êı×éÔªËØ£¨½öµ±µ±Ç°ÎªÊı×éÀàĞÍÊ±ÓĞĞ§£©
-         * @param index ÔªËØË÷Òı
-         * @return ¶ÔÓ¦Î»ÖÃµÄJSONÔªËØ£¬ÎŞĞ§Ë÷Òı·µ»ØNullÀàĞÍ
-         * @throw std::logic_error µ±Ç°ÀàĞÍ²»ÊÇArrayÊ±Å×³ö
-         */
         Json operator[](size_t index) const;
-
-        /**
-         * @brief ÉèÖÃ/¸üĞÂ¶ÔÏóÖĞµÄ¼üÖµ¶Ô
-         * @param key ÒªÉèÖÃµÄ¼ü£¨Ğè·ûºÏJSON¼ü¹æ·¶£¬ÔÊĞí¿Õ×Ö·û´®£©
-         * @param v ÒªÉèÖÃµÄÖµ£¨Ö§³ÖËùÓĞJSONÀàĞÍ£©
-         * @return µ±Ç°Json¶ÔÏóµÄÒıÓÃ£¬Ö§³ÖÁ´Ê½µ÷ÓÃ
-         *
-         * @note ĞĞÎªÌØÕ÷£º
-         * - µ±¼üÒÑ´æÔÚÊ±£¬¸²¸ÇÔ­ÓĞÖµ
-         * - Ö§³ÖÉî²ã¿½±´£¬ÖµµÄĞŞ¸Ä²»»áÓ°ÏìÔ­¶ÔÏó
-         * - Ê¾Àı£¨Á´Ê½µ÷ÓÃ£©£º
-         * \code
-         * Json::Object()
-         *     .set("name", Json::String("Alice"))
-         *     .set("age", Json::Number(25));
-         * \endcode
-         *
-         * @warning ¼ü×Ö·û´®²»»á×Ô¶¯×ªÒå£¬ĞèÈ·±£·ûºÏJSON¼ü¸ñÊ½ÒªÇó
-         */
         Json& set(const std::string& key, const Json& v);
-       
-        /**
-        * @brief »ñÈ¡¶ÔÏóÖĞÖ¸¶¨¼ü¶ÔÓ¦µÄÖµ
-        * @param key Òª²éÕÒµÄ¼ü£¨´óĞ¡Ğ´Ãô¸Ğ£©
-        * @return ´æÔÚ¸Ã¼üÔò·µ»Ø¶ÔÓ¦ÖµµÄJson¶ÔÏó£¬·ñÔò·µ»ØNullÀàĞÍµÄJson¶ÔÏó
-        *
-        * @note Ê¹ÓÃÄ£Ê½½¨Òé£º
-        * \code
-        * if (obj.has("key")) {
-        *     Json value = obj.get("key");
-        *     // °²È«Ê¹ÓÃvalue
-        * }
-        * \endcode
-        *
-        * @note ·µ»ØÖµµÄÉúÃüÖÜÆÚÓÉµ±Ç°Json¶ÔÏó¹ÜÀí
-        * @see has() ·½·¨ÓÃÓÚ¼ì²é¼üÊÇ·ñ´æÔÚ
-        */
         Json get(const std::string& key) const;
-        /**
-         * @brief »ñÈ¡¶ÔÏóÖĞÖ¸¶¨¼ü¶ÔÓ¦µÄÖµ
-         * @param key Òª²éÕÒµÄ¼ü£¨´óĞ¡Ğ´Ãô¸Ğ£©
-         * @return ´æÔÚ¸Ã¼üÔò·µ»Ø¶ÔÓ¦ÖµµÄJson¶ÔÏó£¬·ñÔò·µ»ØNullÀàĞÍµÄJson¶ÔÏó
-         *
-         * @note Ê¹ÓÃÄ£Ê½½¨Òé£º
-         * \code
-         * if (obj.has("key")) {
-         *     Json value = obj["key"];
-         *     // °²È«Ê¹ÓÃvalue
-         * }
-         * \endcode
-         *
-         * @note ·µ»ØÖµµÄÉúÃüÖÜÆÚÓÉµ±Ç°Json¶ÔÏó¹ÜÀí
-         * @see has() ·½·¨ÓÃÓÚ¼ì²é¼üÊÇ·ñ´æÔÚ
-         */
         Json operator[](const std::string& key) const;
-        /**
-         * @brief ĞòÁĞ»¯ÎªJSON×Ö·û´®
-         * @return ·ûºÏJSON¹æ·¶µÄ×Ö·û´®
-         * @throw ĞòÁĞ»¯Ê§°ÜÊ±¿ÉÄÜÅ×³öÒì³£
-         */
+
+        // ----------------------------------------------------------------------
+        // åºåˆ—åŒ–/è§£æ
+        // ----------------------------------------------------------------------
         std::string serialize() const;
-        /**
-		 * @brief ĞòÁĞ»¯ÎªJSON×Ö·û´®²¢¸ñÊ½»¯
-        */
-		std::string serialize_with_format() const;
-        /**
-         * @brief ½âÎöJSON×Ö·û´®
-         * @param s Òª½âÎöµÄJSON×Ö·û´®
-         * @return ½âÎöºóµÄJson¶ÔÏó
-         * @throw std::invalid_argument ½âÎöÊ§°ÜÊ±Å×³ö
-         */
+        std::string serialize_with_format() const;
         static Json parse(const std::string& s);
 
-        /**
-         * @brief ¼ì²é¶ÔÏóÊÇ·ñ°üº¬Ö¸¶¨¼ü£¨½öÏŞObjectÀàĞÍ£©
-         * @param key Òª¼ì²éµÄ¼üÃû
-         * @return bool ´æÔÚ·µ»Øtrue£¬·ñÔòfalse
-         * @throw std::runtime_error µ±Ç°Öµ²»ÊÇObjectÀàĞÍÊ±Å×³ö
-         */
-        bool has(const std::string& key) const;
+        // å®æ–¹æ³•
+        void setNoName() { no_name = true; }
+        void setHasName() { no_name = false; }
 
-        /**
-         * @brief ÅĞ¶Ïµ±Ç°ÖµÊÇ·ñÎªNull
-         * @return bool ÊÇNull·µ»Øtrue£¬·ñÔòfalse
-         */
-        bool isNull() const;
-
-        /**
-         * @brief »ñÈ¡ÈİÆ÷´óĞ¡£¨½öÏŞArray/ObjectÀàĞÍ£©
-         * @return size_t ¶ÔÓÚArray·µ»ØÔªËØÊıÁ¿£¬Object·µ»Ø¼üÊıÁ¿
-         * @throw std::runtime_error µ±Ç°Öµ²»ÊÇArray»òObjectÊ±Å×³ö
-         */
-        size_t size() const;
-        
-        /*
-         * @brief Ö±½Ó¸³ÖµÊı×Ö
-        */
-        Json& operator=(double n);
-		/*
-		 * @brief Ö±½Ó¸³Öµ×Ö·û´®
-		*/
-		Json& operator=(const char* str);
-        /*
-         * @brief Ö±½Ó¸³Öµ×Ö·û´®
-        */
-        Json& operator=(const std::string& s);
-		/*
-		 * @brief Ö±½Ó¸³Öµ²¼¶ûÖµ
-		*/
-		Json& operator=(bool b);
-
-		/*
-		 * @brief Ö±½Ó¸³ÖµJson
-		*/
-        Json& operator=(const Json& j);
+        const JsonValueImpl& getInternalValue() const;
     };
-};
+} // namespace F_Json
 
 
 /**
  * @class F_Lua
- * @brief »ùÓÚsol2µÄLuaĞéÄâ»ú·â×°Àà£¬Ìá¹©ÔöÇ¿µÄ½Å±¾Ö´ĞĞ¡¢º¯Êı°ó¶¨¡¢¿çÓïÑÔµ÷ÓÃµÈºËĞÄ¹¦ÄÜ
+ * @brief åŸºäºsol2çš„Luaè™šæ‹Ÿæœºå°è£…ç±»ï¼Œæä¾›å¢å¼ºçš„è„šæœ¬æ‰§è¡Œã€å‡½æ•°ç»‘å®šã€è·¨è¯­è¨€è°ƒç”¨ç­‰æ ¸å¿ƒåŠŸèƒ½
  *
- * ·â×°sol2ÏÖ´úC++ Lua°ó¶¨¿â£¬Í¨¹ıRAII¹ÜÀí×ÊÔ´£¬Ìá¹©ÀàĞÍ°²È«µÄC++ÓëLua½»»¥¡£
- * Ö§³ÖÒì³£°²È«²Ù×÷£¬°üº¬ÍêÕûµÄ´íÎó´¦Àí»úÖÆ£¬×Ô¶¯ÄÚ´æ¹ÜÀíºÍ¸ß¼¶ÌØĞÔ¡£
+ * å°è£…sol2ç°ä»£C++ Luaç»‘å®šåº“ï¼Œé€šè¿‡RAIIç®¡ç†èµ„æºï¼Œæä¾›ç±»å‹å®‰å…¨çš„C++ä¸Luaäº¤äº’ã€‚
+ * æ”¯æŒå¼‚å¸¸å®‰å…¨æ“ä½œï¼ŒåŒ…å«å®Œæ•´çš„é”™è¯¯å¤„ç†æœºåˆ¶ï¼Œè‡ªåŠ¨å†…å­˜ç®¡ç†å’Œé«˜çº§ç‰¹æ€§ã€‚
  */
 class F_Lua {
 public:
     /**
-     * @brief Àà×¢²áÆ÷£¬ÓÃÓÚÁ´Ê½×¢²áC++Ààµ½Lua»·¾³
+     * @brief ç±»æ³¨å†Œå™¨ï¼Œç”¨äºé“¾å¼æ³¨å†ŒC++ç±»åˆ°Luaç¯å¢ƒ
      */
     template <typename T>
     class ClassRegistrar {
@@ -1823,7 +1379,7 @@ public:
         }
 
         /**
-         * @brief ÆôÓÃstd::shared_ptrÖÇÄÜÖ¸Õë¹ÜÀí
+         * @brief å¯ç”¨std::shared_ptræ™ºèƒ½æŒ‡é’ˆç®¡ç†
          */
         ClassRegistrar<T>& enableSharedPtr() {
             use_shared_ptr_ = true;
@@ -1831,7 +1387,7 @@ public:
         }
 
         /**
-         * @brief Ìí¼Ó¹¹Ôìº¯Êı
+         * @brief æ·»åŠ æ„é€ å‡½æ•°
          */
         template <typename... Args>
         ClassRegistrar& addConstructor() {
@@ -1840,7 +1396,7 @@ public:
         }
 
         /**
-         * @brief Ìí¼Ó³ÉÔ±º¯Êı
+         * @brief æ·»åŠ æˆå‘˜å‡½æ•°
          */
         template <typename Func>
         ClassRegistrar& addFunction(const std::string& name, Func func) {
@@ -1849,7 +1405,7 @@ public:
         }
 
         /**
-         * @brief Ìí¼ÓÊôĞÔ
+         * @brief æ·»åŠ å±æ€§
          */
         template <typename Prop>
         ClassRegistrar& addProperty(const std::string& name, Prop prop) {
@@ -1858,7 +1414,7 @@ public:
         }
 
         /**
-         * @brief Ìí¼Ó¾²Ì¬º¯Êı
+         * @brief æ·»åŠ é™æ€å‡½æ•°
          */
         template <typename Func>
         ClassRegistrar& addStaticFunction(const std::string& name, Func func) {
@@ -1867,7 +1423,7 @@ public:
         }
 
         /**
-         * @brief Ìí¼ÓÎö¹¹º¯Êı¶¨ÖÆ
+         * @brief æ·»åŠ ææ„å‡½æ•°å®šåˆ¶
          */
         template <typename Destructor>
         ClassRegistrar& addDestructor(Destructor dtor) {
@@ -1876,10 +1432,10 @@ public:
         }
 
         /**
-         * @brief Íê³ÉÀà×¢²á
+         * @brief å®Œæˆç±»æ³¨å†Œ
          */
         void endClass() {
-            // Êµ¼ÊµÄ×¢²áÂß¼­ÔÚÎö¹¹º¯ÊıÖĞÖ´ĞĞ
+            // å®é™…çš„æ³¨å†Œé€»è¾‘åœ¨ææ„å‡½æ•°ä¸­æ‰§è¡Œ
         }
 
         ~ClassRegistrar() {
@@ -1889,7 +1445,7 @@ public:
     private:
         void registerClass() {
             if (is_derived_) {
-                // ÅÉÉúÀà×¢²á
+                // æ´¾ç”Ÿç±»æ³¨å†Œ
                 auto usertype = lua_.new_usertype<T>(
                     class_name_,
                     sol::base_classes, sol::bases<std::remove_const_t<std::remove_pointer_t<decltype(getBaseClass<T>())>>>()...
@@ -1897,7 +1453,7 @@ public:
                 setupUsertype(usertype);
             }
             else {
-                // »ùÀà×¢²á
+                // åŸºç±»æ³¨å†Œ
                 auto usertype = lua_.new_usertype<T>(class_name_);
                 setupUsertype(usertype);
             }
@@ -1905,32 +1461,32 @@ public:
 
         template <typename U>
         void setupUsertype(sol::usertype<U>& usertype) {
-            // ×¢²á¹¹Ôìº¯Êı
+            // æ³¨å†Œæ„é€ å‡½æ•°
             std::apply([&](auto... args) {
                 usertype.set(sol::call_constructor, sol::constructors<args...>());
                 }, constructors_);
 
-            // ×¢²á³ÉÔ±º¯Êı
+            // æ³¨å†Œæˆå‘˜å‡½æ•°
             for (const auto& [name, func] : functions_) {
                 usertype.set(name, func);
             }
 
-            // ×¢²áÊôĞÔ
+            // æ³¨å†Œå±æ€§
             for (const auto& [name, prop] : properties_) {
                 usertype.set(name, prop);
             }
 
-            // ×¢²á¾²Ì¬º¯Êı
+            // æ³¨å†Œé™æ€å‡½æ•°
             for (const auto& [name, func] : static_functions_) {
                 usertype.set(name, func);
             }
 
-            // ×¢²áÎö¹¹º¯Êı
+            // æ³¨å†Œææ„å‡½æ•°
             if (destructor_) {
                 usertype.set(sol::meta_function::garbage_collect, destructor_);
             }
 
-            // Èç¹ûÆôÓÃshared_ptr£¬Ìí¼ÓÏàÓ¦µÄ¹¤³§º¯Êı
+            // å¦‚æœå¯ç”¨shared_ptrï¼Œæ·»åŠ ç›¸åº”çš„å·¥å‚å‡½æ•°
             if (use_shared_ptr_) {
                 lua_[class_name_]["create"] = [](auto&&... args) {
                     return std::make_shared<T>(std::forward<decltype(args)>(args)...);
@@ -1938,7 +1494,7 @@ public:
             }
         }
 
-        // ¸¨Öúº¯ÊıÓÃÓÚ»ñÈ¡»ùÀàÀàĞÍ
+        // è¾…åŠ©å‡½æ•°ç”¨äºè·å–åŸºç±»ç±»å‹
         template <typename U>
         static auto getBaseClass() -> void;
 
@@ -1956,52 +1512,52 @@ public:
 
 public:
     /**
-     * @brief ¹¹Ôìº¯Êı£¬³õÊ¼»¯LuaĞéÄâ»ú²¢¼ÓÔØ±ê×¼¿â
-     * @throws std::runtime_error µ±ÎŞ·¨´´½¨Lua×´Ì¬»úÊ±Å×³ö
+     * @brief æ„é€ å‡½æ•°ï¼Œåˆå§‹åŒ–Luaè™šæ‹Ÿæœºå¹¶åŠ è½½æ ‡å‡†åº“
+     * @throws std::runtime_error å½“æ— æ³•åˆ›å»ºLuaçŠ¶æ€æœºæ—¶æŠ›å‡º
      */
     F_Lua();
 
     /**
-     * @brief Îö¹¹º¯Êı£¬°²È«¹Ø±ÕLuaĞéÄâ»ú
+     * @brief ææ„å‡½æ•°ï¼Œå®‰å…¨å…³é—­Luaè™šæ‹Ÿæœº
      */
     ~F_Lua();
 
-    // ½ûÓÃ¿½±´ÓïÒå
+    // ç¦ç”¨æ‹·è´è¯­ä¹‰
     F_Lua(const F_Lua&) = delete;
     F_Lua& operator=(const F_Lua&) = delete;
 
-    // Ö§³ÖÒÆ¶¯ÓïÒå
+    // æ”¯æŒç§»åŠ¨è¯­ä¹‰
     F_Lua(F_Lua&&) = default;
     F_Lua& operator=(F_Lua&&) = default;
 
     /**
-     * @brief Ö´ĞĞLua½Å±¾ÎÄ¼ş
-     * @param filepath Lua½Å±¾ÎÄ¼şÂ·¾¶
-     * @return true Ö´ĞĞ³É¹¦£¬false Ö´ĞĞÊ§°Ü
-     * @note ×Ô¶¯´¦Àí´íÎó²¢Êä³öÏêÏ¸ĞÅÏ¢
+     * @brief æ‰§è¡ŒLuaè„šæœ¬æ–‡ä»¶
+     * @param filepath Luaè„šæœ¬æ–‡ä»¶è·¯å¾„
+     * @return true æ‰§è¡ŒæˆåŠŸï¼Œfalse æ‰§è¡Œå¤±è´¥
+     * @note è‡ªåŠ¨å¤„ç†é”™è¯¯å¹¶è¾“å‡ºè¯¦ç»†ä¿¡æ¯
      */
     bool ExecuteScript(const std::string& filepath);
 
     /**
-     * @brief Ö´ĞĞLua´úÂë×Ö·û´®
-     * @param code ÒªÖ´ĞĞµÄLua´úÂë
-     * @return true Ö´ĞĞ³É¹¦£¬false Ö´ĞĞÊ§°Ü
-     * @note Ö§³Ö¶àĞĞ´úÂëºÍ¸´ÔÓÂß¼­£¬Ìá¹©ÏêÏ¸´íÎóĞÅÏ¢
+     * @brief æ‰§è¡ŒLuaä»£ç å­—ç¬¦ä¸²
+     * @param code è¦æ‰§è¡Œçš„Luaä»£ç 
+     * @return true æ‰§è¡ŒæˆåŠŸï¼Œfalse æ‰§è¡Œå¤±è´¥
+     * @note æ”¯æŒå¤šè¡Œä»£ç å’Œå¤æ‚é€»è¾‘ï¼Œæä¾›è¯¦ç»†é”™è¯¯ä¿¡æ¯
      */
     bool ExecuteString(const std::string& code);
 
     /**
-     * @brief °²È«Ö´ĞĞLua´úÂë×Ö·û´®£¬·µ»ØÖ´ĞĞ½á¹û
-     * @param code ÒªÖ´ĞĞµÄLua´úÂë
-     * @return sol::protected_function_result °üº¬Ö´ĞĞ½á¹ûºÍ´íÎóĞÅÏ¢
+     * @brief å®‰å…¨æ‰§è¡ŒLuaä»£ç å­—ç¬¦ä¸²ï¼Œè¿”å›æ‰§è¡Œç»“æœ
+     * @param code è¦æ‰§è¡Œçš„Luaä»£ç 
+     * @return sol::protected_function_result åŒ…å«æ‰§è¡Œç»“æœå’Œé”™è¯¯ä¿¡æ¯
      */
     sol::protected_function_result ExecuteStringSafe(const std::string& code);
 
     /**
-     * @brief ×¢²áC++º¯Êıµ½LuaÈ«¾ÖÃüÃû¿Õ¼ä
-     * @tparam Func ¿Éµ÷ÓÃ¶ÔÏóÀàĞÍ
-     * @param name ÔÚLuaÖĞÊ¹ÓÃµÄº¯ÊıÃû
-     * @param func Òª°ó¶¨µÄC++º¯Êı
+     * @brief æ³¨å†ŒC++å‡½æ•°åˆ°Luaå…¨å±€å‘½åç©ºé—´
+     * @tparam Func å¯è°ƒç”¨å¯¹è±¡ç±»å‹
+     * @param name åœ¨Luaä¸­ä½¿ç”¨çš„å‡½æ•°å
+     * @param func è¦ç»‘å®šçš„C++å‡½æ•°
      */
     template <typename Func>
     void RegisterFunction(const std::string& name, Func func) {
@@ -2009,11 +1565,11 @@ public:
     }
 
     /**
-     * @brief ×¢²áC++Ààµ½Lua»·¾³
-     * @tparam T Òª×¢²áµÄÀàÀàĞÍ
-     * @param name ÔÚLuaÖĞÊ¹ÓÃµÄÀàÃû
-     * @param is_derived ÊÇ·ñÎªÅÉÉúÀà
-     * @return ClassRegistrar<T> ÓÃÓÚÁ´Ê½Ìí¼Ó³ÉÔ±µÄ¶ÔÏó
+     * @brief æ³¨å†ŒC++ç±»åˆ°Luaç¯å¢ƒ
+     * @tparam T è¦æ³¨å†Œçš„ç±»ç±»å‹
+     * @param name åœ¨Luaä¸­ä½¿ç”¨çš„ç±»å
+     * @param is_derived æ˜¯å¦ä¸ºæ´¾ç”Ÿç±»
+     * @return ClassRegistrar<T> ç”¨äºé“¾å¼æ·»åŠ æˆå‘˜çš„å¯¹è±¡
      */
     template <typename T>
     ClassRegistrar<T> RegisterClass(const std::string& name, bool is_derived = false) {
@@ -2021,11 +1577,11 @@ public:
     }
 
     /**
-     * @brief »ñÈ¡LuaÈ«¾Ö±äÁ¿
-     * @tparam T ±äÁ¿ÀàĞÍ
-     * @param name È«¾Ö±äÁ¿Ãû
-     * @return ±äÁ¿µÄC++ÀàĞÍÖµ
-     * @throws sol::error µ±±äÁ¿²»´æÔÚ»òÀàĞÍ²»Æ¥ÅäÊ±
+     * @brief è·å–Luaå…¨å±€å˜é‡
+     * @tparam T å˜é‡ç±»å‹
+     * @param name å…¨å±€å˜é‡å
+     * @return å˜é‡çš„C++ç±»å‹å€¼
+     * @throws sol::error å½“å˜é‡ä¸å­˜åœ¨æˆ–ç±»å‹ä¸åŒ¹é…æ—¶
      */
     template <typename T>
     T GetGlobal(const std::string& name) {
@@ -2033,10 +1589,10 @@ public:
     }
 
     /**
-     * @brief ÉèÖÃLuaÈ«¾Ö±äÁ¿
-     * @tparam T ±äÁ¿ÀàĞÍ
-     * @param name È«¾Ö±äÁ¿Ãû
-     * @param value ÒªÉèÖÃµÄÖµ
+     * @brief è®¾ç½®Luaå…¨å±€å˜é‡
+     * @tparam T å˜é‡ç±»å‹
+     * @param name å…¨å±€å˜é‡å
+     * @param value è¦è®¾ç½®çš„å€¼
      */
     template <typename T>
     void SetGlobal(const std::string& name, T&& value) {
@@ -2044,11 +1600,11 @@ public:
     }
 
     /**
-     * @brief µ÷ÓÃÎŞ·µ»ØÖµµÄLuaº¯Êı
-     * @tparam Args ²ÎÊıÀàĞÍ°ü
-     * @param funcName Luaº¯ÊıÃû
-     * @param args µ÷ÓÃ²ÎÊıÁĞ±í
-     * @return bool ÊÇ·ñ³É¹¦µ÷ÓÃ
+     * @brief è°ƒç”¨æ— è¿”å›å€¼çš„Luaå‡½æ•°
+     * @tparam Args å‚æ•°ç±»å‹åŒ…
+     * @param funcName Luaå‡½æ•°å
+     * @param args è°ƒç”¨å‚æ•°åˆ—è¡¨
+     * @return bool æ˜¯å¦æˆåŠŸè°ƒç”¨
      */
     template <typename... Args>
     bool CallVoidFunction(const std::string& funcName, Args&&... args) {
@@ -2061,11 +1617,11 @@ public:
     }
 
     /**
-     * @brief °²È«µ÷ÓÃLuaº¯Êı£¬·µ»Ø±£»¤½á¹û
-     * @tparam Args ²ÎÊıÀàĞÍ°ü
-     * @param funcName Luaº¯ÊıÃû
-     * @param args µ÷ÓÃ²ÎÊıÁĞ±í
-     * @return sol::protected_function_result µ÷ÓÃ½á¹û
+     * @brief å®‰å…¨è°ƒç”¨Luaå‡½æ•°ï¼Œè¿”å›ä¿æŠ¤ç»“æœ
+     * @tparam Args å‚æ•°ç±»å‹åŒ…
+     * @param funcName Luaå‡½æ•°å
+     * @param args è°ƒç”¨å‚æ•°åˆ—è¡¨
+     * @return sol::protected_function_result è°ƒç”¨ç»“æœ
      */
     template <typename... Args>
     sol::protected_function_result CallFunctionSafe(const std::string& funcName, Args&&... args) {
@@ -2077,12 +1633,12 @@ public:
     }
 
     /**
-     * @brief µ÷ÓÃ´ø·µ»ØÖµµÄLuaº¯Êı
-     * @tparam Ret ·µ»ØÖµÀàĞÍ
-     * @tparam Args ²ÎÊıÀàĞÍ°ü
-     * @param funcName Luaº¯ÊıÃû
-     * @param args µ÷ÓÃ²ÎÊıÁĞ±í
-     * @return std::optional<Ret> º¯Êı·µ»ØÖµ£¬Èçµ÷ÓÃÊ§°Ü·µ»Østd::nullopt
+     * @brief è°ƒç”¨å¸¦è¿”å›å€¼çš„Luaå‡½æ•°
+     * @tparam Ret è¿”å›å€¼ç±»å‹
+     * @tparam Args å‚æ•°ç±»å‹åŒ…
+     * @param funcName Luaå‡½æ•°å
+     * @param args è°ƒç”¨å‚æ•°åˆ—è¡¨
+     * @return std::optional<Ret> å‡½æ•°è¿”å›å€¼ï¼Œå¦‚è°ƒç”¨å¤±è´¥è¿”å›std::nullopt
      */
     template <typename Ret, typename... Args>
     std::optional<Ret> CallFunction(const std::string& funcName, Args&&... args) {
@@ -2094,9 +1650,9 @@ public:
     }
 
     /**
-     * @brief ¼ì²éÈ«¾Ö±äÁ¿ÊÇ·ñ´æÔÚ
-     * @param name ±äÁ¿Ãû
-     * @return bool ÊÇ·ñ´æÔÚ
+     * @brief æ£€æŸ¥å…¨å±€å˜é‡æ˜¯å¦å­˜åœ¨
+     * @param name å˜é‡å
+     * @return bool æ˜¯å¦å­˜åœ¨
      */
     bool HasGlobal(const std::string& name) {
         sol::object obj = lua_[name];
@@ -2104,9 +1660,9 @@ public:
     }
 
     /**
-     * @brief ¼ì²éÈ«¾Öº¯ÊıÊÇ·ñ´æÔÚ
-     * @param name º¯ÊıÃû
-     * @return bool ÊÇ·ñ´æÔÚÇÒÎªº¯Êı
+     * @brief æ£€æŸ¥å…¨å±€å‡½æ•°æ˜¯å¦å­˜åœ¨
+     * @param name å‡½æ•°å
+     * @return bool æ˜¯å¦å­˜åœ¨ä¸”ä¸ºå‡½æ•°
      */
     bool HasFunction(const std::string& name) {
         sol::object obj = lua_[name];
@@ -2114,70 +1670,70 @@ public:
     }
 
     /**
-     * @brief »ñÈ¡µ×²ãLua×´Ì¬»ú
-     * @return sol::state& Lua×´Ì¬ÒıÓÃ
+     * @brief è·å–åº•å±‚LuaçŠ¶æ€æœº
+     * @return sol::state& LuaçŠ¶æ€å¼•ç”¨
      */
     sol::state& GetState() { return lua_; }
 
     /**
-     * @brief »ñÈ¡µ×²ãLua×´Ì¬»ú£¨const°æ±¾£©
-     * @return const sol::state& Lua×´Ì¬ÒıÓÃ
+     * @brief è·å–åº•å±‚LuaçŠ¶æ€æœºï¼ˆconstç‰ˆæœ¬ï¼‰
+     * @return const sol::state& LuaçŠ¶æ€å¼•ç”¨
      */
     const sol::state& GetState() const { return lua_; }
 
     /**
-     * @brief »ñÈ¡Ô­Éúlua_StateÖ¸Õë
-     * @return lua_State* Ô­Ê¼Lua×´Ì¬Ö¸Õë
+     * @brief è·å–åŸç”Ÿlua_StateæŒ‡é’ˆ
+     * @return lua_State* åŸå§‹LuaçŠ¶æ€æŒ‡é’ˆ
      */
     lua_State* GetRawState() { return lua_; }
 
     /**
-     * @brief Çå¿ÕLua»·¾³
+     * @brief æ¸…ç©ºLuaç¯å¢ƒ
      */
     void ClearEnvironment() {
         lua_.collect_garbage();
     }
 
     /**
- * @brief ÉèÖÃLuaÄÚ´æ¹ÜÀí²ÎÊı
- * @param limit_kb ÄÚ´æÏŞÖÆÌáÊ¾£¨Ä¿Ç°½öÓÃÓÚµ÷ÕûÀ¬»ø»ØÊÕÆµÂÊ£©
+ * @brief è®¾ç½®Luaå†…å­˜ç®¡ç†å‚æ•°
+ * @param limit_kb å†…å­˜é™åˆ¶æç¤ºï¼ˆç›®å‰ä»…ç”¨äºè°ƒæ•´åƒåœ¾å›æ”¶é¢‘ç‡ï¼‰
  */
     void SetMemoryLimit(size_t limit_kb) {
-        // Ê¹ÓÃ²ÎÊıÀ´µ÷ÕûÀ¬»ø»ØÊÕ²ßÂÔ
+        // ä½¿ç”¨å‚æ•°æ¥è°ƒæ•´åƒåœ¾å›æ”¶ç­–ç•¥
         if (limit_kb > 0) {
-            // Ğ¡ÄÚ´æÏŞÖÆ£º¸üÆµ·±µÄÀ¬»ø»ØÊÕ
+            // å°å†…å­˜é™åˆ¶ï¼šæ›´é¢‘ç¹çš„åƒåœ¾å›æ”¶
             int pause = std::max(10, 100 - static_cast<int>(limit_kb / 100));
             lua_["collectgarbage"]("setpause", pause);
             lua_["collectgarbage"]("setstepmul", 500);
         }
         else {
-            // Ä¬ÈÏÉèÖÃ
+            // é»˜è®¤è®¾ç½®
             lua_["collectgarbage"]("setpause", 100);
             lua_["collectgarbage"]("setstepmul", 200);
         }
     }
 
     /**
-     * @brief ¼ÓÔØµ«²»Ö´ĞĞLua´úÂë
-     * @param code Lua´úÂë
-     * @return sol::load_result ¼ÓÔØ½á¹û
+     * @brief åŠ è½½ä½†ä¸æ‰§è¡ŒLuaä»£ç 
+     * @param code Luaä»£ç 
+     * @return sol::load_result åŠ è½½ç»“æœ
      */
     sol::load_result LoadString(const std::string& code) {
         return lua_.load(code);
     }
 
     /**
-     * @brief ´´½¨ĞÂµÄLua»·¾³±í
-     * @return sol::table ĞÂ´´½¨µÄ±í
+     * @brief åˆ›å»ºæ–°çš„Luaç¯å¢ƒè¡¨
+     * @return sol::table æ–°åˆ›å»ºçš„è¡¨
      */
     sol::table CreateTable() {
         return lua_.create_table();
     }
 
     /**
-     * @brief ´´½¨´øÃüÃû¿Õ¼äµÄÈ«¾Ö±í
-     * @param namespace_path ÃüÃû¿Õ¼äÂ·¾¶£¨Èç "Game.Player"£©
-     * @return sol::table ÃüÃû¿Õ¼ä±í
+     * @brief åˆ›å»ºå¸¦å‘½åç©ºé—´çš„å…¨å±€è¡¨
+     * @param namespace_path å‘½åç©ºé—´è·¯å¾„ï¼ˆå¦‚ "Game.Player"ï¼‰
+     * @return sol::table å‘½åç©ºé—´è¡¨
      */
     sol::table CreateNamespace(const std::string& namespace_path) {
         sol::table current = lua_.globals();
@@ -2195,16 +1751,16 @@ public:
     }
 
     /**
-     * @brief ×¢²áC++Ã¶¾Ùµ½Lua
-     * @tparam Enum Ã¶¾ÙÀàĞÍ
-     * @param name Ã¶¾ÙÔÚLuaÖĞµÄÃû³Æ
-     * @param is_global ÊÇ·ñ×¢²áÎªÈ«¾Ö±äÁ¿
+     * @brief æ³¨å†ŒC++æšä¸¾åˆ°Lua
+     * @tparam Enum æšä¸¾ç±»å‹
+     * @param name æšä¸¾åœ¨Luaä¸­çš„åç§°
+     * @param is_global æ˜¯å¦æ³¨å†Œä¸ºå…¨å±€å˜é‡
      */
     template <typename Enum>
     void RegisterEnum(const std::string& name, bool is_global = true) {
         sol::table enum_table = lua_.create_table();
 
-        // ÕâÀïĞèÒªÓÃ»§ÊÖ¶¯Ìí¼ÓÃ¶¾ÙÖµ
+        // è¿™é‡Œéœ€è¦ç”¨æˆ·æ‰‹åŠ¨æ·»åŠ æšä¸¾å€¼
         if (is_global) {
             lua_[name] = enum_table;
         }
@@ -2213,11 +1769,11 @@ public:
     }
 
     /**
-     * @brief ÎªÃ¶¾ÙÌí¼ÓÖµ
-     * @tparam Enum Ã¶¾ÙÀàĞÍ
-     * @param enum_name Ã¶¾ÙÃû³Æ
-     * @param value_name ÖµÃû³Æ
-     * @param value Ã¶¾ÙÖµ
+     * @brief ä¸ºæšä¸¾æ·»åŠ å€¼
+     * @tparam Enum æšä¸¾ç±»å‹
+     * @param enum_name æšä¸¾åç§°
+     * @param value_name å€¼åç§°
+     * @param value æšä¸¾å€¼
      */
     template <typename Enum>
     void AddEnumValue(const std::string& enum_name, const std::string& value_name, Enum value) {
@@ -2232,57 +1788,57 @@ private:
     std::unordered_map<std::string, sol::table> enum_tables_;
 
     /**
-     * @brief Í³Ò»´íÎó´¦Àí
-     * @param result ±£»¤º¯ÊıÖ´ĞĞ½á¹û
+     * @brief ç»Ÿä¸€é”™è¯¯å¤„ç†
+     * @param result ä¿æŠ¤å‡½æ•°æ‰§è¡Œç»“æœ
      */
     void HandleError(const sol::protected_function_result& result);
 };
 
 namespace F_Gui {
-    // ³õÊ¼»¯Óë×´Ì¬¹ÜÀí
+    // åˆå§‹åŒ–ä¸çŠ¶æ€ç®¡ç†
     void Init();
     void Shutdown();
     void BeginFrame();
     void EndFrame();
 
-    // ´°¿Ú¹ÜÀí
+    // çª—å£ç®¡ç†
     void BeginWindow(const char* title, bool* p_open = nullptr, int flags = 0);
     void EndWindow();
 
-    // »ù´¡¿Ø¼ş
+    // åŸºç¡€æ§ä»¶
     bool Button(const char* label, const Vector2& size = { 0,0 });
     void Text(const char* fmt, ...);
     bool Checkbox(const char* label, bool* v);
     bool SliderFloat(const char* label, float* v, float v_min, float v_max);
     bool ColorEdit3(const char* label, float col[3]);
 
-    // ²¼¾Ö¿Ø¼ş
+    // å¸ƒå±€æ§ä»¶
     void BeginGroup(const char* id);
     void EndGroup();
     void SameLine(float offset_x = 0.0f, float spacing = -1.0f);
 
-    // ¸ß¼¶¿Ø¼ş
+    // é«˜çº§æ§ä»¶
     bool TreeNode(const char* label);
     void TreePop();
     void PlotLines(const char* label, const float* values, int values_count,
         float scale_min = FLT_MAX, float scale_max = FLT_MAX,
         Vector2 size = { 0,0 });
 
-    // ÓÎÏ·ÒıÇæ×¨ÓÃ×é¼ş
+    // æ¸¸æˆå¼•æ“ä¸“ç”¨ç»„ä»¶
     void Vector3Control(const char* label, Vector3& value, float resetValue = 0.0f);
     void TexturePreview(Texture2D texture, Vector2 size = { 100,100 });
     void FrameRateOverlay();
 
-    // ÑùÊ½ÏµÍ³
+    // æ ·å¼ç³»ç»Ÿ
     void PushStyleColor(Color idx, Color color);
     void PopStyleColor(int count = 1);
     void LoadTheme(const char* name); // "dark", "light", "classic"
 
-    // ×Ô¶¨Òå»æÖÆ
+    // è‡ªå®šä¹‰ç»˜åˆ¶
     void DrawLine(const Vector2& start, const Vector2& end, Color color, float thickness = 1.0f);
     void DrawRect(const rlRectangle& rect, Color color, float rounding = 0.0f);
 
-    // À©Õ¹ÏµÍ³
+    // æ‰©å±•ç³»ç»Ÿ
     using CustomWidgetFunc = std::function<void()>;
     void RegisterWidget(const char* name, CustomWidgetFunc func);
     void ShowWidget(const char* name);

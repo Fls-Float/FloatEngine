@@ -11,7 +11,7 @@
 #include <atomic>           
 #include <chrono>
 
-// ×ÊÔ´ÀàĞÍÃ¶¾Ù
+// èµ„æºç±»å‹æšä¸¾
 enum ResourceType {
     ResTexture,
     ResSound,
@@ -23,7 +23,7 @@ enum ResourceType {
 };
 
 // ----------------------------------------------------------------------
-// ×ÊÔ´×´Ì¬½á¹¹Ìå (ÄÚ´æºÍÒıÓÃ¼ÆÊı)
+// èµ„æºçŠ¶æ€ç»“æ„ä½“ (å†…å­˜å’Œå¼•ç”¨è®¡æ•°)
 // ----------------------------------------------------------------------
 struct ResourceState {
     int ref_count = 0;
@@ -33,19 +33,19 @@ struct ResourceState {
 };
 
 // ----------------------------------------------------------------------
-// ×ÊÔ´ÔªÊı¾İ½á¹¹Ìå (¼ÓÔØ²ÎÊı£¬ÓÃÓÚÀÁ¼ÓÔØºÍÅú´Î)
+// èµ„æºå…ƒæ•°æ®ç»“æ„ä½“ (åŠ è½½å‚æ•°ï¼Œç”¨äºæ‡’åŠ è½½å’Œæ‰¹æ¬¡)
 // ----------------------------------------------------------------------
 struct ResourceMetadata {
     ResourceType type = ResTexture;
     std::string internalPath;
 
-    // ×ÖÌå×¨Êô²ÎÊı
+    // å­—ä½“ä¸“å±å‚æ•°
     int font_size = 0;
     std::vector<int> codepoints;
 };
 
 // ----------------------------------------------------------------------
-// Ä£ÄâÒì²½ÈÎÎñ½á¹¹Ìå (½öÓÃÓÚÍ³Ò» UploadResourceToGPU µÄ½Ó¿Ú)
+// æ¨¡æ‹Ÿå¼‚æ­¥ä»»åŠ¡ç»“æ„ä½“ (ä»…ç”¨äºç»Ÿä¸€ UploadResourceToGPU çš„æ¥å£)
 // ----------------------------------------------------------------------
 struct LoadTask {
     std::string id;
@@ -61,25 +61,25 @@ public:
     F_Resource();
     ~F_Resource();
 
-    // ÅäÖÃº¯Êı
+    // é…ç½®å‡½æ•°
     void SetResourcePath(const std::string& path);
     void SetResourceData(const std::vector<unsigned char>& data);
     void SetPassword(const std::string& password);
     void SetMemoryBudget(size_t maxBytes);
-    void SetEnableMemoryMonitoring(bool enable); // ±£ÁôÄÚ´æ¼à¿Ø¿ª¹Ø
+    void SetEnableMemoryMonitoring(bool enable); // ä¿ç•™å†…å­˜ç›‘æ§å¼€å…³
 
-    // µ¥×ÊÔ´¼ÓÔØ
+    // å•èµ„æºåŠ è½½
     bool LoadResource(const std::string& internalPath, const std::string& id, ResourceType type, bool lazyLoad = false);
     bool LoadFontResource(const std::string& internalPath, const std::string& id, int font_size, const std::vector<int>& codepoints = {}, bool lazyLoad = false);
 
-    // ÅúÁ¿×ÊÔ´¹ÜÀí
+    // æ‰¹é‡èµ„æºç®¡ç†
     bool CreateLoadBatch(const std::string& batchId, const std::vector<std::pair<std::string, ResourceType>>& resources);
     bool LoadResourceToBatch(const std::string& internalPath, const std::string& id, ResourceType type, const std::string& batchId);
     bool LoadFontResourceToBatch(const std::string& internalPath, const std::string& id, int font_size, const std::string& batchId, const std::vector<int>& codepoints = {});
     void LoadBatchResources(const std::string& batchId);
     void UnloadBatchResources(const std::string& batchId);
 
-    // »ñÈ¡/×´Ì¬
+    // è·å–/çŠ¶æ€
     Texture2D GetTexture(const std::string& id);
     Sound GetSound(const std::string& id);
     Music GetMusic(const std::string& id);
@@ -91,7 +91,7 @@ public:
     std::string GetResourcePath(const std::string& id);
     int GetFileCount();
 
-    // Ğ¶ÔØ
+    // å¸è½½
     void UnloadResource(const std::string& id, ResourceType type);
     void UnloadAllResources();
 
@@ -101,10 +101,10 @@ private:
     bool use_memory_zip;
     std::string zip_password;
 
-    // ÅäÖÃ¿ª¹Ø
+    // é…ç½®å¼€å…³
     bool m_enableMemoryMonitoring = true;
 
-    // ×ÊÔ´»º´æ
+    // èµ„æºç¼“å­˜
     std::map<std::string, Texture2D> textures;
     std::map<std::string, Sound> sounds;
     std::map<std::string, Music> musics;
@@ -112,16 +112,16 @@ private:
     std::map<std::string, std::string> texts;
     std::map<std::string, std::vector<unsigned char>> datas;
 
-    // ×´Ì¬ÓëÅú´Î
+    // çŠ¶æ€ä¸æ‰¹æ¬¡
     std::map<std::string, ResourceMetadata> lazyLoadedResources;
     std::map<std::string, std::map<std::string, ResourceMetadata>> resourceBatches;
     std::map<std::string, ResourceState> resourceStates;
 
-    // ÄÚ´æ×·×Ù
+    // å†…å­˜è¿½è¸ª
     size_t m_maxMemoryBudget = 1024 * 1024 * 512;
     std::atomic<size_t> m_currentMemoryUsage{ 0 };
 
-    // ÄÚ²¿º¯Êı (Í¬²½)
+    // å†…éƒ¨å‡½æ•° (åŒæ­¥)
     bool LoadResourceInternal(const std::string& internalPath, const std::string& id, ResourceType type, int font_size = 0, const std::vector<int>& codepoints = {});
     bool UploadResourceToGPU(const LoadTask& task);
 
@@ -132,7 +132,7 @@ private:
     std::string DetectFileFormat(const std::vector<unsigned char>& data);
     bool IsValidZipFile() const;
 
-    // ÄÚ²¿Ğ¶ÔØ
+    // å†…éƒ¨å¸è½½
     void UnloadTextureById(const std::string& id);
     void UnloadSoundById(const std::string& id);
     void UnloadMusicById(const std::string& id);

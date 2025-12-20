@@ -15,7 +15,7 @@
 #include "minizip-ng/mz_zip_rw.h"
 
 // ----------------------------------------------------------------------------
-// ¹¹Ôìº¯Êı / Îö¹¹º¯Êı / ÅäÖÃ Setters
+// æ„é€ å‡½æ•° / ææ„å‡½æ•° / é…ç½® Setters
 // ----------------------------------------------------------------------------
 
 F_Resource::F_Resource() : use_memory_zip(false) {}
@@ -28,7 +28,7 @@ void F_Resource::SetMemoryBudget(size_t maxBytes) { m_maxMemoryBudget = maxBytes
 void F_Resource::SetEnableMemoryMonitoring(bool enable) { m_enableMemoryMonitoring = enable; }
 
 // ----------------------------------------------------------------------------
-// Minizip-ng ºËĞÄ£ºExtractFileFromZip (I/O)
+// Minizip-ng æ ¸å¿ƒï¼šExtractFileFromZip (I/O)
 // ----------------------------------------------------------------------------
 std::vector<unsigned char> F_Resource::ExtractFileFromZip(const std::string& internalPath) {
     std::vector<unsigned char> data;
@@ -90,7 +90,7 @@ std::vector<unsigned char> F_Resource::ExtractFileFromZip(const std::string& int
 }
 
 // ----------------------------------------------------------------------------
-// ÄÚ´æ¼à¿ØºËĞÄ£ºLRU ºÍ Upload (GPU/Audio)
+// å†…å­˜ç›‘æ§æ ¸å¿ƒï¼šLRU å’Œ Upload (GPU/Audio)
 // ----------------------------------------------------------------------------
 void F_Resource::CheckAndUnloadLRU(size_t requiredBytes) {
     if (!m_enableMemoryMonitoring) return;
@@ -134,7 +134,7 @@ void F_Resource::CheckAndUnloadLRU(size_t requiredBytes) {
 bool F_Resource::UploadResourceToGPU(const LoadTask& task) {
 
     size_t requiredBytes = task.raw_data.size();
-    if (task.type == ResTexture) { requiredBytes *= 4; } // ´ÖÂÔ¹ÀËã GPU ÄÚ´æ
+    if (task.type == ResTexture) { requiredBytes *= 4; } // ç²—ç•¥ä¼°ç®— GPU å†…å­˜
 
     if (m_enableMemoryMonitoring) {
         CheckAndUnloadLRU(requiredBytes);
@@ -191,18 +191,18 @@ bool F_Resource::UploadResourceToGPU(const LoadTask& task) {
 }
 
 // ----------------------------------------------------------------------------
-// Í¬²½¼ÓÔØºËĞÄ
+// åŒæ­¥åŠ è½½æ ¸å¿ƒ
 // ----------------------------------------------------------------------------
 bool F_Resource::LoadResourceInternal(const std::string& internalPath, const std::string& id, ResourceType type, int font_size, const std::vector<int>& codepoints) {
 
-    // 1. ÔÚµ±Ç°Ïß³ÌÖ´ĞĞ I/O (×èÈû)
+    // 1. åœ¨å½“å‰çº¿ç¨‹æ‰§è¡Œ I/O (é˜»å¡)
     std::vector<unsigned char> fileData = ExtractFileFromZip(internalPath);
     if (fileData.empty()) {
         FLOG_ERRORF("Failed to extract file data for %s.", internalPath.c_str());
         return false;
     }
 
-    // 2. ¹¹Ôì LoadTask
+    // 2. æ„é€  LoadTask
     LoadTask task;
     task.id = id;
     task.type = type;
@@ -210,12 +210,12 @@ bool F_Resource::LoadResourceInternal(const std::string& internalPath, const std
     task.font_size = font_size;
     task.codepoints = codepoints;
 
-    // 3. ÔÚµ±Ç°Ïß³ÌÖ´ĞĞ GPU ÉÏ´« (×èÈû)
+    // 3. åœ¨å½“å‰çº¿ç¨‹æ‰§è¡Œ GPU ä¸Šä¼  (é˜»å¡)
     return UploadResourceToGPU(task);
 }
 
 // ----------------------------------------------------------------------------
-// Ğ¶ÔØ/Getters/Helpers
+// å¸è½½/Getters/Helpers
 // ----------------------------------------------------------------------------
 bool F_Resource::LoadResource(const std::string& internalPath, const std::string& id, ResourceType type, bool lazyLoad) {
     if (HasResource(id, type)) return true;
@@ -313,7 +313,7 @@ void F_Resource::UnloadBatchResources(const std::string& batchId) {
     }
 }
 
-// Getters (±£³Ö LRU/ÒıÓÃ¼ÆÊıÂß¼­)
+// Getters (ä¿æŒ LRU/å¼•ç”¨è®¡æ•°é€»è¾‘)
 Texture2D F_Resource::GetTexture(const std::string& id) {
     if (textures.count(id)) {
         if (m_enableMemoryMonitoring) { resourceStates[id].ref_count++; resourceStates[id].last_access_time = std::chrono::steady_clock::now(); }
@@ -408,7 +408,7 @@ int F_Resource::GetFileCount() {
     void* zip_reader = mz_zip_reader_create();
     if (!zip_reader) return 0;
     uint64_t count = 0;
-    // (Minizip-ng GetFileCount Âß¼­)
+    // (Minizip-ng GetFileCount é€»è¾‘)
     if (use_memory_zip) {
         void* mem_stream = mz_stream_mem_create();
         mz_stream_mem_set_buffer(mem_stream, (void*)resource_data.data(), (int32_t)resource_data.size());
@@ -427,7 +427,7 @@ std::string F_Resource::DetectFileFormat(const std::vector<unsigned char>& data)
     if (data.size() < 4) return ".dat";
     const unsigned char* bytes = data.data();
     if (bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47) return ".png";
-    // ... (ÆäËûÄ§Êı¼ì²âÂß¼­)
+    // ... (å…¶ä»–é­”æ•°æ£€æµ‹é€»è¾‘)
     if (bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF) return ".jpg";
     if (bytes[0] == 0x47 && bytes[1] == 0x49 && bytes[2] == 0x46) return ".gif";
     if (bytes[0] == 0x42 && bytes[1] == 0x4D) return ".bmp";
@@ -456,7 +456,7 @@ bool F_Resource::IsValidZipFile() const {
 
 
 // ----------------------------------------------------------------------------
-// ÄÚ²¿Ğ¶ÔØº¯Êı (×Ô¶¯ÍÆ¶ÏÄÚ´æÓÃÁ¿²¢Í¬²½×´Ì¬)
+// å†…éƒ¨å¸è½½å‡½æ•° (è‡ªåŠ¨æ¨æ–­å†…å­˜ç”¨é‡å¹¶åŒæ­¥çŠ¶æ€)
 // ----------------------------------------------------------------------------
 
 void F_Resource::UnloadTextureById(const std::string& id) {
@@ -492,7 +492,7 @@ void F_Resource::UnloadMusicById(const std::string& id) {
             size_t memUsage = resourceStates.count(id) ? resourceStates[id].memory_usage_bytes : 0;
             if (memUsage > 0) m_currentMemoryUsage -= memUsage;
             resourceStates.erase(id);
-            // ÇåÀí Music Ô­Ê¼Êı¾İ»º´æ
+            // æ¸…ç† Music åŸå§‹æ•°æ®ç¼“å­˜
             datas.erase(id + "_internal_music_raw");
         }
         UnloadMusicStream(mus_it->second);
@@ -539,7 +539,7 @@ void F_Resource::UnloadDataById(const std::string& id) {
 
 
 void F_Resource::ExecuteUnload(const std::string& id, ResourceType type) {
-    // µ÷ÓÃ¶ÔÓ¦µÄĞ¶ÔØº¯Êı
+    // è°ƒç”¨å¯¹åº”çš„å¸è½½å‡½æ•°
     switch (type) {
     case ResTexture: UnloadTextureById(id); break;
     case ResSound: UnloadSoundById(id); break;
@@ -547,46 +547,46 @@ void F_Resource::ExecuteUnload(const std::string& id, ResourceType type) {
     case ResFont: UnloadFontById(id); break;
     case ResText: UnloadTextById(id); break;
     case ResData: UnloadDataById(id); break;
-    default: return; // ResUnknown »òÆäËûÀàĞÍ²»´¦Àí
+    default: return; // ResUnknown æˆ–å…¶ä»–ç±»å‹ä¸å¤„ç†
     }
 }
 
 
 // ----------------------------------------------------------------------------
-// ¹«¹²½Ó¿Ú£ºUnloadResource (´¦ÀíÒıÓÃ¼ÆÊı)
+// å…¬å…±æ¥å£ï¼šUnloadResource (å¤„ç†å¼•ç”¨è®¡æ•°)
 // ----------------------------------------------------------------------------
 
 void F_Resource::UnloadResource(const std::string& id, ResourceType type) {
-    // 1. Èç¹ûÊÇÀÁ¼ÓÔØ»òÅú´Î±ê¼Ç£¬Ö»ÒÆ³ı±ê¼Ç£¬²»Ğ¶ÔØÊµ¼Ê×ÊÔ´
+    // 1. å¦‚æœæ˜¯æ‡’åŠ è½½æˆ–æ‰¹æ¬¡æ ‡è®°ï¼Œåªç§»é™¤æ ‡è®°ï¼Œä¸å¸è½½å®é™…èµ„æº
     if (lazyLoadedResources.count(id)) {
         lazyLoadedResources.erase(id);
         return;
     }
 
-    // 2. ¼ì²éÄÚ´æ¼à¿ØÊÇ·ñ¿ªÆô
+    // 2. æ£€æŸ¥å†…å­˜ç›‘æ§æ˜¯å¦å¼€å¯
     if (m_enableMemoryMonitoring) {
         if (resourceStates.count(id)) {
-            // ¼õÉÙÒıÓÃ¼ÆÊı
+            // å‡å°‘å¼•ç”¨è®¡æ•°
             if (resourceStates[id].ref_count > 0) {
                 resourceStates[id].ref_count--;
-                // Èç¹ûÒıÓÃ¼ÆÊıÈÔ´óÓÚ 0£¬Ôò²»Ğ¶ÔØ
+                // å¦‚æœå¼•ç”¨è®¡æ•°ä»å¤§äº 0ï¼Œåˆ™ä¸å¸è½½
                 if (resourceStates[id].ref_count > 0) return;
             }
         }
     }
 
-    // 3. ÒıÓÃ¼ÆÊıÎª 0 »òÎ´¿ªÆôÄÚ´æ¼à¿Ø£¬Ö´ĞĞÊµ¼ÊĞ¶ÔØ
+    // 3. å¼•ç”¨è®¡æ•°ä¸º 0 æˆ–æœªå¼€å¯å†…å­˜ç›‘æ§ï¼Œæ‰§è¡Œå®é™…å¸è½½
     ExecuteUnload(id, type);
 }
 
 
 // ----------------------------------------------------------------------------
-// ¹«¹²½Ó¿Ú£ºUnloadAllResources (Ç¿ÖÆĞ¶ÔØËùÓĞ×ÊÔ´)
+// å…¬å…±æ¥å£ï¼šUnloadAllResources (å¼ºåˆ¶å¸è½½æ‰€æœ‰èµ„æº)
 // ----------------------------------------------------------------------------
 
 void F_Resource::UnloadAllResources() {
 
-    // Ç¿ÖÆĞ¶ÔØËùÓĞ»º´æÖĞµÄ×ÊÔ´
+    // å¼ºåˆ¶å¸è½½æ‰€æœ‰ç¼“å­˜ä¸­çš„èµ„æº
     for (auto& pair : textures) UnloadTexture(pair.second); textures.clear();
     for (auto& pair : sounds) UnloadSound(pair.second); sounds.clear();
     for (auto& pair : musics) {
@@ -596,12 +596,12 @@ void F_Resource::UnloadAllResources() {
     for (auto& pair : fonts) UnloadFont(pair.second); fonts.clear();
 
     texts.clear();
-    datas.clear(); // ÇåÀíËùÓĞ datas£¬°üÀ¨ Music Ô­Ê¼Êı¾İ
+    datas.clear(); // æ¸…ç†æ‰€æœ‰ datasï¼ŒåŒ…æ‹¬ Music åŸå§‹æ•°æ®
 
     lazyLoadedResources.clear();
     resourceBatches.clear();
 
-    // ÇåÀíÄÚ´æ¼à¿Ø×´Ì¬
+    // æ¸…ç†å†…å­˜ç›‘æ§çŠ¶æ€
     if (m_enableMemoryMonitoring) {
         resourceStates.clear();
         m_currentMemoryUsage = 0;

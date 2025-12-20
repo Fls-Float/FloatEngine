@@ -56,14 +56,14 @@ void F_Anim_Create(float* _val, int tween, int ease, float start, float change, 
 void F_Anim_Update();
 void F_Anim_Delete(int id);
 void F_Anim_Delete(std::string name);
-//filter=0±íÊ¾È«²¿Çå³ı£¬filter=1±íÊ¾Çå³ı½áÊøµÄ¶¯»­
+//filter=0è¡¨ç¤ºå…¨éƒ¨æ¸…é™¤ï¼Œfilter=1è¡¨ç¤ºæ¸…é™¤ç»“æŸçš„åŠ¨ç”»
 void F_Anim_Clear(int filter=0);
 F_Anim* F_Anim_Get(int id);
 F_Anim* F_Anim_Get(std::string name);
-//-1±íÊ¾²»´æÔÚ
+//-1è¡¨ç¤ºä¸å­˜åœ¨
 int F_Anim_Find(int id);
-//-1±íÊ¾²»´æÔÚ
+//-1è¡¨ç¤ºä¸å­˜åœ¨
 int F_Anim_Find(std::string name);
 
-//·µ»Ø¶¯»­ÊıÁ¿,filter=0±íÊ¾È«²¿£¬filter=1±íÊ¾Ã»½áÊø¶¯»­
+//è¿”å›åŠ¨ç”»æ•°é‡,filter=0è¡¨ç¤ºå…¨éƒ¨ï¼Œfilter=1è¡¨ç¤ºæ²¡ç»“æŸåŠ¨ç”»
 int F_Anim_Count(bool filter);
